@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 0.0,
+  "old_code": "from typing import Any, Callable\\nimport scipy\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> float:\\n    # Estimate the numeric value of the definite integral, especially\\n    # when scipy.integrate.quad() fails to converge or returns a large error\\n    # estimate or NaN.\\n    answer, _ = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n    return answer",
+  "new_index": 3,
+  "new_code": "import numpy as np\\nfrom scipy import integrate\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals,\\n    especially for oscillatory integrands on infinite domains,\\n    where scipy.integrate.quad() might fail.\\n\\n    Args:\\n        integrand (Callable[float, float]): The function to integrate.\\n        lower_limit (float): The lower limit of integration. Can be -np.inf.\\n        upper_limit (float): The upper limit of integration. Can be np.inf.\\n\\n    Returns:\\n        Tuple[float, float]: A tuple containing the estimated integral value\\n                              and an estimate of the absolute error.\\n    \\"\\"\\"\\n    # Define a high limit for subintervals and strict tolerances\\n    MAX_LIMIT = 5000\\n    ABS_TOL = 1e-10\\n    REL_TOL = 1e-10\\n    FALLBACK_ERROR_THRESHOLD = 1e-3 # Heuristic threshold for \\"large error\\"\\n\\n    # --- Initial attempt with scipy.integrate.quad ---\\n    try:\\n        result, error = integrate.quad(integrand, lower_limit, upper_limit,\\n                                       limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n        \\n        # If result is not NaN and error is within an acceptable range, return it.\\n        if not np.isnan(result) and abs(error) < FALLBACK_ERROR_THRESHOLD:\\n            return result, error\\n    except integrate.IntegrationWarning as w:\\n        # Catch warnings like \\"The integral is probably divergent, or slowly convergent.\\"\\n        # print(f\\"Warning from quad (first attempt): {w}\\")\\n        pass # Proceed to fallback\\n    except Exception as e:\\n        # Catch other exceptions like FloatingPointError, ValueError, etc.\\n        # print(f\\"Error from quad (first attempt): {e}\\")\\n        pass # Proceed to fallback\\n\\n    # --- Determine if it's an infinite domain problem requiring fallback ---\\n    is_lower_inf = np.isinf(lower_limit) and lower_limit < 0\\n    is_upper_inf = np.isinf(upper_limit) and upper_limit > 0\\n\\n    if not (is_lower_inf or is_upper_inf):\\n        # If it's a finite domain integral and initial quad failed,\\n        # it implies a different kind of problem (e.g., non-integrable singularity,\\n        # very complex behavior on finite domain) not covered by this fallback.\\n        # We simply re-attempt with even higher limit as a final try for finite domain\\n        # or return the (possibly bad) result from the first attempt.\\n        try:\\n            result, error = integrate.quad(integrand, lower_limit, upper_limit,\\n                                           limit=MAX_LIMIT * 2, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            if not np.isnan(result):\\n                return result, error\\n        except Exception:\\n            pass # Failed completely\\n\\n        return np.nan, np.inf # Indicate failure\\n\\n    # --- Fallback strategy for infinite domains: Subdivision and Transformation ---\\n    # This strategy attempts to transform the infinite tail(s) of the integral\\n    # into finite integrals, which quad might handle better if its internal\\n    # transformations or adaptive subdivision failed. The tan(u) transformation\\n    # is robust for functions decaying slower than exp(-x).\\n\\n    total_integral = 0.0\\n    total_error = 0.0\\n\\n    if is_upper_inf and not is_lower_inf:\\n        # Integrate from lower_limit to a sufficiently large M, then M to inf\\n        # M is chosen to be a point far enough into the domain where oscillations might stabilize\\n        M = max(lower_limit + 10.0, 10.0) if lower_limit != -np.inf else 10.0\\n\\n        # Integrate the initial finite part [lower_limit, M]\\n        try:\\n            part1_result, part1_error = integrate.quad(integrand, lower_limit, M,\\n                                                       limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            total_integral += part1_result\\n            total_error += part1_error\\n        except Exception:\\n            return np.nan, np.inf # If even this finite part fails, it's likely very problematic\\n\\n        # Transform the infinite tail [M, inf) using x = M + tan(u), u from [0, pi/2)\\n        # dx = sec^2(u) du = 1/cos^2(u) du\\n        def transformed_integrand_upper_inf(u_val):\\n            # Guard against u_val too close to pi/2 where tan(u) or cos(u) might cause issues\\n            if np.isclose(u_val, np.pi/2): # or u_val >= np.pi/2\\n                return 0.0 # Integrand should typically decay to 0 at infinity\\n            \\n            # Use a robust calculation for sec^2(u)\\n            cos_u = np.cos(u_val)\\n            if np.isclose(cos_u, 0.0): # Avoid division by zero\\n                return 0.0 # Should converge to 0 if integral is finite\\n            sec_sq_u = 1.0 / (cos_u * cos_u)\\n            \\n            x_val = M + np.tan(u_val)\\n            return integrand(x_val) * sec_sq_u\\n\\n        try:\\n            part2_result, part2_error = integrate.quad(transformed_integrand_upper_inf, 0, np.pi/2,\\n                                                       limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            total_integral += part2_result\\n            total_error += part2_error\\n        except Exception:\\n            return np.nan, np.inf # Transformation or integral over transformed range failed\\n\\n    elif is_lower_inf and not is_upper_inf:\\n        # Integrate from -inf to upper_limit\\n        # Split into [-inf, M] and [M, upper_limit]\\n        M = min(upper_limit - 10.0, -10.0) if upper_limit != np.inf else -10.0\\n\\n        # Integrate the initial finite part [M, upper_limit]\\n        try:\\n            part1_result, part1_error = integrate.quad(integrand, M, upper_limit,\\n                                                       limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            total_integral += part1_result\\n            total_error += part1_error\\n        except Exception:\\n            return np.nan, np.inf\\n\\n        # Transform the infinite tail [-inf, M) using x = M - tan(u), u from [0, pi/2)\\n        # dx = -sec^2(u) du = -1/cos^2(u) du\\n        def transformed_integrand_lower_inf(u_val):\\n            if np.isclose(u_val, np.pi/2):\\n                return 0.0\\n            \\n            cos_u = np.cos(u_val)\\n            if np.isclose(cos_u, 0.0):\\n                return 0.0\\n            sec_sq_u = 1.0 / (cos_u * cos_u)\\n            \\n            x_val = M - np.tan(u_val)\\n            return integrand(x_val) * sec_sq_u\\n\\n        try:\\n            part2_result, part2_error = integrate.quad(transformed_integrand_lower_inf, 0, np.pi/2,\\n                                                       limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            total_integral += part2_result\\n            total_error += part2_error\\n        except Exception:\\n            return np.nan, np.inf\\n        \\n    elif is_lower_inf and is_upper_inf:\\n        # Integrate from -inf to inf\\n        # Apply the transformation x = tan(u), u from [-pi/2, pi/2)\\n        # dx = sec^2(u) du = 1/cos^2(u) du\\n        def transformed_integrand_both_inf(u_val):\\n            # Guard against u_val too close to -pi/2 or pi/2\\n            if np.isclose(u_val, -np.pi/2) or np.isclose(u_val, np.pi/2):\\n                return 0.0\\n            \\n            cos_u = np.cos(u_val)\\n            if np.isclose(cos_u, 0.0):\\n                return 0.0\\n            sec_sq_u = 1.0 / (cos_u * cos_u)\\n            \\n            x_val = np.tan(u_val)\\n            return integrand(x_val) * sec_sq_u\\n\\n        try:\\n            result, error = integrate.quad(transformed_integrand_both_inf, -np.pi/2, np.pi/2,\\n                                           limit=MAX_LIMIT, epsabs=ABS_TOL, epsrel=REL_TOL)\\n            total_integral = result\\n            total_error = error\\n        except Exception:\\n            return np.nan, np.inf\\n            \\n    return total_integral, total_error"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

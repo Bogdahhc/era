@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 8.0,
+  "old_code": "import torch\\nimport torch.nn as nn\\nfrom torch.utils.data import Dataset, DataLoader\\nfrom torchvision import transforms\\nimport segmentation_models_pytorch as smp\\nfrom PIL import Image\\nimport numpy as np\\nimport os # For os.cpu_count()\\n\\n# Constants\\nNUM_CLASSES = 17 # Total number of segmentation classes (1-indexed labels are 1-17)\\nIMAGE_SIZE = 256 # Images are 256x256\\nBATCH_SIZE = 8\\nLEARNING_RATE = 1e-4\\nNUM_EPOCHS = 5 # Small number of epochs for initial exploration\\n\\n# Define device\\nDEVICE = torch.device(\\"cuda\\" if torch.cuda.is_available() else \\"cpu\\")\\n\\n# Dataset Class\\nclass DLRSDDataset(Dataset):\\n    def __init__(self, data_paths):\\n        self.data_paths = data_paths\\n        # Transforms for image (RGB)\\n        self.image_transform = transforms.Compose([\\n            transforms.ToTensor(), # Converts to (C, H, W) and scales to [0, 1]\\n            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), # ImageNet means/stds\\n        ])\\n        # Transforms for mask (Grayscale)\\n        self.mask_transform = transforms.Compose([\\n            transforms.ToTensor(), # Converts to (1, H, W) and scales to [0, 1]\\n        ])\\n\\n    def __len__(self):\\n        return len(self.data_paths)\\n\\n    def __getitem__(self, idx):\\n        image_path, label_path = self.data_paths[idx]\\n\\n        # Open image and mask using PIL\\n        image = Image.open(image_path).convert('RGB')\\n        mask = Image.open(label_path).convert('L') # Convert to grayscale for single channel mask\\n\\n        # Apply transformations\\n        image_tensor = self.image_transform(image)\\n        # Squeeze removes the channel dimension (1, H, W) -> (H, W)\\n        # Convert to Long type for CrossEntropyLoss\\n        # Labels are 1-indexed (1-17), so subtract 1 to get 0-indexed (0-16)\\n        mask_tensor = (self.mask_transform(mask) * 255).squeeze(0).long() - 1 # Masks are 0-255, so scale to original vals\\n\\n\\n        # Check for any mask values outside expected range (0-16) after conversion\\n        # This helps debug if there are unexpected values in source labels or conversion\\n        if torch.any(mask_tensor < 0) or torch.any(mask_tensor >= NUM_CLASSES):\\n            # If labels are 0-indexed (0-16) and some pixels are 0, subtracting 1 will make them -1\\n            # If original labels are 0-indexed (0-16), remove the \\"- 1\\" part\\n            # Based on description, labels are 1-indexed (1-17).\\n            # So, if original labels were 0 and became -1, it suggests there might be a background class 0.\\n            # If the problem implies 1-17 are the only classes, then class 0 is implicitly ignored.\\n            # The calculate_mean_iou function explicitly ignores index 0 for its calculation.\\n            # If our labels are indeed 1-17, and we convert to 0-16, then any 0's in the original image will become -1.\\n            # Let's ensure the minimum is 0, by clipping. This implies class 1 in source map to 0 in tensor.\\n            mask_tensor = torch.clamp(mask_tensor, min=0, max=NUM_CLASSES - 1)\\n\\n        return image_tensor, mask_tensor\\n\\nclass Model:\\n    def __init__(self, training_data_paths, num_classes=NUM_CLASSES, device=DEVICE):\\n        self.device = device\\n        self.num_classes = num_classes\\n\\n        # Initialize model using segmentation_models_pytorch\\n        self.smp_model = smp.Unet(\\n            encoder_name=\\"resnet34\\",        # Pre-trained ResNet-34 encoder\\n            encoder_weights=\\"imagenet\\",     # Use ImageNet pre-trained weights\\n            in_channels=3,                  # Input images are RGB\\n            classes=self.num_classes,       # Output channels = number of classes (0-indexed)\\n        )\\n        self.smp_model.to(self.device)\\n\\n        # Prepare data loaders\\n        train_dataset = DLRSDDataset(training_data_paths)\\n        self.train_loader = DataLoader(\\n            train_dataset,\\n            batch_size=BATCH_SIZE,\\n            shuffle=True,\\n            num_workers=min(os.cpu_count(), BATCH_SIZE), # Use CPU cores up to batch size for data loading\\n            pin_memory=True # For faster data transfer to GPU\\n        )\\n\\n        # Optimizer and Loss function\\n        self.optimizer = torch.optim.Adam(self.smp_model.parameters(), lr=LEARNING_RATE)\\n        # CrossEntropyLoss expects target labels to be 0-indexed (0 to num_classes-1)\\n        self.loss_fn = nn.CrossEntropyLoss()\\n\\n        self._train_model()\\n\\n    def _train_model(self):\\n        print(f\\"Training model on {self.device}...\\")\\n        self.smp_model.train() # Set model to training mode\\n\\n        for epoch in range(NUM_EPOCHS):\\n            running_loss = 0.0\\n            for batch_idx, (images, masks) in enumerate(self.train_loader):\\n                images = images.to(self.device)\\n                masks = masks.to(self.device)\\n\\n                self.optimizer.zero_grad() # Zero the gradients\\n\\n                outputs = self.smp_model(images)\\n                loss = self.loss_fn(outputs, masks)\\n\\n                loss.backward() # Backpropagation\\n                self.optimizer.step() # Update weights\\n\\n                running_loss += loss.item() * images.size(0)\\n\\n            epoch_loss = running_loss / len(self.train_loader.dataset)\\n            print(f\\"Epoch {epoch+1}/{NUM_EPOCHS}, Loss: {epoch_loss:.4f}\\")\\n        print(\\"Training complete.\\")\\n\\n    def segment_single_image(self, image: np.ndarray) -> np.ndarray:\\n        \\"\\"\\" Predicts the segmentation mask for a single image. \\"\\"\\"\\n        self.smp_model.eval() # Set model to evaluation mode\\n\\n        # Convert numpy array (H, W, C) to PIL Image for torchvision transforms\\n        image_pil = Image.fromarray(image).convert('RGB')\\n\\n        # Apply the same image transformation used in the dataset\\n        transform_inference = transforms.Compose([\\n            transforms.ToTensor(),\\n            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\\n        ])\\n        image_tensor = transform_inference(image_pil).unsqueeze(0).to(self.device) # Add batch dimension\\n\\n        with torch.no_grad(): # No need to compute gradients during inference\\n            output = self.smp_model(image_tensor)\\n\\n        # Get predicted class for each pixel\\n        # Argmax over the class dimension (dim=1 for [B, C, H, W])\\n        predicted_mask = torch.argmax(output, dim=1).squeeze(0) # Remove batch dimension\\n\\n        # Convert back to numpy and make 1-indexed for the evaluation function\\n        # Training masks were 0-indexed, so add 1 back to predictions\\n        predicted_mask_np = (predicted_mask.cpu().numpy() + 1).astype(np.uint8)\\n\\n        # Ensure that predicted classes are within the expected 1-17 range\\n        # This handles cases where argmax might produce values outside the original label range\\n        # if the model output logits lead to such an outcome (unlikely for well-trained model, but good practice)\\n        predicted_mask_np = np.clip(predicted_mask_np, 1, NUM_CLASSES) # Clamps to [1, 17]\\n\\n        return predicted_mask_np\\n\\n# Assign the trained model to the global 'model' variable\\nmodel = Model(training_data_paths)",
+  "new_index": 16,
+  "new_code": "# TODO:  1. Feel free to pip install and import any useful libraries within the\\n#  rewrite cell.\\n\\nimport torch\\nimport torch.nn as nn\\nfrom torch.utils.data import Dataset, DataLoader\\nfrom torchvision import transforms\\nimport segmentation_models_pytorch as smp\\nfrom PIL import Image\\nimport numpy as np\\nimport os # For os.cpu_count()\\n\\n# Constants\\nNUM_CLASSES = 17 # Total number of segmentation classes (1-indexed labels are 1-17)\\nIMAGE_SIZE = 256 # Images are 256x256\\nBATCH_SIZE = 8\\nLEARNING_RATE = 1e-4\\nNUM_EPOCHS = 30 # Increased epochs for better training\\nIGNORE_INDEX = 255 # A value outside the range of 0-16 for ignored pixels\\n\\n# Define device\\nDEVICE = torch.device(\\"cuda\\" if torch.cuda.is_available() else \\"cpu\\")\\n\\n# Dataset Class\\nclass DLRSDDataset(Dataset):\\n    def __init__(self, data_paths):\\n        self.data_paths = data_paths\\n        # Transforms for image (RGB)\\n        self.image_transform = transforms.Compose([\\n            transforms.ToTensor(), # Converts to (C, H, W) and scales to [0, 1]\\n            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), # ImageNet means/stds\\n        ])\\n        # Transforms for mask (Grayscale)\\n        self.mask_transform = transforms.Compose([\\n            transforms.ToTensor(), # Converts to (1, H, W) and scales to [0, 1]\\n        ])\\n\\n    def __len__(self):\\n        return len(self.data_paths)\\n\\n    def __getitem__(self, idx):\\n        image_path, label_path = self.data_paths[idx]\\n\\n        # Open image and mask using PIL\\n        image = Image.open(image_path).convert('RGB')\\n        mask = Image.open(label_path).convert('L') # Convert to grayscale for single channel mask\\n\\n        # Apply transformations for image\\n        image_tensor = self.image_transform(image)\\n\\n        # Process mask for training:\\n        # 1. ToTensor() scales to [0,1], multiply by 255 to get original pixel values (e.g., 0-17)\\n        mask_np_original_values = (self.mask_transform(mask) * 255).squeeze(0).long().cpu().numpy()\\n\\n        # 2. Create a new mask for training targets, initializing with IGNORE_INDEX\\n        # This handles cases where original masks might contain 0 (background/unlabeled)\\n        # while class IDs are 1-17.\\n        processed_mask_tensor = torch.full_like(\\n            torch.from_numpy(mask_np_original_values),\\n            fill_value=IGNORE_INDEX,\\n            dtype=torch.long\\n        )\\n\\n        # 3. Map original 1-17 class IDs to 0-16 for CrossEntropyLoss\\n        # Pixels with original value 0 will remain IGNORE_INDEX\\n        valid_class_pixels = (mask_np_original_values >= 1) & (mask_np_original_values <= NUM_CLASSES)\\n        processed_mask_tensor[valid_class_pixels] = torch.from_numpy(mask_np_original_values[valid_class_pixels] - 1).long()\\n\\n        return image_tensor, processed_mask_tensor\\n\\nclass Model:\\n    def __init__(self, training_data_paths, num_classes=NUM_CLASSES, device=DEVICE):\\n        self.device = device\\n        self.num_classes = num_classes\\n\\n        # Initialize model using segmentation_models_pytorch\\n        self.smp_model = smp.Unet(\\n            encoder_name=\\"resnet34\\",        # Pre-trained ResNet-34 encoder\\n            encoder_weights=\\"imagenet\\",     # Use ImageNet pre-trained weights\\n            in_channels=3,                  # Input images are RGB\\n            classes=self.num_classes,       # Output channels = number of classes (0-indexed)\\n        )\\n        self.smp_model.to(self.device)\\n\\n        # Prepare data loaders\\n        train_dataset = DLRSDDataset(training_data_paths)\\n        self.train_loader = DataLoader(\\n            train_dataset,\\n            batch_size=BATCH_SIZE,\\n            shuffle=True,\\n            num_workers=min(os.cpu_count(), BATCH_SIZE * 2), # More workers for faster data loading\\n            pin_memory=True # For faster data transfer to GPU\\n        )\\n\\n        # Optimizer and Loss function\\n        self.optimizer = torch.optim.Adam(self.smp_model.parameters(), lr=LEARNING_RATE)\\n        # CrossEntropyLoss expects target labels to be 0-indexed (0 to num_classes-1)\\n        # It now also ignores the specified IGNORE_INDEX\\n        self.loss_fn = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)\\n\\n        self._train_model()\\n\\n    def _train_model(self):\\n        print(f\\"Training model on {self.device}...\\")\\n        self.smp_model.train() # Set model to training mode\\n\\n        for epoch in range(NUM_EPOCHS):\\n            running_loss = 0.0\\n            for batch_idx, (images, masks) in enumerate(self.train_loader):\\n                images = images.to(self.device)\\n                masks = masks.to(self.device)\\n\\n                self.optimizer.zero_grad() # Zero the gradients\\n\\n                outputs = self.smp_model(images)\\n                loss = self.loss_fn(outputs, masks)\\n\\n                loss.backward() # Backpropagation\\n                self.optimizer.step() # Update weights\\n\\n                running_loss += loss.item() * images.size(0)\\n\\n            epoch_loss = running_loss / len(self.train_loader.dataset)\\n            print(f\\"Epoch {epoch+1}/{NUM_EPOCHS}, Loss: {epoch_loss:.4f}\\")\\n        print(\\"Training complete.\\")\\n\\n    def segment_single_image(self, image: np.ndarray) -> np.ndarray:\\n        \\"\\"\\" Predicts the segmentation mask for a single image. \\"\\"\\"\\n        self.smp_model.eval() # Set model to evaluation mode\\n\\n        # Convert numpy array (H, W, C) to PIL Image for torchvision transforms\\n        image_pil = Image.fromarray(image).convert('RGB')\\n\\n        # Apply the same image transformation used in the dataset\\n        transform_inference = transforms.Compose([\\n            transforms.ToTensor(),\\n            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),\\n        ])\\n        image_tensor = transform_inference(image_pil).unsqueeze(0).to(self.device) # Add batch dimension\\n\\n        with torch.no_grad(): # No need to compute gradients during inference\\n            output = self.smp_model(image_tensor)\\n\\n        # Get predicted class for each pixel\\n        # Argmax over the class dimension (dim=1 for [B, C, H, W])\\n        predicted_mask = torch.argmax(output, dim=1).squeeze(0) # Remove batch dimension\\n\\n        # Convert back to numpy and make 1-indexed for the evaluation function\\n        # Training masks were 0-indexed, so add 1 back to predictions\\n        # Predicted classes from argmax will be 0-16. Add 1 to get 1-17.\\n        predicted_mask_np = (predicted_mask.cpu().numpy() + 1).astype(np.uint8)\\n\\n        # Ensure that predicted classes are within the expected 1-17 range\\n        # This handles cases where argmax might produce values outside the original label range\\n        # if the model output logits lead to such an outcome (unlikely for well-trained model, but good practice)\\n        predicted_mask_np = np.clip(predicted_mask_np, 1, NUM_CLASSES) # Clamps to [1, 17]\\n\\n        return predicted_mask_np\\n\\n# Assign the trained model to the global 'model' variable\\nmodel = Model(training_data_paths)"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

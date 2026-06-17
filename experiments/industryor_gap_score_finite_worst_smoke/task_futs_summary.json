@@ -1,0 +1,21 @@
+{
+  "dataset": "industryor",
+  "tree_scope": "task",
+  "train": {
+    "n_total": 1,
+    "n_success": 0,
+    "tasks": [
+      {
+        "task_id": "B015",
+        "score": -1e+30,
+        "success": false,
+        "experiment_dir": "experiments/industryor_gap_score_finite_worst_smoke/train_B015"
+      }
+    ]
+  },
+  "test": {
+    "n_total": 0,
+    "n_success": 0,
+    "tasks": []
+  }
+}

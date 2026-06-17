@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 2.0,
+  "old_code": "# [rewrite_cell]\\nimport numpy as np\\nimport pandas as pd\\nimport scanpy as sc\\nfrom scipy.sparse import lil_matrix, csr_matrix\\nfrom sklearn.neighbors import NearestNeighbors\\nfrom typing import Any\\n\\n# Define parameters for the config.\\nconfig = {\\n    'n_pca_comps': 50, # Number of principal components for embedding\\n    # 'k' from the problem description: k-nearest neighbors *from within the current batch*.\\n    # This implies finding k neighbors for *each* cell from *each* batch.\\n    'n_neighbors_per_batch': 15,\\n    # Sigma for Gaussian kernel to compute connectivities from distances.\\n    # If None, it will be estimated from the computed distances.\\n    'sigma_connectivities': None\\n}\\n\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # --- Configuration Parameters ---\\n  n_pca_comps = config.get('n_pca_comps', 50)\\n  n_neighbors_per_batch = config.get('n_neighbors_per_batch', 15)\\n  sigma_connectivities = config.get('sigma_connectivities', None)\\n  # --- End Configuration ---\\n\\n  # 1. Preprocessing: Normalize, log-transform, and perform PCA\\n  # The problem states input is raw counts, so typical scRNA-seq preprocessing is needed.\\n  # These steps align with scanpy best practices before dimensionality reduction/integration.\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  sc.pp.log1p(adata)\\n  sc.pp.scale(adata, max_value=10) # Clip values to avoid extreme outliers impacting PCA\\n  sc.pp.pca(adata, n_comps=n_pca_comps)\\n\\n  # Store PCA embedding as X_emb. This is the low-dimensional space for integration.\\n  X_emb = adata.obsm['X_pca']\\n  n_cells = adata.n_obs\\n\\n  # 2. Batch-Aware Nearest Neighbor Graph Construction\\n  # This implements the \\"Major advice\\": for each cell, identify its k-nearest neighbors\\n  # independently within each batch, and then merge these.\\n\\n  # Initialize lists to store rows, columns, and distances for the sparse matrices\\n  all_rows, all_cols, all_dists = [], [], []\\n\\n  # Prepare batch data for efficient querying\\n  unique_batches = adata.obs['batch'].unique()\\n  batch_pca_data = {}\\n  batch_global_indices = {}\\n\\n  for b_id in unique_batches:\\n      mask = (adata.obs['batch'] == b_id)\\n      global_indices = np.where(mask)[0]\\n      pca_data = X_emb[mask]\\n      batch_pca_data[b_id] = pca_data\\n      batch_global_indices[b_id] = global_indices\\n\\n  # Compute neighbors: For each cell (query_cell), query against every batch (target_batch)\\n  for i in range(n_cells):\\n      query_point = X_emb[i].reshape(1, -1) # The cell for which we find neighbors\\n\\n      for target_b_id in unique_batches:\\n          target_pca = batch_pca_data[target_b_id]\\n          target_g_indices = batch_global_indices[target_b_id]\\n\\n          # Only compute if the target batch has enough cells for k neighbors\\n          if len(target_pca) > 0:\\n              # Determine actual number of neighbors to find, limited by batch size\\n              actual_n_neighbors = min(n_neighbors_per_batch, len(target_pca))\\n              if actual_n_neighbors == 0: # Skip if batch is too small for any neighbor\\n                  continue\\n\\n              nn_model = NearestNeighbors(n_neighbors=actual_n_neighbors, metric='euclidean', n_jobs=-1)\\n              nn_model.fit(target_pca)\\n\\n              # Query the single cell \`i\` against the \`target_pca\` (cells in \`target_b_id\`)\\n              dists, indices = nn_model.kneighbors(query_point)\\n\\n              # Flatten the results as kneighbors returns 2D arrays for a single query point\\n              dists_flat = dists.flatten()\\n              indices_flat = indices.flatten()\\n\\n              # Map local indices within target_pca back to global AnnData indices\\n              global_neighbor_indices = target_g_indices[indices_flat]\\n\\n              # Add edges to our lists\\n              all_rows.extend([i] * len(global_neighbor_indices))\\n              all_cols.extend(global_neighbor_indices)\\n              all_dists.extend(dists_flat)\\n\\n  # 3. Construct Sparse Distance and Connectivity Matrices\\n  # Use an edge map to handle potential duplicate (r,c) pairs if a cell finds the same neighbor\\n  # from multiple batch queries, and to ensure symmetry.\\n  edge_map = {} # (row, col) -> min_dist\\n\\n  for r, c, d in zip(all_rows, all_cols, all_dists):\\n      if r == c: # Skip self-loops for distance calculation, can add later with 0 distance\\n          continue\\n      # Store the minimum distance if an edge is found multiple times\\n      if (r, c) not in edge_map or d < edge_map[(r, c)]:\\n          edge_map[(r, c)] = d\\n      # Ensure symmetry: also add (c, r) if not present or with smaller distance\\n      if (c, r) not in edge_map or d < edge_map[(c, r)]:\\n          edge_map[(c, r)] = d\\n\\n  final_rows, final_cols, final_dists = [], [], []\\n  for (r, c), d in edge_map.items():\\n      final_rows.append(r)\\n      final_cols.append(c)\\n      final_dists.append(d)\\n\\n  # Add self-loops with distance 0 if they don't already exist (common for graph operations)\\n  for i in range(n_cells):\\n      if (i, i) not in edge_map:\\n          final_rows.append(i)\\n          final_cols.append(i)\\n          final_dists.append(0.0)\\n\\n  # Create the final sparse distance matrix\\n  distances_matrix = csr_matrix((final_dists, (final_rows, final_cols)), shape=(n_cells, n_cells))\\n  distances_matrix.eliminate_zeros()\\n\\n  # Compute connectivities using a Gaussian kernel\\n  if sigma_connectivities is None:\\n      # Estimate sigma from non-zero distances. Use median for robustness.\\n      non_zero_dists = distances_matrix.data[distances_matrix.data > 0]\\n      if len(non_zero_dists) > 0:\\n          sigma_connectivities = np.median(non_zero_dists) / 3.0 # Common heuristic\\n          if sigma_connectivities == 0: # Avoid division by zero if all relevant dists are zero\\n               sigma_connectivities = 1.0\\n      else:\\n          sigma_connectivities = 1.0 # Default if no distances found or all are zero\\n\\n  # Apply Gaussian kernel to distances to get connectivities (higher for closer cells)\\n  connectivities_data = np.exp(-distances_matrix.data**2 / (2 * sigma_connectivities**2))\\n  connectivities_matrix = csr_matrix((connectivities_data, (distances_matrix.nonzero()[0], distances_matrix.nonzero()[1])), shape=(n_cells, n_cells))\\n  connectivities_matrix.eliminate_zeros()\\n\\n\\n  # 4. Create output AnnData object\\n  output_adata = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={'X_emb': X_emb}, # The PCA embedding is the \\"transformed dataset\\"\\n  )\\n\\n  # Store the custom-built graph in .obsp and .uns for scanpy/scib compatibility\\n  output_adata.obsp['distances'] = distances_matrix\\n  output_adata.obsp['connectivities'] = connectivities_matrix\\n  output_adata.uns['neighbors'] = {\\n      'params': {\\n          # The 'n_neighbors' for uns is typically the total number of neighbors,\\n          # which in this method can be variable, but we approximate or use per-batch count.\\n          'n_neighbors': n_neighbors_per_batch * len(unique_batches),\\n          'method': 'custom_batch_aware_knn',\\n          'metric': 'euclidean',\\n          'n_pca_comps': n_pca_comps,\\n          'n_neighbors_per_batch': n_neighbors_per_batch,\\n          'sigma_connectivities': sigma_connectivities\\n      }\\n  }\\n\\n  return output_adata",
+  "new_index": 28,
+  "new_code": "# [rewrite_cell]\\nimport numpy as np\\nimport pandas as pd\\nimport scanpy as sc\\nfrom scipy.sparse import lil_matrix, csr_matrix\\nfrom sklearn.neighbors import NearestNeighbors\\nfrom typing import Any\\n\\n# Define parameters for the config.\\nconfig = {\\n    'n_pca_comps': 50, # Number of principal components for embedding input to graph\\n    # 'k' from the problem description: k-nearest neighbors *from within the current batch*.\\n    'n_neighbors_per_batch': 15,\\n    # Sigma for Gaussian kernel to compute connectivities from distances.\\n    # If None, it will be estimated from the computed distances.\\n    'sigma_connectivities': None,\\n    'n_umap_comps': 2, # Number of components for the final UMAP embedding\\n}\\n\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # --- Configuration Parameters ---\\n  n_pca_comps = config.get('n_pca_comps', 50)\\n  n_neighbors_per_batch = config.get('n_neighbors_per_batch', 15)\\n  sigma_connectivities = config.get('sigma_connectivities', None)\\n  n_umap_comps = config.get('n_umap_comps', 2)\\n  # --- End Configuration ---\\n\\n  # 1. Preprocessing: Normalize, log-transform, scale, and perform PCA\\n  # These steps align with scanpy best practices before dimensionality reduction.\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  sc.pp.log1p(adata)\\n  sc.pp.scale(adata, max_value=10) # Clip values to avoid extreme outliers impacting PCA\\n  sc.pp.pca(adata, n_comps=n_pca_comps)\\n\\n  X_pca = adata.obsm['X_pca'] # PCA result, used as input for graph construction\\n  n_cells = adata.n_obs\\n\\n  # 2. Prepare batch data and pre-fit NearestNeighbors models for efficiency\\n  unique_batches = adata.obs['batch'].unique()\\n  batch_pca_data = {} # Stores PCA data subset for each batch\\n  batch_global_indices = {} # Stores global AnnData indices for cells in each batch\\n  batch_nn_models = {} # Stores fitted NearestNeighbors models for each batch\\n\\n  for b_id in unique_batches:\\n      mask = (adata.obs['batch'] == b_id)\\n      global_indices = np.where(mask)[0]\\n      pca_data = X_pca[mask] # Get PCA data for cells only in this batch\\n      \\n      batch_pca_data[b_id] = pca_data\\n      batch_global_indices[b_id] = global_indices\\n      \\n      # Fit NearestNeighbors model once per batch if it has enough cells\\n      if len(pca_data) > 0:\\n          # The n_neighbors here is the max neighbors that can be found within this batch.\\n          # It's important for the model fitting to ensure it's not trying to find\\n          # more neighbors than available cells in the batch.\\n          nn_model = NearestNeighbors(n_neighbors=min(n_neighbors_per_batch, len(pca_data)), \\n                                      metric='euclidean', n_jobs=-1)\\n          nn_model.fit(pca_data)\\n          batch_nn_models[b_id] = nn_model\\n\\n  # 3. Batch-Aware Nearest Neighbor Graph Construction (Distances)\\n  # Initialize a LIL matrix for efficient incremental building of the sparse distance matrix.\\n  distances_lil = lil_matrix((n_cells, n_cells), dtype=np.float32)\\n\\n  # Using a dictionary (edge_map) to handle potential duplicate (r,c) pairs\\n  # and ensuring symmetry by storing the minimum distance.\\n  edge_map = {} \\n\\n  for i in range(n_cells): # Iterate through each query cell\\n      query_point = X_pca[i].reshape(1, -1) \\n\\n      for target_b_id in unique_batches: # Iterate through each target batch\\n          if target_b_id in batch_nn_models: # Only query if a model was successfully fitted\\n              nn_model = batch_nn_models[target_b_id]\\n              target_g_indices = batch_global_indices[target_b_id]\\n\\n              # Determine the actual number of neighbors to request from the model.\\n              # It must be less than or equal to the number of cells the model was fitted on.\\n              actual_n_neighbors_for_query = min(n_neighbors_per_batch, len(target_g_indices))\\n              if actual_n_neighbors_for_query == 0:\\n                  continue # Skip if batch is too small for any neighbors\\n\\n              # Query the single cell \`i\` against the pre-fitted model for \`target_b_id\`\\n              dists, indices = nn_model.kneighbors(query_point, n_neighbors=actual_n_neighbors_for_query)\\n\\n              dists_flat = dists.flatten()\\n              indices_flat = indices.flatten()\\n\\n              # Map local indices within target_pca back to global AnnData indices\\n              global_neighbor_indices = target_g_indices[indices_flat]\\n\\n              for k_idx, global_col_idx in enumerate(global_neighbor_indices):\\n                  dist = dists_flat[k_idx]\\n                  # Store the minimum distance if an edge (i, global_col_idx) is found multiple times\\n                  # (e.g., if multiple cells find the same neighbor indirectly, or through different queries)\\n                  if (i, global_col_idx) not in edge_map or dist < edge_map[(i, global_col_idx)]:\\n                      edge_map[(i, global_col_idx)] = dist\\n                  # Ensure symmetry: also add (global_col_idx, i) if not present or with smaller distance\\n                  if (global_col_idx, i) not in edge_map or dist < edge_map[(global_col_idx, i)]:\\n                      edge_map[(global_col_idx, i)] = dist\\n\\n  # Convert edge_map to lists suitable for CSR matrix construction\\n  final_rows, final_cols, final_dists = [], [], []\\n  for (r, c), d in edge_map.items():\\n      final_rows.append(r)\\n      final_cols.append(c)\\n      final_dists.append(d)\\n\\n  # Add self-loops with distance 0 if they don't already exist (important for graph algorithms)\\n  for i in range(n_cells):\\n      if (i, i) not in edge_map:\\n          final_rows.append(i)\\n          final_cols.append(i)\\n          final_dists.append(0.0)\\n\\n  # Create the final sparse distance matrix\\n  distances_matrix = csr_matrix((final_dists, (final_rows, final_cols)), shape=(n_cells, n_cells))\\n  distances_matrix.eliminate_zeros() # Remove explicit zeros if any\\n\\n  # 4. Compute Connectivities using a Gaussian kernel\\n  if sigma_connectivities is None:\\n      # Estimate sigma from non-zero distances. Use median for robustness.\\n      non_zero_dists = distances_matrix.data[distances_matrix.data > 0]\\n      if len(non_zero_dists) > 0:\\n          sigma_connectivities = np.median(non_zero_dists) / 3.0 # Common heuristic for affinity\\n          if sigma_connectivities == 0: # Avoid division by zero if all relevant dists are zero\\n               sigma_connectivities = 1.0 # Fallback to a default\\n      else:\\n          sigma_connectivities = 1.0 # Default if no distances found or all are zero\\n\\n  # Apply Gaussian kernel: higher values mean stronger connection (affinity)\\n  connectivities_data = np.exp(-distances_matrix.data**2 / (2 * sigma_connectivities**2))\\n  connectivities_matrix = csr_matrix((connectivities_data, (distances_matrix.nonzero()[0], distances_matrix.nonzero()[1])), shape=(n_cells, n_cells))\\n  connectivities_matrix.eliminate_zeros()\\n\\n  # 5. Store the custom graph in adata.obsp and setup adata.uns['neighbors']\\n  adata.obsp['distances'] = distances_matrix\\n  adata.obsp['connectivities'] = connectivities_matrix\\n  \\n  # Properly set adata.uns['neighbors'] for scanpy functions to recognize the custom graph\\n  adata.uns['neighbors'] = {\\n      'params': {\\n          # The 'n_neighbors' for uns is typically the total number of neighbors,\\n          # which in this method can be variable, but we approximate it\\n          # as the sum of neighbors found across all batches for a cell.\\n          'n_neighbors': n_neighbors_per_batch * len(unique_batches), \\n          'method': 'custom_batch_aware_knn',\\n          'metric': 'euclidean', # The distance metric used for KNN search\\n          'n_pca_comps': n_pca_comps,\\n          'n_neighbors_per_batch': n_neighbors_per_batch,\\n          'sigma_connectivities': sigma_connectivities\\n      },\\n      # Explicitly point to the keys in adata.obsp where distances and connectivities are stored\\n      'distances': 'distances', \\n      'connectivities': 'connectivities' \\n  }\\n\\n  # 6. Compute UMAP embedding using the custom, batch-corrected graph\\n  # sc.tl.umap will automatically use the graph specified in adata.uns['neighbors']\\n  sc.tl.umap(adata, n_components=n_umap_comps)\\n\\n  # 7. Create output AnnData object\\n  # The UMAP embedding is the batch-integrated transformed dataset.\\n  output_adata = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={'X_emb': adata.obsm['X_umap']}, # UMAP is the batch-integrated embedding\\n  )\\n\\n  return output_adata"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

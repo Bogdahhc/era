@@ -1,0 +1,62 @@
+{
+  "architecture": {
+    "active_backend": "ortools_cp_sat",
+    "backend_registry": "implementation.exact_job_shop_era.backends",
+    "baseline_architecture": "implementation.job_shop_era generates Python solve(instance) code",
+    "executor": "ExactJobShopExecutor",
+    "name": "exact_job_shop_era",
+    "node_representation": "JSON exact-solver spec"
+  },
+  "cli_args": {
+    "c_puct": 1.0,
+    "experiment_name": "ta31_exact_20_monitor",
+    "instance": "ta31",
+    "iterations": 20,
+    "no_llm": false,
+    "root_time_seconds": 30.0
+  },
+  "code_state": {
+    "exact_module_file_hashes": {
+      "__init__.py": "4abb922e213fc8b6",
+      "audit_cli.py": "fd5d71deb7159b0a",
+      "backends.py": "d916bc46fee25d88",
+      "cli.py": "14fca2c8a2ae854c",
+      "cp_sat_solver.py": "89f55da453680888",
+      "executor.py": "04afd4058116def7",
+      "json_llm.py": "e8fbf39773769b5e",
+      "logger.py": "e8b78303df447fcf",
+      "mutator.py": "a3710b631aeb5e88",
+      "plot.py": "7050aa5de62e2a9d",
+      "plot_tree_cli.py": "c8ebd32cee0a6e07",
+      "problem.py": "f027e996f6dbfbe8",
+      "prompt.py": "2bccc4ad19a1285a",
+      "search.py": "bb9c0e2e11389c98",
+      "spec.py": "5dbcd31db2e5c943"
+    },
+    "git_head": "37637a49fd78139c01a2162f8dc5136087165f93",
+    "git_status_short": "M README.md\n M implementation/futs.py\n M implementation/llm.py\n M implementation/playground_s3e1.py\n?? experiments/\n?? implementation/exact_job_shop_era/\n?? implementation/job_shop_era/\n?? implementation/logior_era/\n?? job_shop_lib_dataset_directory.txt",
+    "tracked_diff_hash": "a9acc6e77e1d5cdd"
+  },
+  "created_at": "2026-06-04 17:03:13",
+  "environment": {
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.35",
+    "python": "3.13.9"
+  },
+  "experiment_dir": "experiments/ta31_exact_20_monitor",
+  "problem": {
+    "description": "Configure an exact solver for job-shop benchmark ta31. It has 30 jobs, 15 machines, and 450 operations. The inner solver must be an exact CP/MIP-style solver, not a dispatching heuristic. The scorer rewards low makespan and proof status.",
+    "instance_name": "ta31",
+    "optimum": 1764
+  },
+  "root_spec": {
+    "backend": "ortools_cp_sat",
+    "branching": "default",
+    "encoding": "interval_variables",
+    "log_search_progress": false,
+    "max_time_in_seconds": 30.0,
+    "notes": "",
+    "redundant_bounds": [],
+    "symmetry_breaking": false,
+    "warm_start": "none"
+  }
+}

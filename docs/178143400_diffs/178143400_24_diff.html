@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 14.0,
+  "old_code": "import numpy as np\\nimport scipy.integrate\\nimport scipy.special\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\n    # Store initial quad results, even if they're problematic, as a fallback.\\n    # Initialize with NaN to represent a failed state before the first attempt.\\n    initial_value, initial_error = np.nan, np.nan\\n    \\n    try:\\n        # Attempt to use scipy.integrate.quad first, as it's highly optimized for many cases.\\n        # Default behavior of quad is to return (value, error_estimate).\\n        initial_value, initial_error = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n        \\n        # Check for NaN or Inf results, which are definite signs of failure.\\n        if np.isnan(initial_value) or np.isinf(initial_value) or \\\\\\n           np.isnan(initial_error) or np.isinf(initial_error):\\n            raise ValueError(\\"Initial scipy.integrate.quad returned NaN or Inf, indicating failure.\\")\\n\\n        # Heuristic checks for \\"large error\\" that might indicate a problematic result\\n        # even if not NaN/Inf. These thresholds are tunable.\\n        # If relative error is too high for non-zero results:\\n        if abs(initial_value) > 1e-9 and initial_error / abs(initial_value) > 0.05: # e.g., > 5% relative error\\n            raise ValueError(\\"Initial scipy.integrate.quad relative error too high.\\")\\n        # If absolute error is too high:\\n        if initial_error > 1e-3: # e.g., > 1e-3 absolute error\\n            raise ValueError(\\"Initial scipy.integrate.quad absolute error too high.\\")\\n        \\n        # If the initial quad call seems sufficiently accurate based on heuristics,\\n        # return its result directly.\\n        return float(initial_value), float(initial_error)\\n\\n    except Exception:\\n        # Fallback strategy: Convergence acceleration using Shanks extrapolation.\\n        # This is particularly useful for oscillatory integrals on infinite domains\\n        # where direct quadrature might struggle or converge very slowly.\\n\\n        # Heuristic parameters for generating the sequence of partial integrals.\\n        # - initial_segment_length: Defines the starting length of the integration interval.\\n        # - num_sequence_terms: The number of terms (partial integrals) to generate for the sequence.\\n        initial_segment_length = 10.0 # Start with a moderate interval length\\n        num_sequence_terms = 10       # Generate 10 terms for the extrapolation sequence\\n\\n        sequence_of_integrals = []\\n        \\n        # Generate the sequence of partial integrals by expanding the integration range.\\n        # Intervals are expanded geometrically (2**k) as this often works well with s_extrap.\\n        for k in range(num_sequence_terms):\\n            current_length = initial_segment_length * (2**k) # Interval length grows exponentially\\n\\n            segment_val = None\\n            try:\\n                if np.isinf(lower_limit) and np.isinf(upper_limit):\\n                    # For (-inf, inf), integrate symmetrically from -L_k to L_k\\n                    segment_val, _ = scipy.integrate.quad(integrand, -current_length, current_length)\\n                elif np.isinf(lower_limit): # upper_limit is finite\\n                    # For (-inf, b], integrate from (b - L_k) to b\\n                    segment_val, _ = scipy.integrate.quad(integrand, upper_limit - current_length, upper_limit)\\n                elif np.isinf(upper_limit): # lower_limit is finite\\n                    # For [a, inf), integrate from a to (a + L_k)\\n                    segment_val, _ = scipy.integrate.quad(integrand, lower_limit, lower_limit + current_length)\\n                else:\\n                    # If both limits were finite and initial quad failed, \\n                    # this acceleration strategy (expanding limits) is not directly applicable.\\n                    # In this specific scenario, we fall back to the initial quad result.\\n                    return float(initial_value), float(initial_error)\\n            except:\\n                # Catch any exception during segment integration (e.g., divergent integral, numerical issues)\\n                segment_val = None # Mark as failed\\n\\n            # Check for NaN/Inf in segment results; stop if encountered.\\n            if segment_val is None or np.isnan(segment_val) or np.isinf(segment_val):\\n                break # A segment integral failed, so the sequence is unreliable.\\n            sequence_of_integrals.append(segment_val)\\n        \\n        # For scipy.special.s_extrap to be effective, at least 3 points are generally recommended.\\n        if len(sequence_of_integrals) < 3:\\n            # If insufficient points were collected successfully for extrapolation,\\n            # revert to the initial quad result as the most reliable available answer.\\n            return float(initial_value), float(initial_error)\\n        \\n        try:\\n            # Apply Shanks extrapolation to accelerate convergence of the sequence.\\n            # s_extrap returns a sequence of extrapolated values. The last one is the best estimate.\\n            extrapolated_sequence = scipy.special.s_extrap(sequence_of_integrals)\\n            extrapolated_value = extrapolated_sequence[-1]\\n\\n            # Estimate the error for the extrapolated value.\\n            # A common heuristic: the absolute difference between the last direct integral\\n            # and the extrapolated value. This gives a sense of the remaining \\"jump\\" or acceleration.\\n            extrapolation_error = abs(sequence_of_integrals[-1] - extrapolated_value)\\n            \\n            # Set a minimum error floor to prevent misleadingly perfect (zero or near-zero) errors\\n            # due to numerical precision or exact extrapolation in some cases.\\n            if extrapolation_error < 1e-14: \\n                extrapolation_error = 1e-14\\n            \\n            # Final validity check for the extrapolated result.\\n            # If extrapolation yields NaN or Inf, it means the sequence was too pathological.\\n            if np.isnan(extrapolated_value) or np.isinf(extrapolated_value):\\n                return float(initial_value), float(initial_error) # Fallback to initial quad result\\n\\n            return float(extrapolated_value), float(extrapolation_error)\\n\\n        except Exception:\\n            # If scipy.special.s_extrap itself raises an error (e.g., sequence is ill-conditioned),\\n            # revert to the initial quad result as the final fallback.\\n            return float(initial_value), float(initial_error)",
+  "new_index": 24,
+  "new_code": "# TODO: Implement the \`quadrature()\` function to numerically evaluate integrals.\\n\\nimport numpy as np\\nimport scipy.integrate\\nimport scipy.special\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\n    # Store initial quad results, even if they're problematic, as a fallback.\\n    # Initialize with NaN to represent a failed state before the first attempt.\\n    initial_value, initial_error = np.nan, np.nan\\n    \\n    try:\\n        # Attempt to use scipy.integrate.quad first, as it's highly optimized for many cases.\\n        # Default behavior of quad is to return (value, error_estimate).\\n        initial_value, initial_error = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n        \\n        # Check for NaN or Inf results. If quad returns these, it indicates a definite failure\\n        # that needs a fallback strategy.\\n        if np.isnan(initial_value) or np.isinf(initial_value) or \\\\\\n           np.isnan(initial_error) or np.isinf(initial_error):\\n            # If quad already returned NaN/Inf, this is a clear signal to try Shanks (if domain is infinite).\\n            # The exception is now implicitly handled by the later checks.\\n            pass # Continue to Shanks if applicable\\n        else:\\n            # If the initial quad call converged and returned finite, non-NaN results,\\n            # we trust its result and error estimate.\\n            return float(initial_value), float(initial_error)\\n\\n    except Exception:\\n        # If scipy.integrate.quad raised an exception, it also indicates a failure.\\n        # The initial_value/error would remain NaN, correctly triggering the next check.\\n        pass # Continue to Shanks if applicable\\n\\n    # Fallback strategy: Convergence acceleration using Shanks extrapolation.\\n    # This is particularly useful for oscillatory integrals on infinite domains\\n    # where direct quadrature might struggle or converge very slowly.\\n    \\n    # Shanks extrapolation is only applicable for infinite domains.\\n    is_infinite_domain = np.isinf(lower_limit) or np.isinf(upper_limit)\\n\\n    if not is_infinite_domain:\\n        # If the domain is finite and initial quad failed (returned NaN/Inf or raised),\\n        # Shanks extrapolation as implemented (by expanding range) is not suitable.\\n        # In this case, we simply return the initial (failed) quad result.\\n        return float(initial_value), float(initial_error)\\n\\n    # Heuristic parameters for generating the sequence of partial integrals.\\n    initial_segment_length = 10.0 # Start with a moderate interval length\\n    num_sequence_terms = 10       # Generate 10 terms for the extrapolation sequence\\n\\n    sequence_of_integrals = []\\n    \\n    # Generate the sequence of partial integrals by expanding the integration range.\\n    # Intervals are expanded geometrically (2**k) as this often works well with s_extrap.\\n    for k in range(num_sequence_terms):\\n        current_length = initial_segment_length * (2**k) # Interval length grows exponentially\\n\\n        segment_val = None\\n        try:\\n            if np.isinf(lower_limit) and np.isinf(upper_limit):\\n                # For (-inf, inf), integrate symmetrically from -L_k to L_k\\n                segment_val, _ = scipy.integrate.quad(integrand, -current_length, current_length)\\n            elif np.isinf(lower_limit): # upper_limit is finite\\n                # For (-inf, b], integrate from (b - L_k) to b\\n                segment_val, _ = scipy.integrate.quad(integrand, upper_limit - current_length, upper_limit)\\n            elif np.isinf(upper_limit): # lower_limit is finite\\n                # For [a, inf), integrate from a to (a + L_k)\\n                segment_val, _ = scipy.integrate.quad(integrand, lower_limit, lower_limit + current_length)\\n            else:\\n                # This 'else' should theoretically not be reached if is_infinite_domain check is correct.\\n                # However, as a safety, if somehow we are here with finite bounds, break.\\n                break \\n        except:\\n            # Catch any exception during segment integration (e.g., divergent integral, numerical issues)\\n            segment_val = None # Mark as failed\\n\\n        # Check for NaN/Inf in segment results; stop if encountered.\\n        if segment_val is None or np.isnan(segment_val) or np.isinf(segment_val):\\n            break # A segment integral failed, so the sequence is unreliable.\\n        sequence_of_integrals.append(segment_val)\\n    \\n    # For scipy.special.s_extrap to be effective, at least 3 points are generally recommended.\\n    if len(sequence_of_integrals) < 3:\\n        # If insufficient points were collected successfully for extrapolation,\\n        # revert to the initial quad result (which is already NaN/Inf in this path).\\n        return float(initial_value), float(initial_error)\\n    \\n    try:\\n        # Apply Shanks extrapolation to accelerate convergence of the sequence.\\n        # s_extrap returns a sequence of extrapolated values. The last one is the best estimate.\\n        extrapolated_sequence = scipy.special.s_extrap(sequence_of_integrals)\\n        extrapolated_value = extrapolated_sequence[-1]\\n\\n        # Estimate the error for the extrapolated value.\\n        # A common heuristic: the absolute difference between the last direct integral\\n        # and the extrapolated value. This gives a sense of the remaining \\"jump\\" or acceleration.\\n        extrapolation_error = abs(sequence_of_integrals[-1] - extrapolated_value)\\n        \\n        # Set a minimum error floor to prevent misleadingly perfect (zero or near-zero) errors\\n        # due to numerical precision or exact extrapolation in some cases.\\n        if extrapolation_error < 1e-14: \\n            extrapolation_error = 1e-14\\n        \\n        # Final validity check for the extrapolated result.\\n        # If extrapolation yields NaN or Inf, it means the sequence was too pathological.\\n        if np.isnan(extrapolated_value) or np.isinf(extrapolated_value):\\n            # Fallback to initial quad result (which is already NaN/Inf in this path).\\n            return float(initial_value), float(initial_error) \\n\\n        return float(extrapolated_value), float(extrapolation_error)\\n\\n    except Exception:\\n        # If scipy.special.s_extrap itself raises an error (e.g., sequence is ill-conditioned),\\n        # revert to the initial quad result (which is already NaN/Inf in this path) as the final fallback.\\n        return float(initial_value), float(initial_error)"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

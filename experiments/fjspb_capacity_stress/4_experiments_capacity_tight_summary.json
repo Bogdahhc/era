@@ -1,0 +1,35 @@
+{
+  "source": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/4_experiments.sqlite",
+  "output": "/home/era/experiments/fjspb_capacity_stress/4_experiments_capacity_tight.sqlite",
+  "strategy": "tighten each used workstation capacity to the peak concurrent occupancy in the original schedule, preserving original feasibility while removing slack",
+  "updates": [
+    {
+      "code": "dryer_workstation_1",
+      "old_capacity": 20,
+      "new_capacity": 4,
+      "existing_peak": 4,
+      "scheduled_tasks": 4
+    },
+    {
+      "code": "gc",
+      "old_capacity": 20,
+      "new_capacity": 1,
+      "existing_peak": 1,
+      "scheduled_tasks": 3
+    },
+    {
+      "code": "photocatalysis_workstation_1",
+      "old_capacity": 20,
+      "new_capacity": 1,
+      "existing_peak": 1,
+      "scheduled_tasks": 3
+    },
+    {
+      "code": "starting_station",
+      "old_capacity": 40,
+      "new_capacity": 36,
+      "existing_peak": 36,
+      "scheduled_tasks": 72
+    }
+  ]
+}

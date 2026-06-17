@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 0.0,
+  "old_code": "#TODO(LLM): pip install any additional libraries you may need\\n\\nclass Model:\\n    # TODO(LLM): Implement a real model that can be trained and make predictions.\\n\\n    def segment_single_image(self, image: np.ndarray) -> np.ndarray:\\n        \\"\\"\\" Predicts the segmentation mask for a single image. \\"\\"\\"\\n        # TODO(LLM): Replace this placeholder with a real prediction.\\n        H, W, _ = image.shape\\n        return np.random.randint(0, 10, (H, W))\\n\\nmodel = Model()\\n\\nfor image, label_mask in training_data_paths:\\n  # TODO: Train the model on the each image/mask tumple in the \`training_data\` dataset\\n  break\\n",
+  "new_index": 3,
+  "new_code": "# Imports for the model and training\\nimport torch\\nimport torch.nn as nn\\nimport torch.optim as optim\\nfrom torch.utils.data import Dataset, DataLoader\\nimport numpy as np\\nfrom PIL import Image\\nimport segmentation_models_pytorch as smp\\n\\n# Global NUM_CLASSES is defined outside this cell as 17.\\n\\n# --- Custom Dataset ---\\nclass DLRSDDataset(Dataset):\\n    def __init__(self, data_paths, num_classes):\\n        self.data_paths = data_paths\\n        self.num_classes = num_classes\\n\\n    def __len__(self):\\n        return len(self.data_paths)\\n\\n    def __getitem__(self, idx):\\n        image_path, mask_path = self.data_paths[idx]\\n\\n        # Load image (256x256x3)\\n        # Image.open handles .tif. Convert to RGB to ensure 3 channels.\\n        image = np.array(Image.open(image_path).convert(\\"RGB\\"))\\n        # Normalize to [0,1] and permute to (C, H, W) for PyTorch\\n        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0\\n\\n        # Load mask (256x256)\\n        mask = np.array(Image.open(mask_path))\\n        # Masks are 1-indexed (1 to num_classes). Convert to 0-indexed for CrossEntropyLoss.\\n        # Ensure mask is int64 as required by PyTorch for CE Loss targets.\\n        mask = torch.from_numpy(mask.astype(np.int64) - 1)\\n\\n        return image, mask\\n\\n# --- Model Wrapper Class ---\\nclass Model:\\n    def __init__(self, num_classes, backbone='resnet34', epochs=5, batch_size=8, lr=1e-4):\\n        self.num_classes = num_classes\\n        self.device = torch.device(\\"cuda\\" if torch.cuda.is_available() else \\"cpu\\")\\n        print(f\\"Using device: {self.device}\\")\\n\\n        # Initialize the segmentation model (U-Net with ResNet34 encoder)\\n        # activation=None because CrossEntropyLoss expects raw logits.\\n        self.model = smp.Unet(\\n            encoder_name=backbone,\\n            encoder_weights=\\"imagenet\\", # Use pre-trained weights for the encoder\\n            in_channels=3, # Input images are RGB\\n            classes=self.num_classes, # Output logits for each of the 17 classes (0 to 16)\\n            activation=None\\n        ).to(self.device)\\n\\n        self.epochs = epochs\\n        self.batch_size = batch_size\\n        self.lr = lr\\n\\n        # Define loss function and optimizer\\n        self.loss_function = nn.CrossEntropyLoss().to(self.device)\\n        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)\\n\\n    def train_model_on_paths(self, training_data_paths):\\n        \\"\\"\\"\\n        Trains the model using a list of (image_path, label_path) tuples.\\n        \\"\\"\\"\\n        train_dataset = DLRSDDataset(training_data_paths, self.num_classes)\\n        # Using num_workers > 0 is good practice for data loading speed, especially on GPU\\n        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2)\\n\\n        self.model.train() # Set model to training mode\\n        print(f\\"Starting training for {self.epochs} epochs...\\")\\n        for epoch in range(self.epochs):\\n            running_loss = 0.0\\n            for images, masks in train_loader:\\n                images = images.to(self.device)\\n                masks = masks.to(self.device)\\n\\n                self.optimizer.zero_grad() # Clear gradients\\n                outputs = self.model(images) # Forward pass\\n\\n                loss = self.loss_function(outputs, masks) # Calculate loss\\n                loss.backward() # Backward pass\\n                self.optimizer.step() # Update weights\\n\\n                running_loss += loss.item() * images.size(0)\\n\\n            epoch_loss = running_loss / len(train_dataset)\\n            print(f\\"Epoch {epoch+1}/{self.epochs}, Loss: {epoch_loss:.4f}\\")\\n        print(\\"Training finished.\\")\\n\\n    def segment_single_image(self, image: np.ndarray) -> np.ndarray:\\n        \\"\\"\\"\\n        Predicts the segmentation mask for a single image.\\n        Image input is numpy array (H, W, C) in original pixel values.\\n        Output is numpy array (H, W) with 1-indexed class IDs (1 to num_classes).\\n        \\"\\"\\"\\n        self.model.eval() # Set model to evaluation mode\\n\\n        # Preprocess input image: normalize, permute, add batch dim, move to device\\n        input_image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0\\n        input_image = input_image.unsqueeze(0).to(self.device) # Add batch dimension\\n\\n        with torch.no_grad(): # Disable gradient calculations for inference\\n            outputs = self.model(input_image) # Get logits (1, num_classes, H, W)\\n\\n        # Get predicted mask: apply argmax along the class dimension (dim=1)\\n        # The values will be 0-indexed (0 to num_classes-1)\\n        predicted_mask = torch.argmax(outputs, dim=1).squeeze(0) # Remove batch dim\\n\\n        # Convert back to numpy and add 1 to make it 1-indexed for evaluation\\n        # The \`calculate_mean_iou\` expects 1-indexed class IDs (1 to num_classes)\\n        predicted_mask_np = predicted_mask.cpu().numpy().astype(np.uint8) + 1\\n\\n        return predicted_mask_np\\n\\n# Instantiate and train the model\\n# The prompt provides \`training_data_paths\` and \`NUM_CLASSES\`.\\nmodel = Model(num_classes=NUM_CLASSES)\\nmodel.train_model_on_paths(training_data_paths)"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

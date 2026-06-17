@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "min_slack_first",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 60.0,
+  "notes": "Keep the full valid makespan lower bounds and 60s exact CP-SAT budget, but test min-slack branching to focus decisions on the tightest operation windows for better incumbent and proof progress on ta21.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "node_id": 0,
+    "parent_id": null,
+    "score": -7050.65283006957,
+    "visits": 2,
+    "rank_score": 0.0,
+    "puct": 0.3333333333333333
+  },
+  {
+    "node_id": 1,
+    "parent_id": 0,
+    "score": -6525.60450226093,
+    "visits": 2,
+    "rank_score": 1.0,
+    "puct": 1.3333333333333333
+  }
+]

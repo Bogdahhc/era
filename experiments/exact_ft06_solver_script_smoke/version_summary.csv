@@ -1,0 +1,3 @@
+node_id,parent_id,version_label,makespan,delta_makespan_vs_parent,delta_makespan_vs_root,score,status,best_bound,relative_gap,elapsed_seconds,branches,conflicts,changed_fields,spec_hash,parent_spec_hash
+0,,node_0000,55,,0,1945.0,optimal,55.0,0.0,0.011436036002123728,180,0,"[""backend"", ""branching"", ""encoding"", ""log_search_progress"", ""max_time_in_seconds"", ""notes"", ""redundant_bounds"", ""symmetry_breaking"", ""warm_start""]",0bd5f9c8db1aadee,
+1,0,node_0001,55,0,0,1945.0,optimal,55.0,0.0,0.007562926999526098,30,0,[],0bd5f9c8db1aadee,0bd5f9c8db1aadee

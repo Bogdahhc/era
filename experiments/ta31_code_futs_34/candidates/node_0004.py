@@ -1,0 +1,282 @@
+from job_shop_lib import Schedule
+from ortools.sat.python import cp_model
+import random
+import time
+
+
+def _instance_arrays(instance):
+    machines = []
+    durations = []
+    for job in instance.jobs:
+        jm = []
+        jd = []
+        for op in job:
+            jm.append(int(op.machine_id))
+            jd.append(int(op.duration))
+        machines.append(jm)
+        durations.append(jd)
+    return machines, durations
+
+
+def _fallback_sequences(instance):
+    seq = [[] for _ in range(instance.num_machines)]
+    for j, job in enumerate(instance.jobs):
+        for op in job:
+            seq[int(op.machine_id)].append(j)
+    return seq
+
+
+def _greedy_schedule(instance, rule="mwkr", seed=0):
+    machines, durations = _instance_arrays(instance)
+    n_jobs = len(machines)
+    n_machines = int(instance.num_machines)
+    total_ops = sum(len(j) for j in machines)
+
+    suffix = []
+    for j in range(n_jobs):
+        s = [0] * (len(durations[j]) + 1)
+        for k in range(len(durations[j]) - 1, -1, -1):
+            s[k] = s[k + 1] + durations[j][k]
+        suffix.append(s)
+
+    rng = random.Random(seed)
+    next_op = [0] * n_jobs
+    job_ready = [0] * n_jobs
+    machine_ready = [0] * n_machines
+    starts = {}
+    ends = {}
+    seq = [[] for _ in range(n_machines)]
+    done = 0
+
+    job_priority = list(range(n_jobs))
+    rng.shuffle(job_priority)
+    job_priority = {j: p for p, j in enumerate(job_priority)}
+
+    while done < total_ops:
+        candidates = []
+        best_key = None
+        best_job = None
+        for j in range(n_jobs):
+            k = next_op[j]
+            if k >= len(machines[j]):
+                continue
+            m = machines[j][k]
+            d = durations[j][k]
+            est = max(job_ready[j], machine_ready[m])
+            ect = est + d
+            rem = suffix[j][k]
+            rem_after = suffix[j][k + 1]
+            ops_left = len(machines[j]) - k
+
+            if rule == "spt":
+                key = (est, d, -rem, job_priority[j], j)
+            elif rule == "lpt":
+                key = (est, -d, -rem, job_priority[j], j)
+            elif rule == "ect":
+                key = (ect, est, -rem, job_priority[j], j)
+            elif rule == "mwkr":
+                key = (est, -rem, d, job_priority[j], j)
+            elif rule == "mor":
+                key = (est, -ops_left, -rem, d, job_priority[j], j)
+            elif rule == "random":
+                key = (est, rng.random(), j)
+            elif rule == "lookahead":
+                key = (est, -rem_after, ect, d, job_priority[j], j)
+            elif rule == "late":
+                key = (est, -(rem + max(0, machine_ready[m] - job_ready[j])), d, job_priority[j], j)
+            elif rule == "biased":
+                key = (est, 0, j)
+                candidates.append((est, rem, d, ops_left, j))
+            else:
+                key = (est, job_priority[j], j)
+
+            if best_key is None or key < best_key:
+                best_key = key
+                best_job = j
+
+        if rule == "biased" and candidates:
+            min_est = min(c[0] for c in candidates)
+            active = [c for c in candidates if c[0] <= min_est]
+            if not active:
+                active = candidates
+            scored = []
+            for est, rem, d, ops_left, j in active:
+                score = rem * (0.70 + 0.60 * rng.random()) + d * (0.10 * rng.random()) + ops_left * (2.0 * rng.random())
+                scored.append((score, rng.random(), j))
+            best_job = max(scored)[2]
+
+        j = best_job
+        k = next_op[j]
+        m = machines[j][k]
+        d = durations[j][k]
+        st = max(job_ready[j], machine_ready[m])
+        en = st + d
+        starts[(j, k)] = st
+        ends[(j, k)] = en
+        seq[m].append(j)
+        job_ready[j] = en
+        machine_ready[m] = en
+        next_op[j] += 1
+        done += 1
+
+    return max(job_ready) if job_ready else 0, seq, starts, ends
+
+
+def _best_greedy_schedule(instance, time_limit=4.0):
+    start_time = time.monotonic()
+    rules = ["mwkr", "ect", "spt", "lpt", "mor", "lookahead", "late"]
+    best = None
+    for rule in rules:
+        cand = _greedy_schedule(instance, rule=rule, seed=0)
+        if best is None or cand[0] < best[0]:
+            best = cand
+
+    seed = 0
+    while seed < 220 and time.monotonic() - start_time < time_limit:
+        for rule, offset in (("random", 17), ("mwkr", 101), ("biased", 1009), ("late", 2003)):
+            cand = _greedy_schedule(instance, rule=rule, seed=seed + offset)
+            if cand[0] < best[0]:
+                best = cand
+        seed += 1
+
+    return best
+
+
+def solve(instance):
+    fallback_job_sequences = _fallback_sequences(instance)
+    try:
+        heuristic_makespan, heuristic_sequences, hint_starts, hint_ends = _best_greedy_schedule(instance)
+    except Exception:
+        heuristic_makespan = int(instance.total_duration)
+        heuristic_sequences = fallback_job_sequences
+        hint_starts = {}
+        hint_ends = {}
+
+    machines, durations = _instance_arrays(instance)
+    n_jobs = len(machines)
+    n_machines = int(instance.num_machines)
+    total_duration = int(instance.total_duration)
+    horizon = max(1, min(total_duration, int(heuristic_makespan)))
+
+    job_prefix = []
+    job_suffix = []
+    for j in range(n_jobs):
+        pref = [0] * (len(durations[j]) + 1)
+        for k, d in enumerate(durations[j]):
+            pref[k + 1] = pref[k] + d
+        suff = [0] * (len(durations[j]) + 1)
+        for k in range(len(durations[j]) - 1, -1, -1):
+            suff[k] = suff[k + 1] + durations[j][k]
+        job_prefix.append(pref)
+        job_suffix.append(suff)
+
+    model = cp_model.CpModel()
+    starts = {}
+    ends = {}
+    intervals_by_machine = {m: [] for m in range(n_machines)}
+
+    for job_id in range(n_jobs):
+        for op_index in range(len(machines[job_id])):
+            duration = durations[job_id][op_index]
+            machine_id = machines[job_id][op_index]
+            start_lb = job_prefix[job_id][op_index]
+            end_lb = start_lb + duration
+            start_ub = horizon - duration - job_suffix[job_id][op_index + 1]
+            end_ub = horizon - job_suffix[job_id][op_index + 1]
+            if start_ub < start_lb:
+                start_ub = horizon
+            if end_ub < end_lb:
+                end_ub = horizon
+
+            start = model.NewIntVar(start_lb, start_ub, f"s_{job_id}_{op_index}")
+            end = model.NewIntVar(end_lb, end_ub, f"e_{job_id}_{op_index}")
+            interval = model.NewIntervalVar(start, duration, end, f"i_{job_id}_{op_index}")
+            starts[(job_id, op_index)] = start
+            ends[(job_id, op_index)] = end
+            intervals_by_machine[machine_id].append((job_id, op_index, interval))
+
+    for job_id in range(n_jobs):
+        for op_index in range(1, len(machines[job_id])):
+            model.Add(ends[(job_id, op_index - 1)] <= starts[(job_id, op_index)])
+
+    for machine_ops in intervals_by_machine.values():
+        if machine_ops:
+            model.AddNoOverlap([interval for _, _, interval in machine_ops])
+
+    makespan = model.NewIntVar(0, horizon, "makespan")
+    model.AddMaxEquality(makespan, list(ends.values()))
+
+    job_load_lb = max((sum(durations[j]) for j in range(n_jobs)), default=0)
+    machine_loads = [0] * n_machines
+    machine_before_min = [10**18] * n_machines
+    machine_after_min = [10**18] * n_machines
+
+    for j in range(n_jobs):
+        for k, m in enumerate(machines[j]):
+            machine_loads[m] += durations[j][k]
+            if job_prefix[j][k] < machine_before_min[m]:
+                machine_before_min[m] = job_prefix[j][k]
+            if job_suffix[j][k + 1] < machine_after_min[m]:
+                machine_after_min[m] = job_suffix[j][k + 1]
+            model.Add(ends[(j, k)] + job_suffix[j][k + 1] <= makespan)
+
+    base_lb = max(job_load_lb, max(machine_loads) if machine_loads else 0)
+    machine_lb = 0
+    for m in range(n_machines):
+        if machine_loads[m] > 0:
+            machine_lb = max(machine_lb, machine_loads[m] + int(machine_before_min[m]) + int(machine_after_min[m]))
+    model.Add(makespan >= max(base_lb, machine_lb))
+
+    if heuristic_makespan < total_duration:
+        model.Add(makespan <= int(heuristic_makespan))
+
+    for key, var in starts.items():
+        if key in hint_starts:
+            model.AddHint(var, int(hint_starts[key]))
+    for key, var in ends.items():
+        if key in hint_ends:
+            model.AddHint(var, int(hint_ends[key]))
+    if heuristic_makespan < total_duration:
+        model.AddHint(makespan, int(heuristic_makespan))
+
+    model.Minimize(makespan)
+
+    all_start_vars = [starts[key] for key in sorted(starts)]
+    if all_start_vars:
+        model.AddDecisionStrategy(
+            all_start_vars,
+            cp_model.CHOOSE_LOWEST_MIN,
+            cp_model.SELECT_MIN_VALUE,
+        )
+
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = 284.0
+    solver.parameters.num_search_workers = 8
+    solver.parameters.random_seed = 13
+    solver.parameters.use_optimization_hints = True
+    solver.parameters.cp_model_presolve = True
+    solver.parameters.log_search_progress = False
+
+    for name, value in (
+        ("use_strong_propagation_in_disjunctive", True),
+        ("use_dynamic_precedence_in_disjunctive", True),
+        ("use_precedences_in_disjunctive_constraint", True),
+    ):
+        try:
+            setattr(solver.parameters, name, value)
+        except Exception:
+            pass
+
+    status = solver.Solve(model)
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        return Schedule.from_job_sequences(instance, heuristic_sequences)
+
+    job_sequences = [[] for _ in range(n_machines)]
+    for machine_id, machine_ops in intervals_by_machine.items():
+        ordered = sorted(
+            machine_ops,
+            key=lambda item: (solver.Value(starts[(item[0], item[1])]), solver.Value(ends[(item[0], item[1])]), item[0], item[1]),
+        )
+        job_sequences[machine_id] = [job_id for job_id, _, _ in ordered]
+
+    return Schedule.from_job_sequences(instance, job_sequences)

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": "38",
+  "old_code": "import pandas as pd\\nimport numpy as np\\nimport lightgbm as lgb\\nfrom typing import Any\\n\\n# Define a global fixed start date for consistent time indexing across different data splits.\\n# This ensures that 'time_idx' is comparable regardless of the training window.\\n# The competition description states data starts around August 8, 2020.\\nFIXED_START_DATE = pd.to_datetime('2020-08-01')\\n\\ndef create_base_features(df: pd.DataFrame) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Creates time-based, population, and location features from the input DataFrame.\\n    This function handles common feature engineering steps applicable to both\\n    training and test data, ensuring consistency.\\n    \\"\\"\\"\\n    df_copy = df.copy()\\n\\n    # Convert 'target_end_date' to datetime objects for time-based feature extraction\\n    df_copy['target_end_date'] = pd.to_datetime(df_copy['target_end_date'])\\n\\n    # Extract standard date-related features\\n    df_copy['year'] = df_copy['target_end_date'].dt.year\\n    df_copy['month'] = df_copy['target_end_date'].dt.month\\n    # Use isocalendar().week for ISO week number, cast to int\\n    df_copy['week_of_year'] = df_copy['target_end_date'].dt.isocalendar().week.astype(int)\\n    df_copy['day_of_year'] = df_copy['target_end_date'].dt.dayofyear\\n    df_copy['day_of_week'] = df_copy['target_end_date'].dt.dayofweek # Monday=0, Sunday=6\\n\\n    # Add cyclical features for capturing seasonal patterns (e.g., yearly seasonality).\\n    # Using 52 weeks and 366 days for robustness (leap years).\\n    df_copy['week_sin'] = np.sin(2 * np.pi * df_copy['week_of_year'] / 52)\\n    df_copy['week_cos'] = np.cos(2 * np.pi * df_copy['week_of_year'] / 52)\\n    df_copy['dayofyear_sin'] = np.sin(2 * np.pi * df_copy['day_of_year'] / 366)\\n    df_copy['dayofyear_cos'] = np.cos(2 * np.pi * df_copy['day_of_year'] / 366)\\n\\n    # Log transform 'population' as it's typically skewed and covers a wide range.\\n    df_copy['population_log'] = np.log1p(df_copy['population'])\\n\\n    # Convert 'location' to an integer ID, suitable for categorical modeling in LightGBM.\\n    df_copy['location_id'] = df_copy['location'].astype(int)\\n\\n    # Handle the 'horizon' feature: present in test_x, but not typically in train_x.\\n    # Set to 0 for training data to distinguish from forecast horizons.\\n    if 'horizon' in df_copy.columns:\\n        df_copy['horizon'] = df_copy['horizon'].astype(int)\\n    else:\\n        df_copy['horizon'] = 0\\n\\n    # Create a consistent time index relative to a fixed start date (e.g., first week of data).\\n    # This helps capture overall temporal trends regardless of the rolling window.\\n    df_copy['time_idx'] = (df_copy['target_end_date'] - FIXED_START_DATE).dt.days // 7\\n\\n    return df_copy\\n\\ndef add_lagged_features(df: pd.DataFrame) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Adds lagged features based on 'Total COVID-19 Admissions'.\\n    This function should be called on a DataFrame that includes the target variable.\\n    The DataFrame must be sorted by 'location' and 'target_end_date' prior to calling.\\n    \\"\\"\\"\\n    df_copy = df.copy()\\n\\n    if 'Total COVID-19 Admissions' not in df_copy.columns:\\n        raise ValueError(\\"DataFrame must contain 'Total COVID-19 Admissions' for lagged feature creation.\\")\\n\\n    # Sort data to ensure correct lag calculation per location\\n    df_copy = df_copy.sort_values(by=['location', 'target_end_date'])\\n\\n    # Calculate direct lags of the target variable (admissions from previous weeks)\\n    df_copy['admissions_lag_1'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(1)\\n    df_copy['admissions_lag_2'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(2)\\n    df_copy['admissions_lag_3'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(3)\\n\\n    # Calculate rolling statistics (mean and standard deviation) over recent weeks.\\n    # These capture recent trends and volatility. Using a 3-week window for weekly data.\\n    df_copy['admissions_rolling_mean_3w'] = df_copy.groupby('location')['Total COVID-19 Admissions'].transform(\\n        lambda x: x.rolling(window=3, min_periods=1).mean().shift(1)\\n    )\\n    df_copy['admissions_rolling_std_3w'] = df_copy.groupby('location')['Total COVID-19 Admissions'].transform(\\n        lambda x: x.rolling(window=3, min_periods=1).std().shift(1)\\n    )\\n\\n    # Fill NaN values introduced by shifting (e.g., first few entries for each location).\\n    # For admissions-related features, 0 is a sensible default for missing prior values.\\n    # For standard deviation, 0 is used if there's no variation or too few points.\\n    df_copy['admissions_lag_1'] = df_copy['admissions_lag_1'].fillna(0)\\n    df_copy['admissions_lag_2'] = df_copy['admissions_lag_2'].fillna(0)\\n    df_copy['admissions_lag_3'] = df_copy['admissions_lag_3'].fillna(0)\\n    df_copy['admissions_rolling_mean_3w'] = df_copy['admissions_rolling_mean_3w'].fillna(0)\\n    df_copy['admissions_rolling_std_3w'] = df_copy['admissions_rolling_std_3w'].fillna(0)\\n\\n    return df_copy\\n\\n\\ndef fit_and_predict_fn(\\n    train_x: pd.DataFrame,\\n    train_y: pd.Series,\\n    test_x: pd.DataFrame,\\n    config: dict[str, Any]\\n) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Fits a LightGBM Quantile Regression model for each required quantile and\\n    makes predictions on the test set. This function incorporates:\\n    1. Comprehensive feature engineering including time-based, population, location, and lagged features.\\n    2. Target transformation (log1p) to handle skewed, non-negative count data.\\n    3. Training separate LightGBM models for each quantile.\\n    4. Post-processing of predictions to ensure non-negativity and monotonicity,\\n       crucial for the Weighted Interval Score evaluation metric.\\n\\n    Args:\\n        train_x (pd.DataFrame): Training features.\\n        train_y (pd.Series): Training target values (Total COVID-19 Admissions).\\n        test_x (pd.DataFrame): Test features for future time periods.\\n        config (dict[str, Any]): Configuration parameters for the model,\\n                                  especially LightGBM hyperparameters.\\n\\n    Returns:\\n        pd.DataFrame: A DataFrame with quantile predictions for each row in test_x.\\n                      Columns are named 'quantile_0.01', 'quantile_0.025', etc.\\n    \\"\\"\\"\\n    # Define the list of quantiles required by the competition\\n    quantiles = [0.01, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,\\n                 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975, 0.99]\\n\\n    # Combine train_x and train_y into a single DataFrame for easier lagged feature computation\\n    train_df = train_x.copy()\\n    train_df['Total COVID-19 Admissions'] = train_y\\n\\n    # Apply base feature engineering to the combined training data\\n    train_df = create_base_features(train_df)\\n    # Apply lagged feature engineering to the training data. This requires 'Total COVID-19 Admissions'.\\n    train_df = add_lagged_features(train_df)\\n\\n    # Apply base feature engineering to the test data.\\n    test_features_base = create_base_features(test_x)\\n\\n    # For the test set, lagged features must be derived from the *last known actual values*\\n    # available in the training data for each location.\\n    # We get the last row for each location from the already processed 'train_df' (which contains lags).\\n    last_known_lags = train_df.sort_values(by=['location', 'target_end_date']) \\\\\\n                              .groupby('location').tail(1) \\\\\\n                              [['location', 'admissions_lag_1', 'admissions_lag_2', 'admissions_lag_3',\\n                                'admissions_rolling_mean_3w', 'admissions_rolling_std_3w']]\\n    \\n    # Merge these last known lagged features into the test_features_base DataFrame.\\n    # All forecast horizons for a given location in 'test_x' will use these same latest lags.\\n    test_features = test_features_base.merge(last_known_lags, on='location', how='left')\\n    \\n    # Fill any NaNs that might arise if a location in test_x was not present in train_df\\n    # or if there wasn't enough history for certain lags (e.g., first few weeks of data).\\n    # Defaulting to 0 for admissions-related lags and rolling means.\\n    # For rolling standard deviation, 0 is also appropriate if no historical variation.\\n    test_features['admissions_lag_1'] = test_features['admissions_lag_1'].fillna(0)\\n    test_features['admissions_lag_2'] = test_features['admissions_lag_2'].fillna(0)\\n    test_features['admissions_lag_3'] = test_features['admissions_lag_3'].fillna(0)\\n    test_features['admissions_rolling_mean_3w'] = test_features['admissions_rolling_mean_3w'].fillna(0)\\n    test_features['admissions_rolling_std_3w'] = test_features['admissions_rolling_std_3w'].fillna(0)\\n\\n\\n    # Define the final set of features to be used for model training and prediction.\\n    # This list includes both the base features and the newly created lagged features.\\n    features = [\\n        'year', 'month', 'week_of_year', 'day_of_year', 'day_of_week',\\n        'week_sin', 'week_cos', 'dayofyear_sin', 'dayofyear_cos',\\n        'population_log', 'location_id', 'horizon', 'time_idx',\\n        'admissions_lag_1', 'admissions_lag_2', 'admissions_lag_3',\\n        'admissions_rolling_mean_3w', 'admissions_rolling_std_3w'\\n    ]\\n\\n    # Prepare training and test datasets with the selected features.\\n    X_train = train_df[features]\\n    X_test = test_features[features]\\n\\n    # Target transformation: Apply log1p to 'Total COVID-19 Admissions'.\\n    # This helps to stabilize variance and handle the right-skewed nature of count data,\\n    # making the distribution more suitable for regression models.\\n    y_train_transformed = np.log1p(train_df['Total COVID-19 Admissions'])\\n\\n    # Define categorical features for LightGBM. LightGBM can efficiently handle these directly.\\n    categorical_features = ['location_id', 'year', 'month', 'week_of_year',\\n                            'day_of_year', 'day_of_week', 'horizon']\\n    # Filter to ensure only features actually present in X_train are passed as categorical\\n    categorical_features = [f for f in categorical_features if f in X_train.columns]\\n\\n    # Retrieve LightGBM model hyperparameters from the 'config' dictionary,\\n    # allowing external control over model parameters. Use defaults if not provided.\\n    lgbm_params = config.get('lgbm_params', {\\n        'objective': 'quantile',  # Set objective for quantile regression\\n        'metric': 'quantile',     # Evaluation metric\\n        'n_estimators': 300,      # Number of boosting rounds\\n        'learning_rate': 0.03,    # Step size shrinkage\\n        'num_leaves': 32,         # Max number of leaves in one tree\\n        'verbose': -1,            # Suppress verbose output during training\\n        'n_jobs': -1,             # Use all available CPU cores for parallel processing\\n        'seed': 42,               # Random seed for reproducibility\\n        'boosting_type': 'gbdt',  # Gradient Boosting Decision Tree\\n        'lambda_l1': 0.1,         # L1 regularization (Lasso)\\n        'lambda_l2': 0.1,         # L2 regularization (Ridge)\\n        'feature_fraction': 0.8,  # Fraction of features considered at each split\\n        'bagging_fraction': 0.8,  # Fraction of data sampled for each tree\\n        'bagging_freq': 1         # Frequency for bagging\\n    })\\n\\n    # Initialize a DataFrame to store all quantile predictions for the test set.\\n    test_y_hat_quantiles = pd.DataFrame(index=test_x.index)\\n\\n    # Train a separate LightGBM model for each required quantile.\\n    # This is a common approach for quantile regression with gradient boosting models.\\n    for q in quantiles:\\n        # Update the 'alpha' parameter in LightGBM parameters for the current quantile\\n        current_lgbm_params = lgbm_params.copy()\\n        current_lgbm_params['alpha'] = q\\n\\n        # Initialize and train the LightGBM Regressor model\\n        model = lgb.LGBMRegressor(**current_lgbm_params)\\n        model.fit(X_train, y_train_transformed, categorical_feature=categorical_features)\\n\\n        # Make predictions on the test set, still on the transformed scale\\n        preds_transformed = model.predict(X_test)\\n        \\n        # Inverse transform the predictions using expm1 (inverse of log1p)\\n        preds = np.expm1(preds_transformed)\\n        \\n        # Ensure predictions are non-negative, as admissions cannot be less than zero.\\n        # This is a safeguard against any potential floating-point inaccuracies, although\\n        # expm1 should generally produce non-negative values for outputs from log1p training.\\n        preds[preds < 0] = 0\\n        \\n        # Store predictions in the results DataFrame with the correct column name\\n        test_y_hat_quantiles[f'quantile_{q}'] = preds\\n\\n    # Post-processing: Enforce monotonicity of quantile predictions.\\n    # This is crucial for the Weighted Interval Score (WIS) evaluation.\\n    # Predictions for a higher quantile must be greater than or equal to predictions\\n    # for a lower quantile. This loop iterates through quantiles and adjusts.\\n    for i in range(1, len(quantiles)):\\n        prev_q_col = f'quantile_{quantiles[i-1]}'\\n        current_q_col = f'quantile_{quantiles[i]}'\\n        # For each row, set the current quantile's prediction to be at least the previous one's.\\n        test_y_hat_quantiles[current_q_col] = test_y_hat_quantiles[[prev_q_col, current_q_col]].max(axis=1)\\n\\n    return test_y_hat_quantiles\\n\\n# These 'config_list' definitions will be used by the evaluation harness.\\n# Each dictionary represents a different set of hyperparameters for your model.\\n# The harness will run your \`fit_and_predict_fn\` with each config and select\\n# the best-performing one based on its internal evaluation criteria (e.g., WIS).\\nconfig_list = [\\n    {\\n        # Default LightGBM configuration, balancing performance and speed\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 300,\\n            'learning_rate': 0.03,\\n            'num_leaves': 32,\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.1,\\n            'lambda_l2': 0.1,\\n            'feature_fraction': 0.8,\\n            'bagging_fraction': 0.8,\\n            'bagging_freq': 1\\n        }\\n    },\\n    {\\n        # An alternative configuration with more estimators and slightly lower learning rate,\\n        # potentially leading to higher accuracy but longer training times.\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 400,    # Increased estimators\\n            'learning_rate': 0.02,  # Slightly lower learning rate\\n            'num_leaves': 48,       # More leaves per tree\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.05,      # Reduced regularization\\n            'lambda_l2': 0.05,\\n            'feature_fraction': 0.7,\\n            'bagging_fraction': 0.7,\\n            'bagging_freq': 1\\n        }\\n    }\\n]",
+  "new_index": "81",
+  "new_code": "import pandas as pd\\nimport numpy as np\\nimport lightgbm as lgb\\nfrom typing import Any\\n\\n# Define a global fixed start date for consistent time indexing across different data splits.\\n# This ensures that 'time_idx' is comparable regardless of the training window.\\n# The competition description states data starts around August 8, 2020.\\nFIXED_START_DATE = pd.to_datetime('2020-08-01')\\n\\ndef create_base_features(df: pd.DataFrame) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Creates time-based, population, and location features from the input DataFrame.\\n    This function handles common feature engineering steps applicable to both\\n    training and test data, ensuring consistency.\\n    \\"\\"\\"\\n    df_copy = df.copy()\\n\\n    # Convert 'target_end_date' to datetime objects for time-based feature extraction\\n    df_copy['target_end_date'] = pd.to_datetime(df_copy['target_end_date'])\\n\\n    # Extract standard date-related features\\n    df_copy['year'] = df_copy['target_end_date'].dt.year\\n    df_copy['month'] = df_copy['target_end_date'].dt.month\\n    # Use isocalendar().week for ISO week number, cast to int\\n    df_copy['week_of_year'] = df_copy['target_end_date'].dt.isocalendar().week.astype(int)\\n    df_copy['day_of_year'] = df_copy['target_end_date'].dt.dayofyear\\n    df_copy['day_of_week'] = df_copy['target_end_date'].dt.dayofweek # Monday=0, Sunday=6\\n\\n    # Add cyclical features for capturing seasonal patterns (e.g., yearly seasonality).\\n    # Using 52 weeks and 366 days for robustness (leap years).\\n    df_copy['week_sin'] = np.sin(2 * np.pi * df_copy['week_of_year'] / 52)\\n    df_copy['week_cos'] = np.cos(2 * np.pi * df_copy['week_of_year'] / 52)\\n    df_copy['dayofyear_sin'] = np.sin(2 * np.pi * df_copy['day_of_year'] / 366)\\n    df_copy['dayofyear_cos'] = np.cos(2 * np.pi * df_copy['day_of_year'] / 366)\\n\\n    # Log transform 'population' as it's typically skewed and covers a wide range.\\n    df_copy['population_log'] = np.log1p(df_copy['population'])\\n\\n    # Convert 'location' to an integer ID, suitable for categorical modeling in LightGBM.\\n    df_copy['location_id'] = df_copy['location'].astype(int)\\n\\n    # Handle the 'horizon' feature: present in test_x, but not typically in train_x.\\n    # Set to 0 for training data to distinguish from forecast horizons.\\n    if 'horizon' in df_copy.columns:\\n        df_copy['horizon'] = df_copy['horizon'].astype(int)\\n    else:\\n        df_copy['horizon'] = 0\\n\\n    # Create a consistent time index relative to a fixed start date (e.g., first week of data).\\n    # This helps capture overall temporal trends regardless of the rolling window.\\n    df_copy['time_idx'] = (df_copy['target_end_date'] - FIXED_START_DATE).dt.days // 7\\n\\n    return df_copy\\n\\ndef add_lagged_features(df: pd.DataFrame) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Adds lagged features based on 'Total COVID-19 Admissions'.\\n    This function should be called on a DataFrame that includes the target variable.\\n    The DataFrame must be sorted by 'location' and 'target_end_date' prior to calling.\\n    \\"\\"\\"\\n    df_copy = df.copy()\\n\\n    if 'Total COVID-19 Admissions' not in df_copy.columns:\\n        raise ValueError(\\"DataFrame must contain 'Total COVID-19 Admissions' for lagged feature creation.\\")\\n\\n    # Sort data to ensure correct lag calculation per location\\n    df_copy = df_copy.sort_values(by=['location', 'target_end_date'])\\n\\n    # Calculate direct lags of the target variable (admissions from previous weeks)\\n    df_copy['admissions_lag_1'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(1)\\n    df_copy['admissions_lag_2'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(2)\\n    df_copy['admissions_lag_3'] = df_copy.groupby('location')['Total COVID-19 Admissions'].shift(3)\\n\\n    # Calculate rolling statistics (mean and standard deviation) over recent weeks.\\n    # These capture recent trends and volatility. Using a 3-week window for weekly data.\\n    # min_periods=1 allows calculation even with fewer than 3 points, preventing NaNs at start.\\n    df_copy['admissions_rolling_mean_3w'] = df_copy.groupby('location')['Total COVID-19 Admissions'].transform(\\n        lambda x: x.rolling(window=3, min_periods=1).mean().shift(1)\\n    )\\n    df_copy['admissions_rolling_std_3w'] = df_copy.groupby('location')['Total COVID-19 Admissions'].transform(\\n        lambda x: x.rolling(window=3, min_periods=1).std().shift(1)\\n    )\\n\\n    # Fill NaN values introduced by shifting (e.g., first few entries for each location).\\n    # For admissions-related features, 0 is a sensible default for missing prior values.\\n    # For standard deviation, 0 is used if there's no variation or too few points.\\n    df_copy['admissions_lag_1'] = df_copy['admissions_lag_1'].fillna(0)\\n    df_copy['admissions_lag_2'] = df_copy['admissions_lag_2'].fillna(0)\\n    df_copy['admissions_lag_3'] = df_copy['admissions_lag_3'].fillna(0)\\n    df_copy['admissions_rolling_mean_3w'] = df_copy['admissions_rolling_mean_3w'].fillna(0)\\n    df_copy['admissions_rolling_std_3w'] = df_copy['admissions_rolling_std_3w'].fillna(0)\\n\\n    return df_copy\\n\\n\\ndef fit_and_predict_fn(\\n    train_x: pd.DataFrame,\\n    train_y: pd.Series,\\n    test_x: pd.DataFrame,\\n    config: dict[str, Any]\\n) -> pd.DataFrame:\\n    \\"\\"\\"\\n    Fits a LightGBM Quantile Regression model for each required quantile and\\n    makes predictions on the test set. This function incorporates:\\n    1. Comprehensive feature engineering including time-based, population, location, and lagged features.\\n    2. Target transformation (log1p) to handle skewed, non-negative count data.\\n    3. Training separate LightGBM models for each quantile.\\n    4. Post-processing of predictions to ensure non-negativity and monotonicity,\\n       crucial for the Weighted Interval Score evaluation metric.\\n\\n    Args:\\n        train_x (pd.DataFrame): Training features.\\n        train_y (pd.Series): Training target values (Total COVID-19 Admissions).\\n        test_x (pd.DataFrame): Test features for future time periods.\\n        config (dict[str, Any]): Configuration parameters for the model,\\n                                  especially LightGBM hyperparameters.\\n\\n    Returns:\\n        pd.DataFrame: A DataFrame with quantile predictions for each row in test_x.\\n                      Columns are named 'quantile_0.01', 'quantile_0.025', etc.\\n    \\"\\"\\"\\n    # Define the list of quantiles required by the competition\\n    quantiles = [0.01, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,\\n                 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975, 0.99]\\n\\n    # Combine train_x and train_y into a single DataFrame for easier lagged feature computation\\n    train_df = train_x.copy()\\n    train_df['Total COVID-19 Admissions'] = train_y\\n\\n    # Apply base feature engineering to the combined training data\\n    train_df = create_base_features(train_df)\\n    # Apply lagged feature engineering to the training data. This requires 'Total COVID-19 Admissions'.\\n    train_df = add_lagged_features(train_df)\\n\\n    # Apply base feature engineering to the test data.\\n    test_features_base = create_base_features(test_x)\\n\\n    # For the test set, lagged features must be derived from the *last known actual values*\\n    # available in the training data for each location.\\n    # We get the last row for each location from the already processed 'train_df' (which contains lags).\\n    last_known_lags = train_df.sort_values(by=['location', 'target_end_date']) \\\\\\n                              .groupby('location').tail(1) \\\\\\n                              [['location', 'admissions_lag_1', 'admissions_lag_2', 'admissions_lag_3',\\n                                'admissions_rolling_mean_3w', 'admissions_rolling_std_3w']]\\n    \\n    # Merge these last known lagged features into the test_features_base DataFrame.\\n    # All forecast horizons for a given location in 'test_x' will use these same latest lags.\\n    test_features = test_features_base.merge(last_known_lags, on='location', how='left')\\n    \\n    # Fill any NaNs that might arise if a location in test_x was not present in train_df\\n    # or if there wasn't enough history for certain lags.\\n    test_features['admissions_lag_1'] = test_features['admissions_lag_1'].fillna(0)\\n    test_features['admissions_lag_2'] = test_features['admissions_lag_2'].fillna(0)\\n    test_features['admissions_lag_3'] = test_features['admissions_lag_3'].fillna(0)\\n    test_features['admissions_rolling_mean_3w'] = test_features['admissions_rolling_mean_3w'].fillna(0)\\n    test_features['admissions_rolling_std_3w'] = test_features['admissions_rolling_std_3w'].fillna(0)\\n\\n\\n    # Define the final set of features to be used for model training and prediction.\\n    features = [\\n        'year', 'month', 'week_of_year', 'day_of_year', 'day_of_week',\\n        'week_sin', 'week_cos', 'dayofyear_sin', 'dayofyear_cos',\\n        'population_log', 'location_id', 'horizon', 'time_idx',\\n        'admissions_lag_1', 'admissions_lag_2', 'admissions_lag_3',\\n        'admissions_rolling_mean_3w', 'admissions_rolling_std_3w'\\n    ]\\n\\n    # Prepare training and test datasets with the selected features.\\n    X_train = train_df[features]\\n    X_test = test_features[features]\\n\\n    # Target transformation: Apply log1p to 'Total COVID-19 Admissions'.\\n    y_train_transformed = np.log1p(train_df['Total COVID-19 Admissions'])\\n\\n    # Define categorical features for LightGBM.\\n    categorical_features = ['location_id', 'year', 'month', 'week_of_year',\\n                            'day_of_year', 'day_of_week', 'horizon']\\n    # Filter to ensure only features actually present in X_train are passed as categorical\\n    categorical_features = [f for f in categorical_features if f in X_train.columns]\\n\\n    # Retrieve LightGBM model hyperparameters from the 'config' dictionary,\\n    # allowing external control over model parameters. Use sensible defaults if not provided.\\n    lgbm_params = config.get('lgbm_params', {\\n        'objective': 'quantile',\\n        'metric': 'quantile',\\n        'n_estimators': 300,\\n        'learning_rate': 0.03,\\n        'num_leaves': 32,\\n        'verbose': -1,\\n        'n_jobs': -1,\\n        'seed': 42,\\n        'boosting_type': 'gbdt',\\n        'lambda_l1': 0.1,\\n        'lambda_l2': 0.1,\\n        'feature_fraction': 0.8,\\n        'bagging_fraction': 0.8,\\n        'bagging_freq': 1,\\n        'min_child_samples': 20 # Added a default for min_child_samples\\n    })\\n\\n    # Initialize a DataFrame to store all quantile predictions for the test set.\\n    test_y_hat_quantiles = pd.DataFrame(index=test_x.index)\\n\\n    # Train a separate LightGBM model for each required quantile.\\n    for q in quantiles:\\n        current_lgbm_params = lgbm_params.copy()\\n        current_lgbm_params['alpha'] = q\\n\\n        model = lgb.LGBMRegressor(**current_lgbm_params)\\n        model.fit(X_train, y_train_transformed, categorical_feature=categorical_features)\\n\\n        # Make predictions on the transformed scale\\n        preds_transformed = model.predict(X_test)\\n        \\n        # Inverse transform and ensure non-negativity\\n        preds = np.expm1(preds_transformed)\\n        preds[preds < 0] = 0\\n        \\n        test_y_hat_quantiles[f'quantile_{q}'] = preds\\n\\n    # Post-processing: Enforce monotonicity of quantile predictions.\\n    for i in range(1, len(quantiles)):\\n        prev_q_col = f'quantile_{quantiles[i-1]}'\\n        current_q_col = f'quantile_{quantiles[i]}'\\n        test_y_hat_quantiles[current_q_col] = test_y_hat_quantiles[[prev_q_col, current_q_col]].max(axis=1)\\n\\n    return test_y_hat_quantiles\\n\\n# These 'config_list' definitions will be used by the evaluation harness.\\n# Each dictionary represents a different set of hyperparameters for your model.\\n# The harness will run your \`fit_and_predict_fn\` with each config and select\\n# the best-performing one based on its internal evaluation criteria (e.g., WIS).\\nconfig_list = [\\n    {\\n        # Default LightGBM configuration, balancing performance and speed\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 300,\\n            'learning_rate': 0.03,\\n            'num_leaves': 32,\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.1,\\n            'lambda_l2': 0.1,\\n            'feature_fraction': 0.8,\\n            'bagging_fraction': 0.8,\\n            'bagging_freq': 1,\\n            'min_child_samples': 20\\n        }\\n    },\\n    {\\n        # An alternative configuration with more estimators and slightly lower learning rate,\\n        # potentially leading to higher accuracy but longer training times.\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 400,    # Increased estimators\\n            'learning_rate': 0.02,  # Slightly lower learning rate\\n            'num_leaves': 48,       # More leaves per tree\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.05,      # Reduced regularization\\n            'lambda_l2': 0.05,\\n            'feature_fraction': 0.7,\\n            'bagging_fraction': 0.7,\\n            'bagging_freq': 1,\\n            'min_child_samples': 20\\n        }\\n    },\\n    {\\n        # Config 3: More complex/aggressive setup, aiming for higher capacity\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 600,      # Further increased estimators\\n            'learning_rate': 0.01,    # Even lower learning rate\\n            'num_leaves': 64,         # More leaves, higher complexity\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.01,        # Less regularization (L1)\\n            'lambda_l2': 0.01,        # Less regularization (L2)\\n            'feature_fraction': 0.6,  # More aggressive feature subsampling\\n            'bagging_fraction': 0.6,  # More aggressive data subsampling\\n            'bagging_freq': 1,\\n            'min_child_samples': 15   # Allow smaller leaf nodes\\n        }\\n    },\\n    {\\n        # Config 4: More robust/conservative setup, aiming for lower variance\\n        'lgbm_params': {\\n            'objective': 'quantile',\\n            'metric': 'quantile',\\n            'n_estimators': 200,      # Fewer estimators\\n            'learning_rate': 0.05,    # Higher learning rate\\n            'num_leaves': 24,         # Fewer leaves, lower complexity\\n            'verbose': -1,\\n            'n_jobs': -1,\\n            'seed': 42,\\n            'boosting_type': 'gbdt',\\n            'lambda_l1': 0.2,         # More regularization (L1)\\n            'lambda_l2': 0.2,         # More regularization (L2)\\n            'feature_fraction': 0.9,  # Less aggressive feature subsampling\\n            'bagging_fraction': 0.9,  # Less aggressive data subsampling\\n            'bagging_freq': 1,\\n            'min_child_samples': 30   # Require larger leaf nodes\\n        }\\n    }\\n]"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 9.0,
+  "old_code": "# [rewrite_cell]\\nfrom typing import Any\\nimport scanpy as sc\\nimport anndata as ad\\nimport numpy as np # Used for random_state defaults and general array operations\\n\\n# Define parameters for the config with reasonable defaults.\\n# These values can be tuned for optimal performance.\\nconfig = {\\n    'n_pcs': 50,  # Number of principal components to compute\\n    'n_neighbors': 15,  # Number of neighbors for graph construction per batch\\n    'random_state': 42, # Random state for reproducibility\\n}\\n\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # Ensure raw counts are available in .X\\n  # If adata.X is not already sparse, ensure it's converted to a sparse matrix\\n  # for compatibility with scanpy's default processing for count data.\\n  if not isinstance(adata.X, (np.ndarray, np.matrix)):\\n      adata.X = adata.X.toarray() # Convert to dense if not already\\n  adata.X = adata.X.astype(np.float32) # Ensure float type for calculations\\n\\n  # 1. Preprocessing: Normalize, log-transform, and scale the data.\\n  # This prepares the raw count data for dimensionality reduction and graph building.\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  sc.pp.log1p(adata)\\n  sc.pp.scale(adata)\\n\\n  # 2. Dimensionality Reduction: Compute PCA.\\n  # PCA reduces the high-dimensional gene expression data to a lower-dimensional\\n  # space, which is typically used for building the neighborhood graph.\\n  n_pcs = config.get('n_pcs', 50)\\n  random_state = config.get('random_state', 42)\\n  sc.tl.pca(adata, n_comps=n_pcs, random_state=random_state)\\n\\n  # 3. Batch-Corrected Neighborhood Graph Construction:\\n  # This is the core of the batch integration strategy described in the problem.\\n  # By setting \`batch_key='batch'\`, \`scanpy.pp.neighbors\` computes neighbors\\n  # independently within each batch and then merges these neighborhoods.\\n  # This effectively removes batch effects from the graph structure.\\n  n_neighbors = config.get('n_neighbors', 15)\\n  sc.pp.neighbors(\\n      adata,\\n      n_neighbors=n_neighbors,\\n      batch_key='batch',  # Apply batch correction as per the advice\\n      use_rep='X_pca',    # Use PCA embedding for distance calculations\\n      random_state=random_state,\\n  )\\n\\n  # 4. Embedding: Generate a UMAP embedding from the batch-corrected graph.\\n  # UMAP visualizes the integrated data in a 2D or 3D space, capturing its\\n  # underlying structure without batch effects. This will be our X_emb.\\n  sc.tl.umap(adata, random_state=random_state)\\n\\n  # 5. Prepare output AnnData object.\\n  # The output must contain the original obs and var, and the transformed\\n  # embedding in obsm['X_emb'].\\n  output_data = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={\\n          'X_emb': adata.obsm['X_umap']  # UMAP embedding is the integrated data\\n      },\\n  )\\n\\n  return output_data",
+  "new_index": 11,
+  "new_code": "# [rewrite_cell]\\nfrom typing import Any\\nimport scanpy as sc\\nimport anndata as ad\\nimport numpy as np\\nimport scipy.sparse as sp # Import scipy.sparse for sparse matrix operations\\n\\n# Define parameters for the config with reasonable defaults.\\n# These values can be tuned for optimal performance.\\nconfig = {\\n    'n_pcs': 50,  # Number of principal components to compute\\n    'n_neighbors': 15,  # Number of neighbors for graph construction per batch\\n    'random_state': 42, # Random state for reproducibility\\n}\\n\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # Ensure adata.X is float32. Scanpy functions generally handle sparse matrices directly.\\n  if sp.issparse(adata.X):\\n      adata.X = adata.X.astype(np.float32)\\n  else:\\n      adata.X = adata.X.astype(np.float32) # Ensure float type for calculations\\n\\n  # 1. Preprocessing: Normalize, log-transform, and scale the data.\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  sc.pp.log1p(adata)\\n  sc.pp.scale(adata)\\n\\n  # 2. Dimensionality Reduction: Compute PCA.\\n  n_pcs = config.get('n_pcs', 50)\\n  random_state = config.get('random_state', 42)\\n  sc.tl.pca(adata, n_comps=n_pcs, random_state=random_state)\\n\\n  # 3. Batch-Corrected Neighborhood Graph Construction (manual implementation):\\n  # This section implements the logic of computing neighbors independently\\n  # within each batch and then merging the results, as advised.\\n\\n  n_neighbors = config.get('n_neighbors', 15)\\n  batch_key = 'batch' # Key for batch labels in adata.obs\\n\\n  # Initialize empty sparse matrices for global distances and connectivities\\n  # using LIL format for efficient incremental updates.\\n  n_cells = adata.n_obs\\n  global_distances = sp.lil_matrix((n_cells, n_cells), dtype=np.float32)\\n  global_connectivities = sp.lil_matrix((n_cells, n_cells), dtype=np.float32)\\n\\n  # Get unique batches\\n  unique_batches = adata.obs[batch_key].unique()\\n\\n  # Iterate through each batch to compute local neighborhoods\\n  for batch_id in unique_batches:\\n      # Get global indices of cells belonging to the current batch\\n      batch_mask = (adata.obs[batch_key] == batch_id)\\n      current_batch_global_indices = np.where(batch_mask)[0]\\n\\n      if len(current_batch_global_indices) == 0:\\n          continue # Skip empty batches\\n\\n      # Create a temporary AnnData object for the current batch's PCA data\\n      # The .X of temp_adata will contain the PCA embedding for this batch.\\n      temp_adata = ad.AnnData(X=adata.obsm['X_pca'][current_batch_global_indices, :])\\n\\n      # Compute neighbors *within* this batch using temp_adata's .X\\n      sc.pp.neighbors(\\n          temp_adata,\\n          n_neighbors=n_neighbors,\\n          use_rep='X', # Use temp_adata.X, which holds the PCA data for this batch\\n          random_state=random_state,\\n      )\\n\\n      # Extract distances and connectivities from the temporary batch AnnData\\n      batch_dist = temp_adata.obsp['distances']\\n      batch_conn = temp_adata.obsp['connectivities']\\n\\n      # Map local batch indices to global indices and add to global matrices\\n      # Convert batch-specific sparse matrices to COO format for easy index mapping.\\n      # Then add them to the global LIL matrices.\\n      rows_dist, cols_dist, data_dist = sp.find(batch_dist)\\n      rows_global_dist = current_batch_global_indices[rows_dist]\\n      cols_global_dist = current_batch_global_indices[cols_dist]\\n      new_dist_matrix = sp.coo_matrix((data_dist, (rows_global_dist, cols_global_dist)),\\n                                      shape=(n_cells, n_cells), dtype=np.float32)\\n      global_distances += new_dist_matrix # Add to the global distances matrix\\n\\n      rows_conn, cols_conn, data_conn = sp.find(batch_conn)\\n      rows_global_conn = current_batch_global_indices[rows_conn]\\n      cols_global_conn = current_batch_global_indices[cols_conn]\\n      new_conn_matrix = sp.coo_matrix((data_conn, (rows_global_conn, cols_global_conn)),\\n                                      shape=(n_cells, n_cells), dtype=np.float32)\\n      global_connectivities += new_conn_matrix # Add to the global connectivities matrix\\n\\n  # Convert LIL to CSR for efficiency and store them in adata.obsp\\n  adata.obsp['distances'] = global_distances.tocsr()\\n  adata.obsp['connectivities'] = global_connectivities.tocsr()\\n\\n  # Ensure the 'neighbors' slot in adata.uns is populated correctly for UMAP\\n  # UMAP looks for these parameters, which are usually set by sc.pp.neighbors.\\n  adata.uns['neighbors'] = {}\\n  adata.uns['neighbors']['params'] = {\\n      'n_neighbors': n_neighbors,\\n      'method': 'umap', # This is a common method for neighbor graphs for UMAP\\n      'metric': 'euclidean', # Default metric used by scanpy's neighbors\\n      'use_rep': 'X_pca', # Indicates what representation was used\\n  }\\n\\n  # 4. Embedding: Generate a UMAP embedding from the batch-corrected graph.\\n  sc.tl.umap(adata, random_state=random_state)\\n\\n  # 5. Prepare output AnnData object.\\n  # The output must contain the original obs and var, and the transformed\\n  # embedding in obsm['X_emb'].\\n  output_data = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={\\n          'X_emb': adata.obsm['X_umap']  # UMAP embedding is the integrated data\\n      },\\n  )\\n\\n  return output_data"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

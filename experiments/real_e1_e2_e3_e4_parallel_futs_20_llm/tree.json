@@ -1,0 +1,170 @@
+[
+  {
+    "node_id": 0,
+    "parent_id": null,
+    "score": -14524.00028355317,
+    "visits": 21,
+    "rank_score": 0.1,
+    "puct": 0.12729333379419588
+  },
+  {
+    "node_id": 1,
+    "parent_id": 0,
+    "score": -5615.053007440791,
+    "visits": 21,
+    "rank_score": 0.15,
+    "puct": 0.17729333379419587
+  },
+  {
+    "node_id": 2,
+    "parent_id": 1,
+    "score": null,
+    "visits": 2,
+    "rank_score": 0.025,
+    "puct": 0.2251511144907697
+  },
+  {
+    "node_id": 3,
+    "parent_id": 1,
+    "score": -5615.0076801692085,
+    "visits": 19,
+    "rank_score": 0.45,
+    "puct": 0.48002266717361547
+  },
+  {
+    "node_id": 4,
+    "parent_id": 3,
+    "score": -5615.0085580346895,
+    "visits": 2,
+    "rank_score": 0.35,
+    "puct": 0.5501511144907697
+  },
+  {
+    "node_id": 5,
+    "parent_id": 3,
+    "score": -5615.02005710751,
+    "visits": 2,
+    "rank_score": 0.25,
+    "puct": 0.4501511144907697
+  },
+  {
+    "node_id": 6,
+    "parent_id": 3,
+    "score": -5615.007932567289,
+    "visits": 2,
+    "rank_score": 0.4,
+    "puct": 0.6001511144907697
+  },
+  {
+    "node_id": 7,
+    "parent_id": 3,
+    "score": -5615.007530846018,
+    "visits": 15,
+    "rank_score": 0.5,
+    "puct": 0.5375283339670193
+  },
+  {
+    "node_id": 8,
+    "parent_id": 7,
+    "score": -5615.00734711749,
+    "visits": 14,
+    "rank_score": 0.6,
+    "puct": 0.6400302228981539
+  },
+  {
+    "node_id": 9,
+    "parent_id": 8,
+    "score": -5615.00717421703,
+    "visits": 13,
+    "rank_score": 0.75,
+    "puct": 0.7928895245337364
+  },
+  {
+    "node_id": 10,
+    "parent_id": 9,
+    "score": -5615.009619615958,
+    "visits": 2,
+    "rank_score": 0.3,
+    "puct": 0.5001511144907697
+  },
+  {
+    "node_id": 11,
+    "parent_id": 9,
+    "score": -5615.007298269339,
+    "visits": 10,
+    "rank_score": 0.65,
+    "puct": 0.7045866675883917
+  },
+  {
+    "node_id": 12,
+    "parent_id": 9,
+    "score": -5615.02222904281,
+    "visits": 2,
+    "rank_score": 0.2,
+    "puct": 0.4001511144907697
+  },
+  {
+    "node_id": 13,
+    "parent_id": 11,
+    "score": -5615.00720527214,
+    "visits": 9,
+    "rank_score": 0.7,
+    "puct": 0.7600453343472309
+  },
+  {
+    "node_id": 14,
+    "parent_id": 13,
+    "score": -5615.007353976869,
+    "visits": 2,
+    "rank_score": 0.55,
+    "puct": 0.7501511144907698
+  },
+  {
+    "node_id": 15,
+    "parent_id": 13,
+    "score": -5615.001374782811,
+    "visits": 7,
+    "rank_score": 0.9,
+    "puct": 0.9750566679340387
+  },
+  {
+    "node_id": 16,
+    "parent_id": 15,
+    "score": -5615.001337945839,
+    "visits": 6,
+    "rank_score": 0.95,
+    "puct": 1.0357790490674728
+  },
+  {
+    "node_id": 17,
+    "parent_id": 16,
+    "score": null,
+    "visits": 2,
+    "rank_score": 0.025,
+    "puct": 0.2251511144907697
+  },
+  {
+    "node_id": 18,
+    "parent_id": 16,
+    "score": -5615.0008813369905,
+    "visits": 4,
+    "rank_score": 1.0,
+    "puct": 1.1200906686944618
+  },
+  {
+    "node_id": 19,
+    "parent_id": 18,
+    "score": -5615.001910420111,
+    "visits": 2,
+    "rank_score": 0.8,
+    "puct": 1.0001511144907698
+  },
+  {
+    "node_id": 20,
+    "parent_id": 18,
+    "score": -5615.00143593726,
+    "visits": 2,
+    "rank_score": 0.85,
+    "puct": 1.0501511144907696
+  }
+]

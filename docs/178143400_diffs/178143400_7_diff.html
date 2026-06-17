@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 0.0,
+  "old_code": "from typing import Any, Callable\\nimport scipy\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> float:\\n    # Estimate the numeric value of the definite integral, especially\\n    # when scipy.integrate.quad() fails to converge or returns a large error\\n    # estimate or NaN.\\n    answer, _ = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n    return answer",
+  "new_index": 7,
+  "new_code": "import numpy as np\\nfrom scipy.integrate import quad\\nfrom typing import Any, Callable\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals of oscillatory integrands\\n    on infinite domains. It aims to work like scipy.integrate.quad() but better,\\n    succeeding on integrals where scipy.integrate.quad() fails to converge.\\n\\n    Args:\\n        integrand: The function to integrate.\\n        lower_limit: The lower limit of integration. May be -np.inf.\\n        upper_limit: The upper limit of integration. May be np.inf.\\n\\n    Returns:\\n        A tuple (value, error_estimate) representing the computed integral and its\\n        estimated absolute error. Returns (np.nan, np.inf) if the integral\\n        cannot be computed reliably.\\n    \\"\\"\\"\\n    # Heuristic splitting point for infinite integrals.\\n    # Should be large enough to let initial oscillations settle, but not excessively large.\\n    M_SPLIT = 200.0\\n\\n    # Heuristic step size for iterative summation of infinite tails.\\n    # np.pi is common for sin/cos based oscillations.\\n    PERIOD_STEP = np.pi\\n\\n    # Maximum number of iterative steps for the tail summation to prevent infinite loops.\\n    MAX_ITER_TAIL = 500\\n\\n    # Tolerance for declaring an iterative sum converged for the tail.\\n    TAIL_CONV_TOL = 1e-8\\n\\n    # Increased limit for scipy.integrate.quad to allow more subdivisions.\\n    QUAD_LIMIT = 500\\n    \\n    # Threshold for relative error to consider quad's result unreliable.\\n    RELATIVE_ERROR_THRESHOLD = 1e-2\\n    \\n    # Absolute value threshold for very small numbers, to avoid division by zero in relative error check.\\n    ABS_VALUE_THRESHOLD = 1e-6\\n\\n    # --- Helper function for attempting quad call and checking reliability ---\\n    def _try_quad(func, a, b, q_limit=QUAD_LIMIT):\\n        try:\\n            val, err, infodict = quad(func, a, b, full_output=1, limit=q_limit)\\n            \\n            # Check for NaN/Inf results immediately\\n            if np.isnan(val) or np.isinf(val) or np.isnan(err) or np.isinf(err):\\n                return np.nan, np.inf, \\"NaN/Inf result\\"\\n            \\n            # If quad reports success\\n            if infodict['status'] == 0:\\n                # Check for high relative error even if status is 0\\n                if abs(val) > ABS_VALUE_THRESHOLD and err / abs(val) > RELATIVE_ERROR_THRESHOLD:\\n                    return val, err, \\"High relative error despite status 0\\"\\n                return val, err, \\"Success\\"\\n            else:\\n                return val, err, f\\"Quad status {infodict['status']}\\"\\n        except Exception as e:\\n            return np.nan, np.inf, f\\"Quad exception: {e}\\"\\n\\n    # --- Main Quadrature Logic ---\\n\\n    # Case 1: (-inf, inf)\\n    if lower_limit == -np.inf and upper_limit == np.inf:\\n        try:\\n            # Split into (-inf, 0) and (0, inf) and recursively call self\\n            val1, err1 = quadrature(integrand, -np.inf, 0)\\n            val2, err2 = quadrature(integrand, 0, np.inf)\\n            \\n            if np.isnan(val1) or np.isinf(val1) or np.isnan(val2) or np.isinf(val2):\\n                raise ValueError(\\"Sub-integrals for (-inf, inf) resulted in NaN/Inf\\")\\n            \\n            return val1 + val2, err1 + err2\\n        except Exception:\\n            return np.nan, np.inf\\n\\n    # Case 2: (-inf, finite_upper_limit)\\n    if lower_limit == -np.inf:\\n        # Transformation: integral from -inf to b of f(x) dx = integral from 0 to inf of f(b - t) dt\\n        transformed_integrand = lambda t: integrand(upper_limit - t)\\n        return quadrature(transformed_integrand, 0, np.inf)\\n\\n    # Case 3: (finite_lower_limit, inf)\\n    if upper_limit == np.inf:\\n        val, err, status_msg = _try_quad(integrand, lower_limit, upper_limit)\\n\\n        if status_msg == \\"Success\\":\\n            return val, err\\n        \\n        # Fallback strategy for highly oscillatory integrals to infinity if initial quad call failed\\n        try:\\n            # Integrate finite initial part\\n            val_finite_part, err_finite_part, finite_status_msg = _try_quad(integrand, lower_limit, M_SPLIT)\\n            if finite_status_msg != \\"Success\\" and not np.isnan(val_finite_part):\\n                # If finite part is unreliable but not NaN/inf, still proceed to tail sum\\n                # to get a combined estimate. A hard fail on finite part means overall failure.\\n                if np.isnan(val_finite_part) or np.isinf(val_finite_part):\\n                     raise ValueError(\\"Finite part integration failed in fallback.\\")\\n\\n\\n            # Summation for the infinite tail [M_SPLIT, inf]\\n            tail_sum = 0.0\\n            tail_err_accumulated = 0.0\\n            current_lower_for_tail = M_SPLIT\\n\\n            for i in range(MAX_ITER_TAIL):\\n                current_upper_for_tail = current_lower_for_tail + PERIOD_STEP\\n                \\n                # Use a slightly lower limit for sub-intervals in the tail\\n                interval_val, interval_err, interval_status_msg = _try_quad(\\n                    integrand, current_lower_for_tail, current_upper_for_tail,\\n                    q_limit=QUAD_LIMIT // 2 \\n                )\\n\\n                if interval_status_msg != \\"Success\\" and not np.isnan(interval_val):\\n                    # If a sub-interval is unreliable but not NaN/inf, continue accumulation.\\n                    # If it's NaN/inf, the summation cannot proceed reliably.\\n                    if np.isnan(interval_val) or np.isinf(interval_val):\\n                        raise ValueError(\\"Sub-interval integration failed in tail summation.\\")\\n                    \\n                tail_sum += interval_val\\n                tail_err_accumulated += interval_err # Simple error accumulation (rough)\\n\\n                # Convergence check for alternating series or decaying oscillations\\n                # If the contribution of the last interval is very small\\n                if abs(interval_val) < TAIL_CONV_TOL * abs(tail_sum) and i > 5: # Require at least a few steps\\n                    break\\n                \\n                current_lower_for_tail = current_upper_for_tail\\n            else: # If loop completes without breaking (i.e., did not converge quickly)\\n                raise ValueError(\\"Tail summation did not converge quickly within max iterations.\\")\\n\\n            return val_finite_part + tail_sum, err_finite_part + tail_err_accumulated\\n\\n        except Exception as e:\\n            # If the fallback also fails, return NaN/inf\\n            return np.nan, np.inf\\n\\n    # Case 4: (finite_lower_limit, finite_upper_limit)\\n    else:\\n        val, err, status_msg = _try_quad(integrand, lower_limit, upper_limit)\\n        if status_msg == \\"Success\\":\\n            return val, err\\n        \\n        # If quad fails on a finite range, it's a truly hard integral outside of the\\n        # specific infinite/oscillatory problem focus. Indicate failure.\\n        return np.nan, np.inf"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

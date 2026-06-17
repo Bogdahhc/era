@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "default",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 60.0,
+  "notes": "Keep strong valid makespan lower bounds and default CP-SAT portfolio, increasing exact solve time to improve incumbent quality and proof progress on hard ta21.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

@@ -1,0 +1,2 @@
+{"node_id": 0, "parent_id": null, "score": -15582.0, "feasible": true, "makespan": 15582, "elapsed_seconds": 0.0863502025604248, "visits": 1, "rank_score": 0.5, "puct": 1.0, "error": null, "code_diff": null}
+{"node_id": 1, "parent_id": 0, "score": -15582.0, "feasible": true, "makespan": 15582, "elapsed_seconds": 0.08475732803344727, "visits": 2, "rank_score": 0.5, "puct": 0.8333333333333333, "error": null, "code_diff": ""}

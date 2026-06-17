@@ -1,0 +1,82 @@
+[
+  {
+    "node_id": 0,
+    "parent_id": null,
+    "score": -6832.604393358801,
+    "visits": 10,
+    "rank_score": 0.2222222222222222,
+    "puct": 0.2852058879519996
+  },
+  {
+    "node_id": 1,
+    "parent_id": 0,
+    "score": -5615.019340028931,
+    "visits": 10,
+    "rank_score": 0.3333333333333333,
+    "puct": 0.3963169990631107
+  },
+  {
+    "node_id": 2,
+    "parent_id": 1,
+    "score": null,
+    "visits": 2,
+    "rank_score": 0.05555555555555555,
+    "puct": 0.28649566323140585
+  },
+  {
+    "node_id": 3,
+    "parent_id": 1,
+    "score": null,
+    "visits": 2,
+    "rank_score": 0.05555555555555555,
+    "puct": 0.28649566323140585
+  },
+  {
+    "node_id": 4,
+    "parent_id": 1,
+    "score": -5615.0139210907,
+    "visits": 7,
+    "rank_score": 0.4444444444444444,
+    "puct": 0.5310469848228883
+  },
+  {
+    "node_id": 5,
+    "parent_id": 4,
+    "score": -5615.00517098461,
+    "visits": 6,
+    "rank_score": 0.5555555555555556,
+    "puct": 0.6545298874166343
+  },
+  {
+    "node_id": 6,
+    "parent_id": 5,
+    "score": -5615.00473078013,
+    "visits": 5,
+    "rank_score": 1.0,
+    "puct": 1.1154700538379252
+  },
+  {
+    "node_id": 7,
+    "parent_id": 6,
+    "score": -5615.004978739028,
+    "visits": 2,
+    "rank_score": 0.6666666666666666,
+    "puct": 0.8976067743425169
+  },
+  {
+    "node_id": 8,
+    "parent_id": 6,
+    "score": -5615.00487877158,
+    "visits": 2,
+    "rank_score": 0.7777777777777778,
+    "puct": 1.008717885453628
+  },
+  {
+    "node_id": 9,
+    "parent_id": 6,
+    "score": -5615.0047441201095,
+    "visits": 2,
+    "rank_score": 0.8888888888888888,
+    "puct": 1.1198289965647392
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "dataset": "industryor",
+  "tree_scope": "task",
+  "train": {
+    "n_total": 2,
+    "n_success": 0,
+    "tasks": [
+      {
+        "task_id": "B015",
+        "score": 0.0,
+        "success": false,
+        "experiment_dir": "experiments/industryor_task_no_llm_smoke/train_B015"
+      },
+      {
+        "task_id": "B016",
+        "score": 0.0,
+        "success": false,
+        "experiment_dir": "experiments/industryor_task_no_llm_smoke/train_B016"
+      }
+    ]
+  },
+  "test": {
+    "n_total": 1,
+    "n_success": 0,
+    "tasks": [
+      {
+        "task_id": "B088",
+        "score": 0.0,
+        "success": false,
+        "experiment_dir": "experiments/industryor_task_no_llm_smoke/test_B088"
+      }
+    ]
+  }
+}

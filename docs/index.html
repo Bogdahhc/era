@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiments</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="static/index.css" />
+  </head>
+  <body>
+    <div class="link-container">
+      <h1 class="main-heading">Experiments</h1>
+      <ul id="linkList" class="link-list">
+        <!-- Links will be inserted here by JavaScript. -->
+      </ul>
+    </div>
+
+    <script>
+      const studies = JSON.parse(`{
+  "studies": [
+    {
+      "name": "scRNA-seq Batch Integration",
+      "xid": 173582811,
+      "url": "173582811_study.html"
+    },
+    {
+      "name": "COVID Forecasting",
+      "xid": 172492931,
+      "url": "172492931_study.html"
+    },
+    {
+      "name": "Geospatial Analysis",
+      "xid": 174509051,
+      "url": "174509051_study.html"
+    },
+    {
+      "name": "ZAPBench",
+      "xid": 173409392,
+      "url": "173409392_study.html"
+    },
+    {
+      "name": "GIFT-Eval",
+      "xid": 172476116,
+      "url": "172476116_study.html"
+    },
+    {
+      "name": "Integrals",
+      "xid": 178143400,
+      "url": "178143400_study.html"
+    }
+  ]
+}`)["studies"];
+
+      const linkList = document.getElementById("linkList");
+
+      function populateLinks() {
+        linkList.innerHTML = "";
+        studies.forEach((study) => {
+          const listItem = document.createElement("li");
+          const anchor = document.createElement("a");
+          anchor.href = study.url;
+          if (study.name) {
+            anchor.textContent = study.name;
+          } else {
+            anchor.textContent = study.xid;
+          }
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.classList.add("link-item");
+          listItem.appendChild(anchor);
+          linkList.appendChild(listItem);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", populateLinks);
+    </script>
+  </body>
+</html>

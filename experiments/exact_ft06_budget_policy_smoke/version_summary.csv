@@ -1,0 +1,3 @@
+node_id,parent_id,version_label,makespan,delta_makespan_vs_parent,delta_makespan_vs_root,score,status,best_bound,relative_gap,elapsed_seconds,branches,conflicts,changed_fields,solver_script,spec_hash,parent_spec_hash
+0,,node_0000,55,,0,1945.0,optimal,55.0,0.0,0.04609206999884918,0,0,"[""backend"", ""branching"", ""encoding"", ""log_search_progress"", ""max_time_in_seconds"", ""notes"", ""redundant_bounds"", ""symmetry_breaking"", ""warm_start""]",solvers/node_0000_solver.py,8b679bc48250e515,
+1,0,node_0001,55,0,0,1945.0,optimal,55.0,0.0,0.031413158983923495,60,1,"[""max_time_in_seconds"", ""notes""]",solvers/node_0001_solver.py,ce30f33b662248a8,8b679bc48250e515

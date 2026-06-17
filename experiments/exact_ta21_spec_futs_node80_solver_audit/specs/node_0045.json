@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "default",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 60.0,
+  "notes": "Keep all valid makespan lower bounds and the 60s exact CP-SAT budget, but revert to CP-SAT default portfolio branching to avoid over-constraining search on the dense ta21 instance.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

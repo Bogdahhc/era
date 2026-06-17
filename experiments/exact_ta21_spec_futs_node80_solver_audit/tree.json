@@ -1,0 +1,812 @@
+[
+  {
+    "node_id": 0,
+    "parent_id": null,
+    "score": -1739.5162037037037,
+    "visits": 81,
+    "rank_score": 0.0,
+    "puct": 0.004635592989563581,
+    "spec_hash": "14e2afda3eb27012",
+    "parent_spec_hash": null
+  },
+  {
+    "node_id": 1,
+    "parent_id": 0,
+    "score": -1715.730363423212,
+    "visits": 81,
+    "rank_score": 0.0375,
+    "puct": 0.04213559298956358,
+    "spec_hash": "02f3e5314fd0e572",
+    "parent_spec_hash": "14e2afda3eb27012"
+  },
+  {
+    "node_id": 2,
+    "parent_id": 1,
+    "score": -1692.6698337292162,
+    "visits": 80,
+    "rank_score": 0.3375,
+    "puct": 0.34219282253264466,
+    "spec_hash": "c2f27df09b31824a",
+    "parent_spec_hash": "02f3e5314fd0e572"
+  },
+  {
+    "node_id": 3,
+    "parent_id": 2,
+    "score": -1681.9450418160095,
+    "visits": 79,
+    "rank_score": 0.6125,
+    "puct": 0.6172514828143028,
+    "spec_hash": "28ee4e414a021973",
+    "parent_spec_hash": "c2f27df09b31824a"
+  },
+  {
+    "node_id": 4,
+    "parent_id": 3,
+    "score": -1675.853717026379,
+    "visits": 78,
+    "rank_score": 0.7375,
+    "puct": 0.7423116281663825,
+    "spec_hash": "d76fb0cc0be4a270",
+    "parent_spec_hash": "28ee4e414a021973"
+  },
+  {
+    "node_id": 5,
+    "parent_id": 4,
+    "score": -1673.6830732292917,
+    "visits": 77,
+    "rank_score": 0.775,
+    "puct": 0.7798733157069772,
+    "spec_hash": "797c8acd5c4f0104",
+    "parent_spec_hash": "d76fb0cc0be4a270"
+  },
+  {
+    "node_id": 6,
+    "parent_id": 5,
+    "score": -1703.090909090909,
+    "visits": 2,
+    "rank_score": 0.1875,
+    "puct": 0.31420620838140456,
+    "spec_hash": "df76666a40e77ea1",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 7,
+    "parent_id": 5,
+    "score": -1681.4671445639187,
+    "visits": 55,
+    "rank_score": 0.6375,
+    "puct": 0.644287832591861,
+    "spec_hash": "dff25850b04f2084",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 8,
+    "parent_id": 5,
+    "score": -1711.048178613396,
+    "visits": 2,
+    "rank_score": 0.0625,
+    "puct": 0.18920620838140453,
+    "spec_hash": "5c6dd5e5e8afa5c3",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 9,
+    "parent_id": 5,
+    "score": -1690.5612366230678,
+    "visits": 2,
+    "rank_score": 0.4,
+    "puct": 0.5267062083814046,
+    "spec_hash": "a55083928f785c1e",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 10,
+    "parent_id": 5,
+    "score": -1676.7291791491912,
+    "visits": 5,
+    "rank_score": 0.7125,
+    "puct": 0.7758531041907023,
+    "spec_hash": "d99c3d9f793c45a6",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 11,
+    "parent_id": 5,
+    "score": -1706.2516205067766,
+    "visits": 2,
+    "rank_score": 0.1625,
+    "puct": 0.28920620838140454,
+    "spec_hash": "791e17320e337b6c",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 12,
+    "parent_id": 5,
+    "score": -1676.8490113840624,
+    "visits": 3,
+    "rank_score": 0.6875,
+    "puct": 0.7825296562860534,
+    "spec_hash": "c9a7329bd67e8245",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 13,
+    "parent_id": 5,
+    "score": -1698.4023668639054,
+    "visits": 2,
+    "rank_score": 0.2375,
+    "puct": 0.3642062083814045,
+    "spec_hash": "424b2e59cf23ac53",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 14,
+    "parent_id": 10,
+    "score": -1720.0,
+    "visits": 2,
+    "rank_score": 0.025,
+    "puct": 0.15170620838140453,
+    "spec_hash": "4dc91a5f7cbd0a46",
+    "parent_spec_hash": "d99c3d9f793c45a6"
+  },
+  {
+    "node_id": 15,
+    "parent_id": 5,
+    "score": -1695.298755186722,
+    "visits": 2,
+    "rank_score": 0.2625,
+    "puct": 0.3892062083814045,
+    "spec_hash": "b718b04432c7fa26",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 16,
+    "parent_id": 5,
+    "score": -1688.452380952381,
+    "visits": 2,
+    "rank_score": 0.4625,
+    "puct": 0.5892062083814046,
+    "spec_hash": "0080d822ba84cbeb",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 17,
+    "parent_id": 5,
+    "score": -1681.6463560334528,
+    "visits": 2,
+    "rank_score": 0.625,
+    "puct": 0.7517062083814046,
+    "spec_hash": "10c9c37253cca191",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 18,
+    "parent_id": 5,
+    "score": -1692.6104513064133,
+    "visits": 2,
+    "rank_score": 0.35,
+    "puct": 0.47670620838140454,
+    "spec_hash": "ce7247eae4cda4e5",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 19,
+    "parent_id": 10,
+    "score": -1713.6244131455398,
+    "visits": 2,
+    "rank_score": 0.05,
+    "puct": 0.17670620838140455,
+    "spec_hash": "13caf27bc49e40ef",
+    "parent_spec_hash": "d99c3d9f793c45a6"
+  },
+  {
+    "node_id": 20,
+    "parent_id": 12,
+    "score": -1691.6749851455734,
+    "visits": 2,
+    "rank_score": 0.3625,
+    "puct": 0.4892062083814045,
+    "spec_hash": "02f166d151419f37",
+    "parent_spec_hash": "c9a7329bd67e8245"
+  },
+  {
+    "node_id": 21,
+    "parent_id": 5,
+    "score": -1706.310548025928,
+    "visits": 2,
+    "rank_score": 0.14375,
+    "puct": 0.2704562083814045,
+    "spec_hash": "e9fcc7ffc6d1e27a",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 22,
+    "parent_id": 5,
+    "score": -1697.8217880402606,
+    "visits": 2,
+    "rank_score": 0.25,
+    "puct": 0.37670620838140456,
+    "spec_hash": "54fe08bc5d2610d3",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 23,
+    "parent_id": 5,
+    "score": -1707.3050647820967,
+    "visits": 2,
+    "rank_score": 0.1,
+    "puct": 0.22670620838140454,
+    "spec_hash": "bc88d353f5c5fcd2",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 24,
+    "parent_id": 5,
+    "score": -1706.310548025928,
+    "visits": 2,
+    "rank_score": 0.14375,
+    "puct": 0.2704562083814045,
+    "spec_hash": "ef359f8bd04c8001",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 25,
+    "parent_id": 5,
+    "score": -1694.1850533807828,
+    "visits": 2,
+    "rank_score": 0.2875,
+    "puct": 0.41420620838140454,
+    "spec_hash": "aaf56e591c084632",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 26,
+    "parent_id": 10,
+    "score": -1685.8665077473183,
+    "visits": 2,
+    "rank_score": 0.54375,
+    "puct": 0.6704562083814045,
+    "spec_hash": "9629eeaa64d85a5f",
+    "parent_spec_hash": "d99c3d9f793c45a6"
+  },
+  {
+    "node_id": 27,
+    "parent_id": 5,
+    "score": -1702.5596221959859,
+    "visits": 2,
+    "rank_score": 0.2,
+    "puct": 0.3267062083814045,
+    "spec_hash": "1cb672243993c64f",
+    "parent_spec_hash": "797c8acd5c4f0104"
+  },
+  {
+    "node_id": 28,
+    "parent_id": 7,
+    "score": -1673.142857142857,
+    "visits": 54,
+    "rank_score": 0.8125,
+    "puct": 0.8194112477298948,
+    "spec_hash": "2939d1397363c448",
+    "parent_spec_hash": "dff25850b04f2084"
+  },
+  {
+    "node_id": 29,
+    "parent_id": 28,
+    "score": -1699.3973979893553,
+    "visits": 2,
+    "rank_score": 0.225,
+    "puct": 0.35170620838140454,
+    "spec_hash": "ae3c81033b82ee91",
+    "parent_spec_hash": "2939d1397363c448"
+  },
+  {
+    "node_id": 30,
+    "parent_id": 28,
+    "score": -1706.9517078916372,
+    "visits": 2,
+    "rank_score": 0.1125,
+    "puct": 0.23920620838140455,
+    "spec_hash": "20a2960e988456e6",
+    "parent_spec_hash": "2939d1397363c448"
+  },
+  {
+    "node_id": 31,
+    "parent_id": 28,
+    "score": -1736.4287369640788,
+    "visits": 2,
+    "rank_score": 0.0125,
+    "puct": 0.13920620838140454,
+    "spec_hash": "51095e22b976fc7b",
+    "parent_spec_hash": "2939d1397363c448"
+  },
+  {
+    "node_id": 32,
+    "parent_id": 28,
+    "score": -1673.202881152461,
+    "visits": 50,
+    "rank_score": 0.8,
+    "puct": 0.8074533063753768,
+    "spec_hash": "ccc6f14ceb604b97",
+    "parent_spec_hash": "2939d1397363c448"
+  },
+  {
+    "node_id": 33,
+    "parent_id": 32,
+    "score": -1655.1249241964827,
+    "visits": 49,
+    "rank_score": 0.975,
+    "puct": 0.9826023725028843,
+    "spec_hash": "65d188854166190e",
+    "parent_spec_hash": "ccc6f14ceb604b97"
+  },
+  {
+    "node_id": 34,
+    "parent_id": 33,
+    "score": -1700.628841607565,
+    "visits": 2,
+    "rank_score": 0.2125,
+    "puct": 0.33920620838140453,
+    "spec_hash": "1f9ae8aca5c5af45",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 35,
+    "parent_id": 33,
+    "score": -1661.2839879154078,
+    "visits": 11,
+    "rank_score": 0.9625,
+    "puct": 0.9941765520953512,
+    "spec_hash": "5f1e6bd2551cfec1",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 36,
+    "parent_id": 35,
+    "score": -1683.0405727923628,
+    "visits": 2,
+    "rank_score": 0.5875,
+    "puct": 0.7142062083814046,
+    "spec_hash": "1273cf6ad79fa546",
+    "parent_spec_hash": "5f1e6bd2551cfec1"
+  },
+  {
+    "node_id": 37,
+    "parent_id": 35,
+    "score": -1709.7595532039977,
+    "visits": 2,
+    "rank_score": 0.075,
+    "puct": 0.20170620838140452,
+    "spec_hash": "c773f78e918a8892",
+    "parent_spec_hash": "5f1e6bd2551cfec1"
+  },
+  {
+    "node_id": 38,
+    "parent_id": 33,
+    "score": -1707.8875809299589,
+    "visits": 2,
+    "rank_score": 0.0875,
+    "puct": 0.21420620838140453,
+    "spec_hash": "1fac62c1fa9db2b8",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 39,
+    "parent_id": 35,
+    "score": -1670.670673076923,
+    "visits": 8,
+    "rank_score": 0.85625,
+    "puct": 0.8984854027938015,
+    "spec_hash": "20f7b7e79867e3be",
+    "parent_spec_hash": "5f1e6bd2551cfec1"
+  },
+  {
+    "node_id": 40,
+    "parent_id": 39,
+    "score": -1663.3971031985516,
+    "visits": 7,
+    "rank_score": 0.9375,
+    "puct": 0.9850148281430267,
+    "spec_hash": "e8903149b8d000a5",
+    "parent_spec_hash": "20f7b7e79867e3be"
+  },
+  {
+    "node_id": 41,
+    "parent_id": 40,
+    "score": -1689.7288941736028,
+    "visits": 2,
+    "rank_score": 0.4375,
+    "puct": 0.5642062083814046,
+    "spec_hash": "ad047e87103bdbd5",
+    "parent_spec_hash": "e8903149b8d000a5"
+  },
+  {
+    "node_id": 42,
+    "parent_id": 40,
+    "score": -1671.8468468468468,
+    "visits": 4,
+    "rank_score": 0.825,
+    "puct": 0.9010237250288426,
+    "spec_hash": "3d618623b64f0cb4",
+    "parent_spec_hash": "e8903149b8d000a5"
+  },
+  {
+    "node_id": 43,
+    "parent_id": 42,
+    "score": -1688.674003569304,
+    "visits": 2,
+    "rank_score": 0.45,
+    "puct": 0.5767062083814045,
+    "spec_hash": "b3db4df3ce90cf95",
+    "parent_spec_hash": "3d618623b64f0cb4"
+  },
+  {
+    "node_id": 44,
+    "parent_id": 33,
+    "score": -1685.7473182359952,
+    "visits": 2,
+    "rank_score": 0.5625,
+    "puct": 0.6892062083814046,
+    "spec_hash": "d068eba8849c5687",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 45,
+    "parent_id": 33,
+    "score": -1693.2492581602373,
+    "visits": 2,
+    "rank_score": 0.3,
+    "puct": 0.4267062083814045,
+    "spec_hash": "1f44c14eda6b684f",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 46,
+    "parent_id": 40,
+    "score": -1690.724301841949,
+    "visits": 2,
+    "rank_score": 0.3875,
+    "puct": 0.5142062083814045,
+    "spec_hash": "ae868a70d32cac1b",
+    "parent_spec_hash": "e8903149b8d000a5"
+  },
+  {
+    "node_id": 47,
+    "parent_id": 33,
+    "score": -1685.8665077473183,
+    "visits": 2,
+    "rank_score": 0.54375,
+    "puct": 0.6704562083814045,
+    "spec_hash": "ed4682bdd13627d7",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 48,
+    "parent_id": 33,
+    "score": -1678.9976076555024,
+    "visits": 2,
+    "rank_score": 0.6625,
+    "puct": 0.7892062083814045,
+    "spec_hash": "7ed17e91b92150fb",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 49,
+    "parent_id": 42,
+    "score": -1674.89448441247,
+    "visits": 2,
+    "rank_score": 0.7625,
+    "puct": 0.8892062083814045,
+    "spec_hash": "61e603032c592a28",
+    "parent_spec_hash": "3d618623b64f0cb4"
+  },
+  {
+    "node_id": 50,
+    "parent_id": 33,
+    "score": -1690.026159334126,
+    "visits": 2,
+    "rank_score": 0.41875,
+    "puct": 0.5454562083814045,
+    "spec_hash": "7f9693fc06c87f30",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 51,
+    "parent_id": 33,
+    "score": -1675.0143884892086,
+    "visits": 2,
+    "rank_score": 0.75,
+    "puct": 0.8767062083814046,
+    "spec_hash": "db7ed2e7929fd30b",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 52,
+    "parent_id": 33,
+    "score": -1676.7664670658683,
+    "visits": 2,
+    "rank_score": 0.7,
+    "puct": 0.8267062083814045,
+    "spec_hash": "ff98933af1e121c0",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 53,
+    "parent_id": 33,
+    "score": -1690.026159334126,
+    "visits": 2,
+    "rank_score": 0.41875,
+    "puct": 0.5454562083814045,
+    "spec_hash": "45d880443b17dc04",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 54,
+    "parent_id": 33,
+    "score": -1667.8031306441903,
+    "visits": 28,
+    "rank_score": 0.8875,
+    "puct": 0.9006075387980763,
+    "spec_hash": "aa0897337485f1a6",
+    "parent_spec_hash": "65d188854166190e"
+  },
+  {
+    "node_id": 55,
+    "parent_id": 54,
+    "score": -1687.9761904761904,
+    "visits": 2,
+    "rank_score": 0.475,
+    "puct": 0.6017062083814045,
+    "spec_hash": "c2611c49f4e4b681",
+    "parent_spec_hash": "aa0897337485f1a6"
+  },
+  {
+    "node_id": 56,
+    "parent_id": 54,
+    "score": -1654.942995755003,
+    "visits": 26,
+    "rank_score": 0.9875,
+    "puct": 1.0015784675979338,
+    "spec_hash": "cf00944a56933b42",
+    "parent_spec_hash": "aa0897337485f1a6"
+  },
+  {
+    "node_id": 57,
+    "parent_id": 56,
+    "score": -1668.678700361011,
+    "visits": 3,
+    "rank_score": 0.875,
+    "puct": 0.9700296562860534,
+    "spec_hash": "c84efdfb52900657",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 58,
+    "parent_id": 56,
+    "score": -1692.833827893175,
+    "visits": 2,
+    "rank_score": 0.325,
+    "puct": 0.4517062083814045,
+    "spec_hash": "764affca1132418c",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 59,
+    "parent_id": 56,
+    "score": -1670.670673076923,
+    "visits": 2,
+    "rank_score": 0.85625,
+    "puct": 0.9829562083814045,
+    "spec_hash": "ee6d7c96172aeb56",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 60,
+    "parent_id": 56,
+    "score": -1667.3816977724262,
+    "visits": 18,
+    "rank_score": 0.9,
+    "puct": 0.9200062434286429,
+    "spec_hash": "01bb14e39c40542f",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 61,
+    "parent_id": 60,
+    "score": -1676.5269461077844,
+    "visits": 2,
+    "rank_score": 0.725,
+    "puct": 0.8517062083814045,
+    "spec_hash": "0117fc3dd86d236f",
+    "parent_spec_hash": "01bb14e39c40542f"
+  },
+  {
+    "node_id": 62,
+    "parent_id": 56,
+    "score": -1692.893175074184,
+    "visits": 2,
+    "rank_score": 0.3125,
+    "puct": 0.43920620838140456,
+    "spec_hash": "c14bcdbd91c04705",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 63,
+    "parent_id": 56,
+    "score": -1671.6066066066066,
+    "visits": 2,
+    "rank_score": 0.8375,
+    "puct": 0.9642062083814046,
+    "spec_hash": "225a35295e58a630",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 64,
+    "parent_id": 56,
+    "score": -1704.4316037735848,
+    "visits": 2,
+    "rank_score": 0.175,
+    "puct": 0.3017062083814045,
+    "spec_hash": "95a9e879ba3743f0",
+    "parent_spec_hash": "cf00944a56933b42"
+  },
+  {
+    "node_id": 65,
+    "parent_id": 57,
+    "score": -1677.065868263473,
+    "visits": 2,
+    "rank_score": 0.675,
+    "puct": 0.8017062083814046,
+    "spec_hash": "650ee9a6c7f7754a",
+    "parent_spec_hash": "c84efdfb52900657"
+  },
+  {
+    "node_id": 66,
+    "parent_id": 60,
+    "score": -1663.0953530476766,
+    "visits": 16,
+    "rank_score": 0.95,
+    "puct": 0.9723599191261302,
+    "spec_hash": "2502955e6dfda266",
+    "parent_spec_hash": "01bb14e39c40542f"
+  },
+  {
+    "node_id": 67,
+    "parent_id": 66,
+    "score": -1654.7610673135234,
+    "visits": 15,
+    "rank_score": 1.0,
+    "puct": 1.0237574140715133,
+    "spec_hash": "a2a43d1207cc651a",
+    "parent_spec_hash": "2502955e6dfda266"
+  },
+  {
+    "node_id": 68,
+    "parent_id": 67,
+    "score": -1665.2085593731163,
+    "visits": 3,
+    "rank_score": 0.925,
+    "puct": 1.0200296562860534,
+    "spec_hash": "6b2f0bc6586a4e17",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 69,
+    "parent_id": 67,
+    "score": -1694.7652637818612,
+    "visits": 2,
+    "rank_score": 0.275,
+    "puct": 0.4017062083814046,
+    "spec_hash": "a521fd09c44e464e",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 70,
+    "parent_id": 67,
+    "score": -1687.3809523809523,
+    "visits": 2,
+    "rank_score": 0.5125,
+    "puct": 0.6392062083814045,
+    "spec_hash": "2d02d660b7a6189b",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 71,
+    "parent_id": 67,
+    "score": -1666.2048192771085,
+    "visits": 3,
+    "rank_score": 0.9125,
+    "puct": 1.0075296562860534,
+    "spec_hash": "84ba882bec21c115",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 72,
+    "parent_id": 67,
+    "score": -1680.989247311828,
+    "visits": 2,
+    "rank_score": 0.65,
+    "puct": 0.7767062083814046,
+    "spec_hash": "941c5569a696c50a",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 73,
+    "parent_id": 67,
+    "score": -1673.3587282543492,
+    "visits": 2,
+    "rank_score": 0.7875,
+    "puct": 0.9142062083814045,
+    "spec_hash": "31ad9d32bfd0af07",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 74,
+    "parent_id": 68,
+    "score": -1687.4404761904761,
+    "visits": 2,
+    "rank_score": 0.49375,
+    "puct": 0.6204562083814046,
+    "spec_hash": "6a8a4036f3a07071",
+    "parent_spec_hash": "6b2f0bc6586a4e17"
+  },
+  {
+    "node_id": 75,
+    "parent_id": 67,
+    "score": -1683.2195704057278,
+    "visits": 2,
+    "rank_score": 0.575,
+    "puct": 0.7017062083814045,
+    "spec_hash": "c9ac665a13d4995f",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 76,
+    "parent_id": 71,
+    "score": -1687.4404761904761,
+    "visits": 2,
+    "rank_score": 0.49375,
+    "puct": 0.6204562083814046,
+    "spec_hash": "042c31a51be8bfd0",
+    "parent_spec_hash": "84ba882bec21c115"
+  },
+  {
+    "node_id": 77,
+    "parent_id": 67,
+    "score": -1682.8019093078758,
+    "visits": 2,
+    "rank_score": 0.6,
+    "puct": 0.7267062083814045,
+    "spec_hash": "013c3bf7ff2b094f",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 78,
+    "parent_id": 67,
+    "score": -1691.541567695962,
+    "visits": 2,
+    "rank_score": 0.375,
+    "puct": 0.5017062083814046,
+    "spec_hash": "9314c2b4892775d0",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 79,
+    "parent_id": 67,
+    "score": -1706.3627797408717,
+    "visits": 2,
+    "rank_score": 0.125,
+    "puct": 0.25170620838140456,
+    "spec_hash": "59ca6477dc0dd14e",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  },
+  {
+    "node_id": 80,
+    "parent_id": 67,
+    "score": -1686.3853484216795,
+    "visits": 2,
+    "rank_score": 0.525,
+    "puct": 0.6517062083814046,
+    "spec_hash": "a3b13342c77eed1a",
+    "parent_spec_hash": "a2a43d1207cc651a"
+  }
+]

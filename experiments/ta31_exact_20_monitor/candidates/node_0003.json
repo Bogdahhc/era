@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "min_slack_first",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 300.0,
+  "notes": "retain all valid makespan lower bounds and test min-slack exact branching to prioritize tightly constrained operations | budget_policy=max_time_in_seconds set to 300.0 from parent makespan/optimum threshold",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

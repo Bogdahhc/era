@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 13.0,
+  "old_code": "# [rewrite_cell]\\nfrom typing import Any\\nimport numpy as np\\nimport pandas as pd\\nimport scanpy as sc\\nfrom sklearn.neighbors import NearestNeighbors\\nfrom scipy.sparse import csr_matrix\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # Configure hyperparameters\\n  # Number of PCs to use for KNN search\\n  n_pcs = config.get('n_pcs', 50)\\n  # Number of neighbors to find within EACH batch\\n  k_neighbors_per_batch = config.get('k_neighbors_per_batch', 15)\\n  # Total number of nearest neighbors to keep for the final combined graph for each cell.\\n  # This determines the overall density of the graph.\\n  # It's set to a maximum of 50 or the sum of k_neighbors_per_batch from all batches.\\n  max_overall_neighbors = config.get('max_overall_neighbors', 50)\\n  metric = config.get('metric', 'euclidean')\\n  # UMAP parameters\\n  umap_min_dist = config.get('umap_min_dist', 0.5)\\n  umap_spread = config.get('umap_spread', 1.0)\\n\\n  # 1. Preprocessing\\n  # Normalize counts per cell\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  # Log-transform data\\n  sc.pp.log1p(adata)\\n  # Scale data to unit variance and zero mean\\n  sc.pp.scale(adata, max_value=10) # Clipping can help with outliers\\n\\n  # Perform PCA\\n  sc.tl.pca(adata, n_comps=n_pcs, svd_solver='arpack')\\n\\n  # 2. Batch-aware KNN Graph Construction\\n  X_pca = adata.obsm['X_pca'][:, :n_pcs]\\n  batches = adata.obs['batch'].astype('category')\\n  unique_batches = batches.cat.categories\\n  cell_indices_by_batch = {b: np.where(batches == b)[0] for b in unique_batches}\\n\\n  num_cells = adata.n_obs\\n\\n  # A list of lists to temporarily store (neighbor_idx, dist_val) for each cell\\n  # This avoids pre-allocating a large sparse matrix\\n  temp_neighbors_per_cell = [[] for _ in range(num_cells)]\\n\\n  # Build NearestNeighbors index for each batch and query all cells against them\\n  nn_models = {}\\n  for b_id in unique_batches:\\n    batch_cells_pca = X_pca[cell_indices_by_batch[b_id]]\\n    # +1 because NearestNeighbors can include the query point itself\\n    # Changed algorithm from 'kd_tree' to 'auto' for potential performance improvement\\n    nn = NearestNeighbors(n_neighbors=k_neighbors_per_batch + 1, algorithm='auto', metric=metric)\\n    nn.fit(batch_cells_pca)\\n    nn_models[b_id] = nn\\n\\n    # Query all cells against the current batch's NearestNeighbors model\\n    distances_batch, batch_relative_indices_batch = nn.kneighbors(X_pca)\\n\\n    # Process results for this batch\\n    for i in range(num_cells):\\n      global_neighbor_indices = cell_indices_by_batch[b_id][batch_relative_indices_batch[i]]\\n      current_cell_batch_distances = distances_batch[i]\\n\\n      for k in range(len(global_neighbor_indices)):\\n        neighbor_idx = global_neighbor_indices[k]\\n        neighbor_dist = current_cell_batch_distances[k]\\n        if neighbor_idx != i: # Exclude self-loop\\n          temp_neighbors_per_cell[i].append((neighbor_idx, neighbor_dist))\\n\\n  # Combine and select top N_total_neighbors for each cell\\n  all_rows = []\\n  all_cols = []\\n  all_dists = []\\n\\n  # Determine the actual n_total_neighbors for the graph\\n  # It should be at least k_neighbors_per_batch, and at most max_overall_neighbors\\n  # Also limited by the total number of unique neighbors found per cell\\n  n_total_neighbors = min(k_neighbors_per_batch * len(unique_batches), max_overall_neighbors)\\n\\n  for i in range(num_cells):\\n    combined_neighbors_for_cell_i = {} # Map global_idx to distance, keeps min distance for duplicates\\n    for neighbor_idx, dist_val in temp_neighbors_per_cell[i]:\\n      if neighbor_idx not in combined_neighbors_for_cell_i or dist_val < combined_neighbors_for_cell_i[neighbor_idx]:\\n        combined_neighbors_for_cell_i[neighbor_idx] = dist_val\\n\\n    # Sort by distance and select top N_total_neighbors\\n    selected_neighbors_items = sorted(combined_neighbors_for_cell_i.items(), key=lambda item: item[1])[:n_total_neighbors]\\n\\n    for neighbor_idx, dist_val in selected_neighbors_items:\\n      all_rows.append(i)\\n      all_cols.append(neighbor_idx)\\n      all_dists.append(dist_val)\\n\\n  # Construct distances and connectivities sparse matrices\\n  distances_matrix = csr_matrix((all_dists, (all_rows, all_cols)), shape=(num_cells, num_cells))\\n\\n  # Connectivities matrix (binary, representing presence of edge)\\n  connectivities_matrix = distances_matrix.copy()\\n  connectivities_matrix.data[:] = 1 # Convert distances to 1 for connectivity\\n\\n  # Make matrices symmetric for an undirected graph (common for UMAP)\\n  # Take the average distance if an edge exists in both directions for distances_matrix\\n  distances_matrix = (distances_matrix + distances_matrix.T) / 2\\n  # Take max for connectivities to ensure if A->B or B->A exists, then A-B exists\\n  connectivities_matrix = (connectivities_matrix + connectivities_matrix.T).astype(bool).astype(float) # Ensure binary symmetric\\n\\n  # Store in adata.uns['neighbors'] to be compatible with scanpy\\n  adata.uns['neighbors'] = {}\\n  adata.uns['neighbors']['params'] = {\\n      'n_neighbors': n_total_neighbors,\\n      'method': 'custom_batch_knn',\\n      'metric': metric\\n  }\\n  adata.uns['neighbors']['distances'] = distances_matrix\\n  adata.uns['neighbors']['connectivities'] = connectivities_matrix\\n\\n  # 3. Generate Embedding (UMAP) from the constructed graph\\n  sc.tl.umap(adata, min_dist=umap_min_dist, spread=umap_spread)\\n  adata.obsm['X_emb'] = adata.obsm['X_umap']\\n\\n  # 4. Return output_data in the specified format\\n  output_data = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={\\n          'X_emb': adata.obsm['X_emb']\\n      },\\n  )\\n  return output_data",
+  "new_index": 17,
+  "new_code": "# [rewrite_cell]\\nfrom typing import Any\\nimport numpy as np\\nimport pandas as pd\\nimport scanpy as sc\\nfrom sklearn.neighbors import NearestNeighbors\\nfrom scipy.sparse import csr_matrix\\n\\ndef eliminate_batch_effect_fn(\\n    adata: ad.AnnData, config: dict[str, Any]\\n) -> ad.AnnData:\\n  # Configure hyperparameters\\n  # Number of PCs to use for KNN search\\n  n_pcs = config.get('n_pcs', 50)\\n  # Number of neighbors to find within EACH batch\\n  k_neighbors_per_batch = config.get('k_neighbors_per_batch', 15)\\n  # Total number of nearest neighbors to keep for the final combined graph for each cell.\\n  # This determines the overall density of the graph.\\n  max_overall_neighbors = config.get('max_overall_neighbors', 50)\\n  metric = config.get('metric', 'euclidean')\\n  # UMAP parameters\\n  umap_min_dist = config.get('umap_min_dist', 0.5)\\n  umap_spread = config.get('umap_spread', 1.0)\\n  # Preprocessing scaling max_value\\n  scale_max_value = config.get('scale_max_value', 10)\\n\\n\\n  # 1. Preprocessing\\n  # Normalize counts per cell\\n  sc.pp.normalize_total(adata, target_sum=1e4)\\n  # Log-transform data\\n  sc.pp.log1p(adata)\\n  # Scale data to unit variance and zero mean\\n  sc.pp.scale(adata, max_value=scale_max_value)\\n\\n  # Perform PCA\\n  sc.tl.pca(adata, n_comps=n_pcs, svd_solver='arpack')\\n\\n  # 2. Batch-aware KNN Graph Construction\\n  X_pca = adata.obsm['X_pca'][:, :n_pcs]\\n  batches = adata.obs['batch'].astype('category')\\n  unique_batches = batches.cat.categories\\n  cell_indices_by_batch = {b: np.where(batches == b)[0] for b in unique_batches}\\n\\n  num_cells = adata.n_obs\\n\\n  # List to store all candidate (source, target, distance) triplets from all batches\\n  candidate_edges_data = []\\n\\n  # Iterate through each batch to find neighbors within that batch for all cells\\n  for b_id in unique_batches:\\n    batch_cells_pca = X_pca[cell_indices_by_batch[b_id]]\\n    # Add 1 to n_neighbors to account for the query point itself, which will be filtered out\\n    nn = NearestNeighbors(n_neighbors=k_neighbors_per_batch + 1, algorithm='auto', metric=metric, n_jobs=-1)\\n    nn.fit(batch_cells_pca)\\n\\n    # Query ALL cells against the current batch's PCA data\\n    # distances_batch: (num_cells, k_neighbors_per_batch + 1)\\n    # batch_relative_indices_batch: (num_cells, k_neighbors_per_batch + 1)\\n    distances_batch, batch_relative_indices_batch = nn.kneighbors(X_pca)\\n\\n    # Convert relative indices (within batch_cells_pca) to global indices\\n    global_neighbor_indices = cell_indices_by_batch[b_id][batch_relative_indices_batch]\\n\\n    # Create arrays of source, target, and distance for all found neighbors in this batch\\n    # np.repeat creates source indices for each neighbor\\n    sources_curr_batch = np.repeat(np.arange(num_cells), k_neighbors_per_batch + 1)\\n    targets_curr_batch = global_neighbor_indices.flatten()\\n    dists_curr_batch = distances_batch.flatten()\\n\\n    # Filter out self-loops (where source == target)\\n    mask = sources_curr_batch != targets_curr_batch\\n    candidate_edges_data.append(np.column_stack((sources_curr_batch[mask], targets_curr_batch[mask], dists_curr_batch[mask])))\\n\\n  # Concatenate all candidate edges from all batches into a single NumPy array\\n  if not candidate_edges_data: # Handle case where no neighbors are found (e.g., very small k_neighbors or empty batches)\\n      distances_matrix = csr_matrix((num_cells, num_cells), dtype=float)\\n      connectivities_matrix = csr_matrix((num_cells, num_cells), dtype=float)\\n  else:\\n      all_candidate_edges = np.vstack(candidate_edges_data)\\n\\n      # Convert to DataFrame for efficient grouping and sorting\\n      # Using smaller dtypes to save memory\\n      df_candidates = pd.DataFrame(all_candidate_edges, columns=['source', 'target', 'dist'])\\n      df_candidates['source'] = df_candidates['source'].astype(np.int32)\\n      df_candidates['target'] = df_candidates['target'].astype(np.int32)\\n      df_candidates['dist'] = df_candidates['dist'].astype(np.float32)\\n\\n      # Group by (source, target) to get the minimum distance for duplicate edges\\n      # This addresses \\"merge the identified neighbor sets for the cell\\" by resolving conflicts\\n      df_consolidated = df_candidates.groupby(['source', 'target'])['dist'].min().reset_index()\\n\\n      # Determine the actual n_total_neighbors for the graph\\n      # It should be at least k_neighbors_per_batch, and at most max_overall_neighbors\\n      n_total_neighbors = min(k_neighbors_per_batch * len(unique_batches), max_overall_neighbors)\\n\\n      # Group by source and select the top N (n_total_neighbors) closest neighbors for each source\\n      # nsmallest is efficient for this task\\n      df_final_neighbors = df_consolidated.loc[\\n          df_consolidated.groupby('source')['dist'].nsmallest(n_total_neighbors).index.get_level_values(1)\\n      ].reset_index(drop=True)\\n\\n      # Extract final lists for sparse matrix construction\\n      final_rows = df_final_neighbors['source'].values\\n      final_cols = df_final_neighbors['target'].values\\n      final_dists = df_final_neighbors['dist'].values\\n\\n      # Construct distances sparse matrix\\n      distances_matrix = csr_matrix((final_dists, (final_rows, final_cols)), shape=(num_cells, num_cells))\\n\\n      # Connectivities matrix (binary, representing presence of edge)\\n      connectivities_matrix = distances_matrix.copy()\\n      connectivities_matrix.data[:] = 1 # Convert distances to 1 for connectivity\\n\\n      # Make matrices symmetric for an undirected graph (common for UMAP)\\n      distances_matrix = (distances_matrix + distances_matrix.T) / 2\\n      connectivities_matrix = (connectivities_matrix + connectivities_matrix.T).astype(bool).astype(float) # Ensure binary symmetric\\n\\n  # Store in adata.uns['neighbors'] to be compatible with scanpy\\n  adata.uns['neighbors'] = {}\\n  adata.uns['neighbors']['params'] = {\\n      'n_neighbors': n_total_neighbors,\\n      'method': 'custom_batch_knn',\\n      'metric': metric\\n  }\\n  adata.uns['neighbors']['distances'] = distances_matrix\\n  adata.uns['neighbors']['connectivities'] = connectivities_matrix\\n\\n  # 3. Generate Embedding (UMAP) from the constructed graph\\n  sc.tl.umap(adata, min_dist=umap_min_dist, spread=umap_spread)\\n  adata.obsm['X_emb'] = adata.obsm['X_umap']\\n\\n  # 4. Return output_data in the specified format\\n  output_data = ad.AnnData(\\n      obs=adata.obs,\\n      var=adata.var,\\n      obsm={\\n          'X_emb': adata.obsm['X_emb']\\n      },\\n  )\\n  return output_data"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

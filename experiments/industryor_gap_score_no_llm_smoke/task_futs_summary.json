@@ -1,0 +1,28 @@
+{
+  "dataset": "industryor",
+  "tree_scope": "task",
+  "train": {
+    "n_total": 1,
+    "n_success": 0,
+    "tasks": [
+      {
+        "task_id": "B015",
+        "score": -Infinity,
+        "success": false,
+        "experiment_dir": "experiments/industryor_gap_score_no_llm_smoke/train_B015"
+      }
+    ]
+  },
+  "test": {
+    "n_total": 1,
+    "n_success": 0,
+    "tasks": [
+      {
+        "task_id": "B088",
+        "score": -Infinity,
+        "success": false,
+        "experiment_dir": "experiments/industryor_gap_score_no_llm_smoke/test_B088"
+      }
+    ]
+  }
+}

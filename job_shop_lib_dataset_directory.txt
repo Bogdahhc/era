@@ -1,0 +1,194 @@
+job_shop_lib dataset directory report
+
+package_root: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib
+benchmarking_dir: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking
+benchmark_json: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/benchmark_instances.json
+total_instances: 162
+
+directory_files:
+  file: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/__init__.py
+  dir : /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/__pycache__
+  file: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/__pycache__/__init__.cpython-313.pyc
+  file: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/__pycache__/_load_benchmark.cpython-313.pyc
+  file: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/_load_benchmark.py
+  file: /home/hehaochen/.local/lib/python3.13/site-packages/job_shop_lib/benchmarking/benchmark_instances.json
+
+groups:
+  abz: 5
+    abz5, abz6, abz7, abz8, abz9
+  ft: 3
+    ft06, ft10, ft20
+  la: 40
+    la01, la02, la03, la04, la05, la06, la07, la08, la09, la10, la11, la12, la13, la14, la15, la16, la17, la18, la19, la20, la21, la22, la23, la24, la25, la26, la27, la28, la29, la30, la31, la32, la33, la34, la35, la36, la37, la38, la39, la40
+  orb: 10
+    orb01, orb02, orb03, orb04, orb05, orb06, orb07, orb08, orb09, orb10
+  swv: 20
+    swv01, swv02, swv03, swv04, swv05, swv06, swv07, swv08, swv09, swv10, swv11, swv12, swv13, swv14, swv15, swv16, swv17, swv18, swv19, swv20
+  ta: 80
+    ta01, ta02, ta03, ta04, ta05, ta06, ta07, ta08, ta09, ta10, ta11, ta12, ta13, ta14, ta15, ta16, ta17, ta18, ta19, ta20, ta21, ta22, ta23, ta24, ta25, ta26, ta27, ta28, ta29, ta30, ta31, ta32, ta33, ta34, ta35, ta36, ta37, ta38, ta39, ta40, ta41, ta42, ta43, ta44, ta45, ta46, ta47, ta48, ta49, ta50, ta51, ta52, ta53, ta54, ta55, ta56, ta57, ta58, ta59, ta60, ta61, ta62, ta63, ta64, ta65, ta66, ta67, ta68, ta69, ta70, ta71, ta72, ta73, ta74, ta75, ta76, ta77, ta78, ta79, ta80
+  yn: 4
+    yn1, yn2, yn3, yn4
+
+instances:
+  abz5: jobs=10, machines=10, operations=100, optimum=1234, lower_bound=1234, upper_bound=1234
+  abz6: jobs=10, machines=10, operations=100, optimum=943, lower_bound=943, upper_bound=943
+  abz7: jobs=20, machines=15, operations=300, optimum=656, lower_bound=656, upper_bound=656
+  abz8: jobs=20, machines=15, operations=300, optimum=None, lower_bound=645, upper_bound=665
+  abz9: jobs=20, machines=15, operations=300, optimum=678, lower_bound=678, upper_bound=678
+  ft06: jobs=6, machines=6, operations=36, optimum=55, lower_bound=55, upper_bound=55
+  ft10: jobs=10, machines=10, operations=100, optimum=930, lower_bound=930, upper_bound=930
+  ft20: jobs=20, machines=5, operations=100, optimum=1165, lower_bound=1165, upper_bound=1165
+  la01: jobs=10, machines=5, operations=50, optimum=666, lower_bound=666, upper_bound=666
+  la02: jobs=10, machines=5, operations=50, optimum=655, lower_bound=655, upper_bound=655
+  la03: jobs=10, machines=5, operations=50, optimum=597, lower_bound=597, upper_bound=597
+  la04: jobs=10, machines=5, operations=50, optimum=590, lower_bound=590, upper_bound=590
+  la05: jobs=10, machines=5, operations=50, optimum=593, lower_bound=593, upper_bound=593
+  la06: jobs=15, machines=5, operations=75, optimum=926, lower_bound=926, upper_bound=926
+  la07: jobs=15, machines=5, operations=75, optimum=890, lower_bound=890, upper_bound=890
+  la08: jobs=15, machines=5, operations=75, optimum=863, lower_bound=863, upper_bound=863
+  la09: jobs=15, machines=5, operations=75, optimum=951, lower_bound=951, upper_bound=951
+  la10: jobs=15, machines=5, operations=75, optimum=958, lower_bound=958, upper_bound=958
+  la11: jobs=20, machines=5, operations=100, optimum=1222, lower_bound=1222, upper_bound=1222
+  la12: jobs=20, machines=5, operations=100, optimum=1039, lower_bound=1039, upper_bound=1039
+  la13: jobs=20, machines=5, operations=100, optimum=1150, lower_bound=1150, upper_bound=1150
+  la14: jobs=20, machines=5, operations=100, optimum=1292, lower_bound=1292, upper_bound=1292
+  la15: jobs=20, machines=5, operations=100, optimum=1207, lower_bound=1207, upper_bound=1207
+  la16: jobs=10, machines=10, operations=100, optimum=945, lower_bound=945, upper_bound=945
+  la17: jobs=10, machines=10, operations=100, optimum=784, lower_bound=784, upper_bound=784
+  la18: jobs=10, machines=10, operations=100, optimum=848, lower_bound=848, upper_bound=848
+  la19: jobs=10, machines=10, operations=100, optimum=842, lower_bound=842, upper_bound=842
+  la20: jobs=10, machines=10, operations=100, optimum=902, lower_bound=902, upper_bound=902
+  la21: jobs=15, machines=10, operations=150, optimum=1046, lower_bound=1046, upper_bound=1046
+  la22: jobs=15, machines=10, operations=150, optimum=927, lower_bound=927, upper_bound=927
+  la23: jobs=15, machines=10, operations=150, optimum=1032, lower_bound=1032, upper_bound=1032
+  la24: jobs=15, machines=10, operations=150, optimum=935, lower_bound=935, upper_bound=935
+  la25: jobs=15, machines=10, operations=150, optimum=977, lower_bound=977, upper_bound=977
+  la26: jobs=20, machines=10, operations=200, optimum=1218, lower_bound=1218, upper_bound=1218
+  la27: jobs=20, machines=10, operations=200, optimum=1235, lower_bound=1235, upper_bound=1235
+  la28: jobs=20, machines=10, operations=200, optimum=1216, lower_bound=1216, upper_bound=1216
+  la29: jobs=20, machines=10, operations=200, optimum=1152, lower_bound=1152, upper_bound=1152
+  la30: jobs=20, machines=10, operations=200, optimum=1355, lower_bound=1355, upper_bound=1355
+  la31: jobs=30, machines=10, operations=300, optimum=1784, lower_bound=1784, upper_bound=1784
+  la32: jobs=30, machines=10, operations=300, optimum=1850, lower_bound=1850, upper_bound=1850
+  la33: jobs=30, machines=10, operations=300, optimum=1719, lower_bound=1719, upper_bound=1719
+  la34: jobs=30, machines=10, operations=300, optimum=1721, lower_bound=1721, upper_bound=1721
+  la35: jobs=30, machines=10, operations=300, optimum=1888, lower_bound=1888, upper_bound=1888
+  la36: jobs=15, machines=15, operations=225, optimum=1268, lower_bound=1268, upper_bound=1268
+  la37: jobs=15, machines=15, operations=225, optimum=1397, lower_bound=1397, upper_bound=1397
+  la38: jobs=15, machines=15, operations=225, optimum=1196, lower_bound=1196, upper_bound=1196
+  la39: jobs=15, machines=15, operations=225, optimum=1233, lower_bound=1233, upper_bound=1233
+  la40: jobs=15, machines=15, operations=225, optimum=1222, lower_bound=1222, upper_bound=1222
+  orb01: jobs=10, machines=10, operations=100, optimum=1059, lower_bound=1059, upper_bound=1059
+  orb02: jobs=10, machines=10, operations=100, optimum=888, lower_bound=888, upper_bound=888
+  orb03: jobs=10, machines=10, operations=100, optimum=1005, lower_bound=1005, upper_bound=1005
+  orb04: jobs=10, machines=10, operations=100, optimum=1005, lower_bound=1005, upper_bound=1005
+  orb05: jobs=10, machines=10, operations=100, optimum=887, lower_bound=887, upper_bound=887
+  orb06: jobs=10, machines=10, operations=100, optimum=1010, lower_bound=1010, upper_bound=1010
+  orb07: jobs=10, machines=10, operations=100, optimum=397, lower_bound=397, upper_bound=397
+  orb08: jobs=10, machines=10, operations=100, optimum=899, lower_bound=899, upper_bound=899
+  orb09: jobs=10, machines=10, operations=100, optimum=934, lower_bound=934, upper_bound=934
+  orb10: jobs=10, machines=10, operations=100, optimum=944, lower_bound=944, upper_bound=944
+  swv01: jobs=20, machines=10, operations=200, optimum=1407, lower_bound=1407, upper_bound=1407
+  swv02: jobs=20, machines=10, operations=200, optimum=1475, lower_bound=1475, upper_bound=1475
+  swv03: jobs=20, machines=10, operations=200, optimum=1398, lower_bound=1398, upper_bound=1398
+  swv04: jobs=20, machines=10, operations=200, optimum=1464, lower_bound=1464, upper_bound=1464
+  swv05: jobs=20, machines=10, operations=200, optimum=1424, lower_bound=1424, upper_bound=1424
+  swv06: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1630, upper_bound=1671
+  swv07: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1513, upper_bound=1594
+  swv08: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1671, upper_bound=1752
+  swv09: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1633, upper_bound=1655
+  swv10: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1663, upper_bound=1743
+  swv11: jobs=50, machines=10, operations=500, optimum=2983, lower_bound=2983, upper_bound=2983
+  swv12: jobs=50, machines=10, operations=500, optimum=None, lower_bound=2972, upper_bound=2977
+  swv13: jobs=50, machines=10, operations=500, optimum=3104, lower_bound=3104, upper_bound=3104
+  swv14: jobs=50, machines=10, operations=500, optimum=2968, lower_bound=2968, upper_bound=2968
+  swv15: jobs=50, machines=10, operations=500, optimum=2885, lower_bound=2885, upper_bound=2885
+  swv16: jobs=50, machines=10, operations=500, optimum=2924, lower_bound=2924, upper_bound=2924
+  swv17: jobs=50, machines=10, operations=500, optimum=2794, lower_bound=2794, upper_bound=2794
+  swv18: jobs=50, machines=10, operations=500, optimum=2852, lower_bound=2852, upper_bound=2852
+  swv19: jobs=50, machines=10, operations=500, optimum=2843, lower_bound=2843, upper_bound=2843
+  swv20: jobs=50, machines=10, operations=500, optimum=2823, lower_bound=2823, upper_bound=2823
+  ta01: jobs=15, machines=15, operations=225, optimum=1231, lower_bound=1231, upper_bound=1231
+  ta02: jobs=15, machines=15, operations=225, optimum=1244, lower_bound=1244, upper_bound=1244
+  ta03: jobs=15, machines=15, operations=225, optimum=1218, lower_bound=1218, upper_bound=1218
+  ta04: jobs=15, machines=15, operations=225, optimum=1175, lower_bound=1175, upper_bound=1175
+  ta05: jobs=15, machines=15, operations=225, optimum=1224, lower_bound=1224, upper_bound=1224
+  ta06: jobs=15, machines=15, operations=225, optimum=1238, lower_bound=1238, upper_bound=1238
+  ta07: jobs=15, machines=15, operations=225, optimum=1227, lower_bound=1227, upper_bound=1227
+  ta08: jobs=15, machines=15, operations=225, optimum=1217, lower_bound=1217, upper_bound=1217
+  ta09: jobs=15, machines=15, operations=225, optimum=1274, lower_bound=1274, upper_bound=1274
+  ta10: jobs=15, machines=15, operations=225, optimum=1241, lower_bound=1241, upper_bound=1241
+  ta11: jobs=20, machines=15, operations=300, optimum=1357, lower_bound=1357, upper_bound=1357
+  ta12: jobs=20, machines=15, operations=300, optimum=1367, lower_bound=1367, upper_bound=1367
+  ta13: jobs=20, machines=15, operations=300, optimum=1342, lower_bound=1342, upper_bound=1342
+  ta14: jobs=20, machines=15, operations=300, optimum=1345, lower_bound=1345, upper_bound=1345
+  ta15: jobs=20, machines=15, operations=300, optimum=1339, lower_bound=1339, upper_bound=1339
+  ta16: jobs=20, machines=15, operations=300, optimum=1360, lower_bound=1360, upper_bound=1360
+  ta17: jobs=20, machines=15, operations=300, optimum=1462, lower_bound=1462, upper_bound=1462
+  ta18: jobs=20, machines=15, operations=300, optimum=None, lower_bound=1377, upper_bound=1396
+  ta19: jobs=20, machines=15, operations=300, optimum=1332, lower_bound=1332, upper_bound=1332
+  ta20: jobs=20, machines=15, operations=300, optimum=1348, lower_bound=1348, upper_bound=1348
+  ta21: jobs=20, machines=20, operations=400, optimum=1642, lower_bound=1642, upper_bound=1642
+  ta22: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1561, upper_bound=1600
+  ta23: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1518, upper_bound=1557
+  ta24: jobs=20, machines=20, operations=400, optimum=1644, lower_bound=1644, upper_bound=1644
+  ta25: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1558, upper_bound=1595
+  ta26: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1591, upper_bound=1643
+  ta27: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1652, upper_bound=1680
+  ta28: jobs=20, machines=20, operations=400, optimum=1603, lower_bound=1603, upper_bound=1603
+  ta29: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1573, upper_bound=1625
+  ta30: jobs=20, machines=20, operations=400, optimum=None, lower_bound=1519, upper_bound=1584
+  ta31: jobs=30, machines=15, operations=450, optimum=1764, lower_bound=1764, upper_bound=1764
+  ta32: jobs=30, machines=15, operations=450, optimum=None, lower_bound=1774, upper_bound=1784
+  ta33: jobs=30, machines=15, operations=450, optimum=None, lower_bound=1778, upper_bound=1791
+  ta34: jobs=30, machines=15, operations=450, optimum=None, lower_bound=1828, upper_bound=1829
+  ta35: jobs=30, machines=15, operations=450, optimum=2007, lower_bound=2007, upper_bound=2007
+  ta36: jobs=30, machines=15, operations=450, optimum=1819, lower_bound=1819, upper_bound=1819
+  ta37: jobs=30, machines=15, operations=450, optimum=1771, lower_bound=1771, upper_bound=1771
+  ta38: jobs=30, machines=15, operations=450, optimum=1673, lower_bound=1673, upper_bound=1673
+  ta39: jobs=30, machines=15, operations=450, optimum=1795, lower_bound=1795, upper_bound=1795
+  ta40: jobs=30, machines=15, operations=450, optimum=None, lower_bound=1651, upper_bound=1669
+  ta41: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1906, upper_bound=2005
+  ta42: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1884, upper_bound=1937
+  ta43: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1809, upper_bound=1846
+  ta44: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1948, upper_bound=1979
+  ta45: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1997, upper_bound=2000
+  ta46: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1957, upper_bound=2004
+  ta47: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1807, upper_bound=1889
+  ta48: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1912, upper_bound=1937
+  ta49: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1931, upper_bound=1968
+  ta50: jobs=30, machines=20, operations=600, optimum=None, lower_bound=1833, upper_bound=1923
+  ta51: jobs=50, machines=15, operations=750, optimum=2760, lower_bound=2760, upper_bound=2760
+  ta52: jobs=50, machines=15, operations=750, optimum=2756, lower_bound=2756, upper_bound=2756
+  ta53: jobs=50, machines=15, operations=750, optimum=2717, lower_bound=2717, upper_bound=2717
+  ta54: jobs=50, machines=15, operations=750, optimum=2839, lower_bound=2839, upper_bound=2839
+  ta55: jobs=50, machines=15, operations=750, optimum=2679, lower_bound=2679, upper_bound=2679
+  ta56: jobs=50, machines=15, operations=750, optimum=2781, lower_bound=2781, upper_bound=2781
+  ta57: jobs=50, machines=15, operations=750, optimum=2943, lower_bound=2943, upper_bound=2943
+  ta58: jobs=50, machines=15, operations=750, optimum=2885, lower_bound=2885, upper_bound=2885
+  ta59: jobs=50, machines=15, operations=750, optimum=2655, lower_bound=2655, upper_bound=2655
+  ta60: jobs=50, machines=15, operations=750, optimum=2723, lower_bound=2723, upper_bound=2723
+  ta61: jobs=50, machines=20, operations=1000, optimum=2868, lower_bound=2868, upper_bound=2868
+  ta62: jobs=50, machines=20, operations=1000, optimum=2869, lower_bound=2869, upper_bound=2869
+  ta63: jobs=50, machines=20, operations=1000, optimum=2755, lower_bound=2755, upper_bound=2755
+  ta64: jobs=50, machines=20, operations=1000, optimum=2702, lower_bound=2702, upper_bound=2702
+  ta65: jobs=50, machines=20, operations=1000, optimum=2725, lower_bound=2725, upper_bound=2725
+  ta66: jobs=50, machines=20, operations=1000, optimum=2845, lower_bound=2845, upper_bound=2845
+  ta67: jobs=50, machines=20, operations=1000, optimum=2825, lower_bound=2825, upper_bound=2825
+  ta68: jobs=50, machines=20, operations=1000, optimum=2784, lower_bound=2784, upper_bound=2784
+  ta69: jobs=50, machines=20, operations=1000, optimum=3071, lower_bound=3071, upper_bound=3071
+  ta70: jobs=50, machines=20, operations=1000, optimum=2995, lower_bound=2995, upper_bound=2995
+  ta71: jobs=100, machines=20, operations=2000, optimum=5464, lower_bound=5464, upper_bound=5464
+  ta72: jobs=100, machines=20, operations=2000, optimum=5181, lower_bound=5181, upper_bound=5181
+  ta73: jobs=100, machines=20, operations=2000, optimum=5568, lower_bound=5568, upper_bound=5568
+  ta74: jobs=100, machines=20, operations=2000, optimum=5339, lower_bound=5339, upper_bound=5339
+  ta75: jobs=100, machines=20, operations=2000, optimum=5392, lower_bound=5392, upper_bound=5392
+  ta76: jobs=100, machines=20, operations=2000, optimum=5342, lower_bound=5342, upper_bound=5342
+  ta77: jobs=100, machines=20, operations=2000, optimum=5436, lower_bound=5436, upper_bound=5436
+  ta78: jobs=100, machines=20, operations=2000, optimum=5394, lower_bound=5394, upper_bound=5394
+  ta79: jobs=100, machines=20, operations=2000, optimum=5358, lower_bound=5358, upper_bound=5358
+  ta80: jobs=100, machines=20, operations=2000, optimum=5183, lower_bound=5183, upper_bound=5183
+  yn1: jobs=20, machines=20, operations=400, optimum=884, lower_bound=884, upper_bound=884
+  yn2: jobs=20, machines=20, operations=400, optimum=None, lower_bound=870, upper_bound=904
+  yn3: jobs=20, machines=20, operations=400, optimum=None, lower_bound=859, upper_bound=892
+  yn4: jobs=20, machines=20, operations=400, optimum=None, lower_bound=929, upper_bound=968

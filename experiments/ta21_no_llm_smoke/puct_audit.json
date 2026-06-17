@@ -1,0 +1,33 @@
+{
+  "num_nodes": 2,
+  "c_puct": 1.0,
+  "prior": 0.5,
+  "total_visits": 4,
+  "max_rank_error": 0.0,
+  "max_puct_error": 0.0,
+  "passes": true,
+  "nodes": [
+    {
+      "node_id": 0,
+      "score": -15582.0,
+      "visits": 2,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 0.8333333333333333,
+      "expected_puct": 0.8333333333333333,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 1,
+      "score": -15582.0,
+      "visits": 2,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 0.8333333333333333,
+      "expected_puct": 0.8333333333333333,
+      "puct_error": 0.0
+    }
+  ]
+}

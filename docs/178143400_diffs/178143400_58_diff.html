@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 39.0,
+  "old_code": "import scipy.integrate\\nimport math\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals of oscillatory integrands\\n    on infinite domains, aiming for better robustness than a simple scipy.integrate.quad() call.\\n\\n    Args:\\n        integrand (Callable[float, float]): The function to integrate.\\n        lower_limit (float): The lower limit of integration. May be -math.inf.\\n        upper_limit (float): The upper limit of integration. May be math.inf.\\n\\n    Returns:\\n        Tuple[float, float]: A tuple containing the estimated value of the integral\\n                              and an estimate of the absolute error.\\n    \\"\\"\\"\\n\\n    # Constants for numerical stability in transformations\\n    TINY_COS_VAL = 1e-12  # Threshold for cos_val near zero to avoid ZeroDivisionError\\n    LARGE_X_VAL = 1e300   # Threshold for transformed x values considered effectively infinite\\n\\n    # --- Attempt 1: Standard quad with increased subdivisions ---\\n    try:\\n        # Increase limit for more subdivisions, use default tolerances\\n        result, error, info = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=200, # Increased from default 50\\n            full_output=True\\n        )\\n        # Check for normal convergence (ier=0) or max subdivisions reached (ier=1)\\n        # ier=1 can still yield a good result, but might have higher error\\n        if info['ier'] <= 1:\\n            # Check if the result is numerically sound and error is acceptable\\n            if math.isnan(result) or math.isinf(result):\\n                pass # Invalid result, proceed to next strategy\\n            elif abs(result) > 1e-10: # For non-trivial results, check relative error\\n                if error / abs(result) < 0.01:\\n                    return result, error\\n            elif error < 1e-8: # For results near zero, check absolute error\\n                return result, error\\n            # If error is still too high, proceed to next strategy\\n    except Exception:\\n        pass # quad failed, proceed to next strategy\\n\\n    # --- Attempt 2: Transformations for Oscillatory Integrands on Infinite Domains ---\\n    # This uses x = tan(t * pi / 2) transformation, which compresses infinite range\\n    # into finite one, while 'stretching' the Jacobian towards infinities.\\n    # This is often effective for oscillatory integrals that decay slowly.\\n\\n    transformed_result = float('nan')\\n    transformed_error = float('inf')\\n\\n    # Case 1: lower_limit = -inf, upper_limit = inf\\n    if lower_limit == -math.inf and upper_limit == math.inf:\\n        # Transformation: x = tan(t * pi / 2), maps t in [-1, 1] to x in [-inf, inf]\\n        # dx/dt = (pi/2) * sec^2(t * pi / 2) = (pi/2) / cos^2(t * pi / 2)\\n        def transformed_integrand_inf_inf(t):\\n            # Guard against hitting boundaries exactly or floating point issues\\n            # t should be in (-1, 1), but can be very close to boundaries.\\n            # Returning 0.0 for boundary/extreme values allows quad to converge on integrable singularities.\\n            if abs(t) >= 1.0:\\n                return 0.0 \\n            \\n            cos_val = math.cos(t * math.pi / 2)\\n            if abs(cos_val) < TINY_COS_VAL: # Avoid division by near zero, which implies x -> inf\\n                return 0.0\\n\\n            val_x = math.tan(t * math.pi / 2)\\n            if abs(val_x) > LARGE_X_VAL: # If tan overflows before hitting math.inf\\n                return 0.0 # Effective infinity, contribution tends to zero for integrable functions\\n\\n            return integrand(val_x) * (math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_inf_inf, -1.0, 1.0,\\n                limit=300, epsabs=1e-10, epsrel=1e-10 # Tighter tolerances, more subdivisions\\n            )\\n        except Exception:\\n            pass # Transformation failed\\n\\n    # Case 2: lower_limit is finite, upper_limit = inf\\n    elif upper_limit == math.inf:\\n        # Transformation: x = lower_limit + tan(t * pi / 2), maps t in [0, 1) to x in [lower_limit, inf)\\n        # dx/dt = (pi/2) * sec^2(t * pi / 2)\\n        def transformed_integrand_a_inf(t):\\n            if t >= 1.0:\\n                return 0.0\\n            \\n            cos_val = math.cos(t * math.pi / 2)\\n            if abs(cos_val) < TINY_COS_VAL:\\n                return 0.0\\n\\n            val_x = lower_limit + math.tan(t * math.pi / 2)\\n            if abs(val_x) > LARGE_X_VAL:\\n                return 0.0\\n\\n            return integrand(val_x) * (math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_a_inf, 0.0, 1.0,\\n                limit=300, epsabs=1e-10, epsrel=1e-10\\n            )\\n        except Exception:\\n            pass\\n\\n    # Case 3: lower_limit = -inf, upper_limit is finite\\n    elif lower_limit == -math.inf:\\n        # Transformation: x = upper_limit - tan(t * pi / 2), maps t in [0, 1) to x in (-inf, upper_limit]\\n        # dx/dt = -(pi/2) * sec^2(t * pi / 2)\\n        def transformed_integrand_inf_b(t):\\n            if t >= 1.0:\\n                return 0.0\\n\\n            cos_val = math.cos(t * math.pi / 2)\\n            if abs(cos_val) < TINY_COS_VAL:\\n                return 0.0\\n\\n            val_x = upper_limit - math.tan(t * math.pi / 2)\\n            if abs(val_x) > LARGE_X_VAL:\\n                return 0.0\\n\\n            return integrand(val_x) * (-math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_inf_b, 0.0, 1.0,\\n                limit=300, epsabs=1e-10, epsrel=1e-10\\n            )\\n        except Exception:\\n            pass\\n        \\n    # If transformation worked and results are numerically sound\\n    if not math.isnan(transformed_result) and not math.isinf(transformed_result):\\n        if abs(transformed_result) > 1e-10:\\n            if transformed_error / abs(transformed_result) < 0.01:\\n                return transformed_result, transformed_error\\n        elif transformed_error < 1e-8:\\n            return transformed_result, transformed_error\\n\\n    # --- Final Fallback: Aggressive standard quad ---\\n    # If all previous attempts fail or yield unstable results, try original quad\\n    # with even more aggressive subdivision attempts but slightly relaxed precision.\\n    try:\\n        final_result, final_error, final_info = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=500, # Even higher limit for a last resort\\n            epsabs=1e-6, # Relaxed absolute error tolerance from default (1.49e-08)\\n            epsrel=1e-6, # Relaxed relative error tolerance from default\\n            full_output=True\\n        )\\n        # If result is NaN or Inf, or if the internal error code indicates serious issues\\n        # ier=3 (roundoff error), 4 (bad integrand behavior), 5 (failed to converge)\\n        if math.isnan(final_result) or math.isinf(final_result) or final_info['ier'] in [3, 4, 5]:\\n            return float('nan'), float('inf') # Indicate failure/divergence\\n        \\n        return final_result, final_error # Return best effort\\n    except Exception:\\n        return float('nan'), float('inf') # Ultimate failure",
+  "new_index": 58,
+  "new_code": "import scipy.integrate\\nimport math\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals of oscillatory integrands\\n    on infinite domains, aiming for better robustness than a simple scipy.integrate.quad() call.\\n\\n    Args:\\n        integrand (Callable[float, float]): The function to integrate.\\n        lower_limit (float): The lower limit of integration. May be -math.inf.\\n        upper_limit (float): The upper limit of integration. May be math.inf.\\n\\n    Returns:\\n        Tuple[float, float]: A tuple containing the estimated value of the integral\\n                              and an estimate of the absolute error.\\n    \\"\\"\\"\\n\\n    # Constants for numerical stability in transformations\\n    # Threshold for cos_val near zero to avoid ZeroDivisionError in Jacobian\\n    TINY_COS_VAL = 1e-10 \\n    # Threshold for transformed x values considered effectively infinite to avoid math.tan overflow\\n    LARGE_X_VAL = 1e300   \\n\\n    # Target precision for \\"good\\" convergence (absolute error)\\n    TARGET_EPS = 1e-8 \\n\\n    # --- Attempt 1: Standard quad with increased subdivisions ---\\n    try:\\n        # Increase limit for more subdivisions, use default tolerances (approx 1.49e-8)\\n        # We explicitly set \`epsabs\` and \`epsrel\` to allow more control.\\n        result, error = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=100, # Increased from default 50\\n            epsabs=TARGET_EPS, \\n            epsrel=TARGET_EPS\\n        )\\n        # Check for non-NaN/Inf result and acceptable error\\n        if not (math.isnan(result) or math.isinf(result)):\\n            return result, error # Assume quad's error estimate reflects desired quality\\n    except Exception:\\n        pass # quad failed, proceed to next strategy\\n\\n    # --- Attempt 2: Transformations for Infinite Domains using x = tan(t * pi / 2) ---\\n    # This transformation compresses an infinite range into a finite one.\\n    # It introduces a Jacobian factor that 'stretches' the integrand near the new finite boundaries.\\n    # This is often effective for oscillatory integrals that decay sufficiently fast.\\n\\n    # Case 1: lower_limit = -inf, upper_limit = inf\\n    if lower_limit == -math.inf and upper_limit == math.inf:\\n        # Transformation: x = tan(t * pi / 2), maps t in [-1, 1] to x in [-inf, inf]\\n        # dx/dt = (pi/2) * sec^2(t * pi / 2) = (pi/2) / cos^2(t * pi / 2)\\n        def transformed_integrand_inf_inf(t):\\n            # Guard against hitting boundaries exactly or floating point issues\\n            # For well-behaved integrals, contribution at effective infinity (t close to +/-1) is zero.\\n            if abs(t) >= 1.0:\\n                return 0.0 \\n            \\n            cos_val = math.cos(t * math.pi / 2)\\n            # Avoid division by near zero, which implies x -> inf. Return 0.0 if x is effectively infinite.\\n            if abs(cos_val) < TINY_COS_VAL: \\n                return 0.0\\n\\n            val_x = math.tan(t * math.pi / 2)\\n            # Check for tan overflow before it becomes math.inf (e.g., for very large arguments).\\n            # If val_x overflows, it means t is extremely close to the boundary, and we assume 0.0 contribution.\\n            if abs(val_x) > LARGE_X_VAL: \\n                return 0.0\\n\\n            return integrand(val_x) * (math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_inf_inf, -1.0, 1.0,\\n                limit=200, epsabs=TARGET_EPS, epsrel=TARGET_EPS # Consistent tolerances\\n            )\\n            if not (math.isnan(transformed_result) or math.isinf(transformed_result)):\\n                return transformed_result, transformed_error\\n        except Exception:\\n            pass # Transformation failed, proceed to next strategy\\n\\n    # Case 2: lower_limit is finite, upper_limit = inf\\n    elif upper_limit == math.inf:\\n        # Transformation: x = lower_limit + tan(t * pi / 2), maps t in [0, 1) to x in [lower_limit, inf)\\n        # dx/dt = (pi/2) * sec^2(t * pi / 2)\\n        def transformed_integrand_a_inf(t):\\n            if t >= 1.0:\\n                return 0.0\\n            \\n            cos_val = math.cos(t * math.pi / 2)\\n            if abs(cos_val) < TINY_COS_VAL:\\n                return 0.0\\n\\n            val_x = lower_limit + math.tan(t * math.pi / 2)\\n            if abs(val_x) > LARGE_X_VAL:\\n                return 0.0\\n\\n            return integrand(val_x) * (math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_a_inf, 0.0, 1.0,\\n                limit=200, epsabs=TARGET_EPS, epsrel=TARGET_EPS\\n            )\\n            if not (math.isnan(transformed_result) or math.isinf(transformed_result)):\\n                return transformed_result, transformed_error\\n        except Exception:\\n            pass\\n\\n    # Case 3: lower_limit = -inf, upper_limit is finite\\n    elif lower_limit == -math.inf:\\n        # Transformation: x = upper_limit - tan(t * pi / 2), maps t in [0, 1) to x in (-inf, upper_limit]\\n        # dx/dt = -(pi/2) * sec^2(t * pi / 2)\\n        def transformed_integrand_inf_b(t):\\n            if t >= 1.0:\\n                return 0.0\\n\\n            cos_val = math.cos(t * math.pi / 2)\\n            if abs(cos_val) < TINY_COS_VAL:\\n                return 0.0\\n\\n            val_x = upper_limit - math.tan(t * math.pi / 2)\\n            if abs(val_x) > LARGE_X_VAL:\\n                return 0.0\\n\\n            return integrand(val_x) * (-math.pi / 2) / (cos_val**2)\\n\\n        try:\\n            transformed_result, transformed_error = scipy.integrate.quad(\\n                transformed_integrand_inf_b, 0.0, 1.0,\\n                limit=200, epsabs=TARGET_EPS, epsrel=TARGET_EPS\\n            )\\n            if not (math.isnan(transformed_result) or math.isinf(transformed_result)):\\n                return transformed_result, transformed_error\\n        except Exception:\\n            pass\\n        \\n    # --- Final Fallback: Aggressive standard quad with slightly relaxed precision ---\\n    # This is a last-ditch attempt if other strategies fail.\\n    try:\\n        # Higher limit, and slightly relaxed error tolerances for better chance of convergence\\n        final_result, final_error, info = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=500, \\n            epsabs=1e-7, # Slightly relaxed from TARGET_EPS\\n            epsrel=1e-7, # Slightly relaxed from TARGET_EPS\\n            full_output=True # Get info for convergence check\\n        )\\n        # If result is NaN or Inf, or if the internal error code indicates serious issues\\n        # ier=3 (roundoff error), 4 (bad integrand behavior), 5 (failed to converge), 6 (invalid input)\\n        if math.isnan(final_result) or math.isinf(final_result) or info['ier'] in [3, 4, 5, 6]:\\n            return float('nan'), float('inf') # Indicate ultimate failure/divergence\\n        \\n        return final_result, final_error # Return best effort\\n    except Exception:\\n        # All attempts failed.\\n        return float('nan'), float('inf') "
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

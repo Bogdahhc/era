@@ -1,0 +1,53 @@
+{
+  "architecture": {
+    "backend": "candidate code may import ortools.sat.python.cp_model",
+    "baseline_architecture": "implementation.job_shop_era generates unrestricted Python solve(instance) code",
+    "executor": "ExactJobShopExecutor",
+    "name": "exact_job_shop_era",
+    "node_representation": "Python CP-SAT solve(instance) candidate"
+  },
+  "cli_args": {
+    "c_puct": 1.0,
+    "experiment_name": "ta31_code_futs_50",
+    "instance": "ta31",
+    "iterations": 50,
+    "no_llm": false,
+    "root_time_seconds": null,
+    "timeout_seconds": 300
+  },
+  "code_state": {
+    "exact_module_file_hashes": {
+      "__init__.py": "4abb922e213fc8b6",
+      "audit_cli.py": "17a9915135a43776",
+      "backends.py": "d916bc46fee25d88",
+      "cli.py": "d0f7ee125eabaea9",
+      "cp_sat_solver.py": "89f55da453680888",
+      "executor.py": "7dd81ca6df0848c7",
+      "json_llm.py": "e8fbf39773769b5e",
+      "logger.py": "bc187b595fdca00e",
+      "mutator.py": "4b43a5c6e6494010",
+      "plot.py": "e802a340cc4bfffb",
+      "plot_tree_cli.py": "c8ebd32cee0a6e07",
+      "problem.py": "83d5bf8bcba86c95",
+      "prompt.py": "6d4e5fa829d24d6b",
+      "search.py": "d04030452b9b5122",
+      "seed.py": "a3eb33907487d726",
+      "spec.py": "5dbcd31db2e5c943"
+    },
+    "git_head": "37637a49fd78139c01a2162f8dc5136087165f93",
+    "git_status_short": "M README.md\n M implementation/futs.py\n M implementation/llm.py\n M implementation/playground_s3e1.py\n?? experiments/\n?? implementation/exact_job_shop_era/\n?? implementation/job_shop_era/\n?? implementation/logior_era/\n?? job_shop_lib_dataset_directory.txt",
+    "tracked_diff_hash": "a9acc6e77e1d5cdd"
+  },
+  "created_at": "2026-06-05 10:33:17",
+  "environment": {
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.35",
+    "python": "3.13.9"
+  },
+  "experiment_dir": "experiments/ta31_code_futs_50",
+  "problem": {
+    "description": "Write a reusable CP-SAT Python solver for job-shop benchmark ta31. It has 30 jobs, 15 machines, and 450 operations. The solver may use OR-Tools CP-SAT modeling, hints, decomposition, repair, or hybrid exact-search control, but it must return a valid job_shop_lib.Schedule. The scorer rewards low makespan.",
+    "instance_name": "ta31",
+    "optimum": 1764
+  },
+  "root_candidate": "from job_shop_lib import Schedule\nfrom ortools.sat.python import cp_model\n\n\ndef solve(instance):\n  fallback_job_sequences = [[] for _ in range(instance.num_machines)]\n  for job_id, job in enumerate(instance.jobs):\n    for operation in job:\n      fallback_job_sequences[int(operation.machine_id)].append(job_id)\n\n  model = cp_model.CpModel()\n  horizon = int(instance.total_duration)\n  starts = {}\n  ends = {}\n  intervals_by_machine = {m: [] for m in range(instance.num_machines)}\n\n  for job_id, job in enumerate(instance.jobs):\n    for op_index, operation in enumerate(job):\n      key = (job_id, op_index)\n      duration = int(operation.duration)\n      machine_id = int(operation.machine_id)\n      start = model.NewIntVar(0, horizon, f\"s_{job_id}_{op_index}\")\n      end = model.NewIntVar(0, horizon, f\"e_{job_id}_{op_index}\")\n      interval = model.NewIntervalVar(\n          start, duration, end, f\"i_{job_id}_{op_index}\"\n      )\n      starts[key] = start\n      ends[key] = end\n      intervals_by_machine[machine_id].append((job_id, op_index, interval))\n\n  for job_id, job in enumerate(instance.jobs):\n    for op_index in range(1, len(job)):\n      model.Add(ends[(job_id, op_index - 1)] <= starts[(job_id, op_index)])\n\n  for machine_ops in intervals_by_machine.values():\n    intervals = [interval for _, _, interval in machine_ops]\n    if intervals:\n      model.AddNoOverlap(intervals)\n\n  makespan = model.NewIntVar(0, horizon, \"makespan\")\n  model.AddMaxEquality(makespan, list(ends.values()))\n  model.Minimize(makespan)\n\n  solver = cp_model.CpSolver()\n  solver.parameters.max_time_in_seconds = 240.0\n  status = solver.Solve(model)\n  if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):\n    return Schedule.from_job_sequences(instance, fallback_job_sequences)\n\n  job_sequences = [[] for _ in range(instance.num_machines)]\n  for machine_id, machine_ops in intervals_by_machine.items():\n    ordered = sorted(\n        machine_ops,\n        key=lambda item: solver.Value(starts[(item[0], item[1])]),\n    )\n    job_sequences[machine_id] = [job_id for job_id, _, _ in ordered]\n  return Schedule.from_job_sequences(instance, job_sequences)"
+}

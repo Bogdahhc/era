@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 0.0,
+  "old_code": "from typing import Any, Callable\\nimport scipy\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> float:\\n    # Estimate the numeric value of the definite integral, especially\\n    # when scipy.integrate.quad() fails to converge or returns a large error\\n    # estimate or NaN.\\n    answer, _ = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n    return answer",
+  "new_index": 2,
+  "new_code": "import numpy as np\\nimport scipy.integrate\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[[float], float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\n    # Attempt to solve the integral using scipy.integrate.quad first.\\n    # This is often the most efficient and robust method for many cases.\\n    try:\\n        value, error_estimate = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n        \\n        # Check if scipy.integrate.quad returned a problematic result\\n        # such as NaN or infinite value/error, which can happen even without\\n        # raising an IntegrateError for some difficult integrals.\\n        if np.isnan(value) or np.isinf(value) or np.isinf(error_estimate):\\n            raise scipy.integrate.IntegrateError(\\"Initial quad call returned NaN or Inf.\\", None)\\n            \\n        return value, error_estimate\\n\\n    except scipy.integrate.IntegrateError:\\n        # If the initial quad call fails (e.g., convergence error) or returns problematic results,\\n        # try a robust transformation strategy, especially for infinite limits.\\n\\n        transformed_integrand: Callable[[float], float]\\n        new_lower_limit: float\\n        new_upper_limit: float\\n\\n        # Apply transformations for infinite limits to map them to finite intervals.\\n        # The x = tan(u) transformation (or its shifted/scaled versions)\\n        # is often effective for functions decaying at infinity, as sec^2(u) can\\n        # help tame the integrand's behavior near the new finite endpoints.\\n\\n        # Case 1: Integration from -infinity to +infinity\\n        if lower_limit == -np.inf and upper_limit == np.inf:\\n            transformed_integrand = lambda u: integrand(np.tan(u)) * (np.sec(u)**2)\\n            new_lower_limit = -np.pi / 2\\n            new_upper_limit = np.pi / 2\\n        \\n        # Case 2: Integration from a finite lower_limit to +infinity\\n        elif lower_limit != -np.inf and upper_limit == np.inf:\\n            transformed_integrand = lambda u: integrand(lower_limit + np.tan(u)) * (np.sec(u)**2)\\n            new_lower_limit = 0.0\\n            new_upper_limit = np.pi / 2\\n        \\n        # Case 3: Integration from -infinity to a finite upper_limit\\n        elif lower_limit == -np.inf and upper_limit != np.inf:\\n            # Transformation x = upper_limit - tan(u) maps (-inf, upper_limit] to [0, pi/2] for u.\\n            # dx = -sec^2(u) du. The negative sign is absorbed by flipping the integration direction,\\n            # so limits become [0, pi/2] for u.\\n            transformed_integrand = lambda u: integrand(upper_limit - np.tan(u)) * (np.sec(u)**2)\\n            new_lower_limit = 0.0\\n            new_upper_limit = np.pi / 2\\n        \\n        # Case 4: Finite limits (This path should ideally not be taken for finite limits\\n        # if the initial quad call didn't fail, but serves as a fallback if it did).\\n        else:\\n            # If the integral fails on finite limits, re-attempting with a general\\n            # transformation might not be the most targeted fix, but it's a generic\\n            # robustness step. However, if standard quad already failed, it might\\n            # indicate fundamental non-integrability or extreme numerical issues.\\n            # In this specific problem, the focus is on infinite/oscillatory.\\n            # If finite case falls here due to \`IntegrateError\`, we re-raise it\\n            # as transformations for finite limits are less universally beneficial\\n            # without specific knowledge of the integrand's behavior.\\n            # Given the problem's focus, returning NaN for finite failed cases is\\n            # acceptable as the problem implies specific failure modes.\\n            return np.nan, np.inf \\n\\n        # Retry integration with the transformed integrand and finite limits\\n        try:\\n            value_transformed, error_transformed = scipy.integrate.quad(transformed_integrand, new_lower_limit, new_upper_limit)\\n            return value_transformed, error_transformed\\n        \\n        except scipy.integrate.IntegrateError:\\n            # If even the transformed integral fails to converge,\\n            # signal ultimate failure.\\n            return np.nan, np.inf"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

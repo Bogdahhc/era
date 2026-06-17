@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 0.0,
+  "old_code": "from typing import Any, Callable\\nimport scipy\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> float:\\n    # Estimate the numeric value of the definite integral, especially\\n    # when scipy.integrate.quad() fails to converge or returns a large error\\n    # estimate or NaN.\\n    answer, _ = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n    return answer",
+  "new_index": 9,
+  "new_code": "import numpy as np\\nimport scipy.integrate\\nfrom scipy.special import sum_alternating_series\\nfrom typing import Callable, Tuple\\n\\ndef quadrature(\\n    integrand: Callable[[float], float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    # Strategy: Try scipy.integrate.quad first. If it struggles (NaN, Inf, or high error),\\n    # especially for infinite oscillatory integrals, employ a fallback strategy\\n    # that sums integrals over approximate oscillation periods and applies series acceleration.\\n\\n    # 1. Initial attempt with scipy.integrate.quad\\n    try:\\n        result, error = scipy.integrate.quad(integrand, lower_limit, upper_limit, limit=200, epsabs=1e-9, epsrel=1e-9)\\n        # Check for convergence issues or NaN/Inf. Heuristic for \\"converged well\\".\\n        if np.isnan(result) or np.isinf(result) or \\\\\\n           (error > abs(result) * 1e-4 and abs(result) > 1e-6) or \\\\\\n           error > 1e-3: # Absolute error check\\n            raise ValueError(\\"scipy.integrate.quad did not converge well for initial attempt.\\")\\n        return result, error\\n    except Exception:\\n        # Fallback for challenging integrals, especially oscillatory ones on infinite domains.\\n\\n        # Handle infinite limits by transforming or splitting\\n        if lower_limit == -np.inf and upper_limit == np.inf:\\n            # Split into (-inf, 0] and [0, inf)\\n            res1, err1 = quadrature(integrand, -np.inf, 0)\\n            res2, err2 = quadrature(integrand, 0, np.inf)\\n            return res1 + res2, err1 + err2\\n        elif lower_limit == -np.inf:\\n            # Transform (-inf, b] to [abs(b), inf) by substituting x = -t\\n            # integral(-inf, b) f(x) dx = integral(-b, inf) f(-t) dt\\n            transformed_integrand = lambda t: integrand(-t)\\n            res, err = quadrature(transformed_integrand, -upper_limit, np.inf)\\n            return res, err # Error estimate remains the same.\\n        elif upper_limit == np.inf:\\n            # For integrals from a finite lower_limit to infinity\\n            # Employ a strategy of integrating a finite part and summing the oscillatory tail.\\n            \\n            # Choose a finite threshold M, integrate up to M with quad.\\n            # M should be large enough so oscillations are well-established.\\n            M = max(lower_limit, 50.0) \\n\\n            finite_part_result, finite_part_error = scipy.integrate.quad(integrand, lower_limit, M, epsabs=1e-10, epsrel=1e-10)\\n\\n            # For the infinite tail, sum contributions from \\"humps\\" using series acceleration.\\n            # This heuristic assumes a dominant sin(x) or cos(x) oscillation with period pi,\\n            # which leads to an alternating series of integral contributions.\\n            \\n            tail_terms = []\\n            current_segment_start = M\\n            \\n            # Sum up to 500 segments to capture enough terms for acceleration.\\n            # Adjust \`limit\` for segment integrals to balance speed and accuracy.\\n            max_segments_to_sum = 500 \\n            \\n            for i in range(max_segments_to_sum):\\n                segment_end = current_segment_start + np.pi # Heuristic: Assume pi-periodicity\\n                term_val, _ = scipy.integrate.quad(integrand, current_segment_start, segment_end, limit=50, epsabs=1e-10, epsrel=1e-10)\\n                tail_terms.append(term_val)\\n                current_segment_start = segment_end\\n                \\n                # Stop early if terms become very small, implies the series has largely converged.\\n                if abs(term_val) < 1e-12 and i > 10: # Require at least 10 terms before stopping\\n                    break\\n\\n            # Apply Euler transformation (sum_alternating_series) if terms appear alternating.\\n            # sum_alternating_series expects a sequence a_0, a_1, a_2... where the sum is a_0 - a_1 + a_2 - ...\\n            # We need to pass the absolute values, and \`sum_alternating_series\` handles the alternation logic.\\n            \\n            if len(tail_terms) > 5: # Need enough terms to be meaningful\\n                # Heuristic to check for alternating sign: average sign change should be negative (e.g., + then -)\\n                # Or, more robustly, check if product of consecutive terms is negative.\\n                \\n                is_alternating = True\\n                if len(tail_terms) > 1:\\n                    first_non_zero_idx = next((i for i, x in enumerate(tail_terms) if abs(x) > 1e-15), 0)\\n                    if first_non_zero_idx < len(tail_terms) - 1: # At least two non-zero terms\\n                        # Check alternation from the first non-zero term\\n                        for j in range(first_non_zero_idx, len(tail_terms) - 1):\\n                            if np.sign(tail_terms[j]) == np.sign(tail_terms[j+1]) and abs(tail_terms[j]) > 1e-15:\\n                                is_alternating = False\\n                                break\\n                    else: # Not enough significant terms to determine alternation\\n                        is_alternating = False\\n\\n                if is_alternating:\\n                    # The function expects a_k, where sum is a_0 - a_1 + a_2 - ...\\n                    # If our \`tail_terms\` already have alternating signs, we need to extract \`abs(a_k)\` and apply \`sign(a_0)\`\\n                    first_significant_term_sign = np.sign(tail_terms[first_non_zero_idx]) if first_non_zero_idx < len(tail_terms) else 0\\n                    \\n                    if first_significant_term_sign != 0:\\n                        positive_terms = [abs(t) for t in tail_terms[first_non_zero_idx:]]\\n                        tail_sum_accelerated = sum_alternating_series(lambda k: positive_terms[k], 0) * first_significant_term_sign\\n                    else: # All terms effectively zero\\n                        tail_sum_accelerated = 0.0\\n\\n                    result = finite_part_result + tail_sum_accelerated\\n                    # Heuristic error for the tail sum, usually related to the last term or the acceleration method's error properties.\\n                    # sum_alternating_series does not directly return an error estimate.\\n                    error = finite_part_error + abs(tail_sum_accelerated * 1e-4)\\n                    return result, error\\n                else:\\n                    # If not clearly alternating (e.g., terms decay without sign change, or complex oscillations),\\n                    # just sum the generated terms directly. This is less robust for slow convergence.\\n                    tail_sum_direct = np.sum(tail_terms)\\n                    result = finite_part_result + tail_sum_direct\\n                    error = finite_part_error + abs(tail_sum_direct * 1e-3) # Larger heuristic error\\n                    return result, error\\n            else:\\n                # If too few terms were generated for the tail, it might be that the integral\\n                # does not have a well-defined oscillatory tail suitable for this method,\\n                # or it converges extremely slowly.\\n                # In this case, fall back to the initial quad call, but if it failed,\\n                # we return NaN.\\n                return np.nan, np.inf\\n\\n        # If it's a finite integral (upper_limit != inf) and original quad failed,\\n        # it might be due to singularities or other issues not covered by this oscillatory strategy.\\n        # In this specific case, for competition, if \`quad\` fails even after parameter tuning,\\n        # the problem is likely outside the scope of \\"oscillatory on infinite domains\\",\\n        # or it truly is non-convergent, or it's a type of singularity not handled.\\n        # Return NaN for cases not explicitly handled by the oscillatory strategy.\\n        return np.nan, np.inf"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

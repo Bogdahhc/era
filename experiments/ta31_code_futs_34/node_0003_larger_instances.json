@@ -1,0 +1,62 @@
+[
+  {
+    "elapsed_seconds": 275.5396767280181,
+    "error": null,
+    "feasible": true,
+    "gap_abs": 188,
+    "gap_pct": 6.302380154207174,
+    "instance": "swv11",
+    "jobs": 50,
+    "machines": 10,
+    "makespan": 3171,
+    "ok": true,
+    "operations": 500,
+    "optimum": 2983,
+    "score": -3171.0
+  },
+  {
+    "elapsed_seconds": 73.86702893394977,
+    "error": null,
+    "feasible": true,
+    "gap_abs": 0,
+    "gap_pct": 0.0,
+    "instance": "ta51",
+    "jobs": 50,
+    "machines": 15,
+    "makespan": 2760,
+    "ok": true,
+    "operations": 750,
+    "optimum": 2760,
+    "score": -2760.0
+  },
+  {
+    "elapsed_seconds": 272.75238652998814,
+    "error": null,
+    "feasible": true,
+    "gap_abs": 165,
+    "gap_pct": 5.7531380753138075,
+    "instance": "ta61",
+    "jobs": 50,
+    "machines": 20,
+    "makespan": 3033,
+    "ok": true,
+    "operations": 1000,
+    "optimum": 2868,
+    "score": -3033.0
+  },
+  {
+    "elapsed_seconds": 280.89104480698006,
+    "error": null,
+    "feasible": true,
+    "gap_abs": 369,
+    "gap_pct": 6.753294289897512,
+    "instance": "ta71",
+    "jobs": 100,
+    "machines": 20,
+    "makespan": 5833,
+    "ok": true,
+    "operations": 2000,
+    "optimum": 5464,
+    "score": -5833.0
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "critical_machine_first",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 90.0,
+  "notes": "Test an exact CP-SAT decision strategy focused on bottleneck machines while retaining all valid makespan lower bounds and the parent time budget.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

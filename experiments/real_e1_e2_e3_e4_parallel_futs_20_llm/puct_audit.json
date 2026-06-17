@@ -1,0 +1,242 @@
+{
+  "num_nodes": 21,
+  "c_puct": 1.0,
+  "prior": 0.047619047619047616,
+  "total_visits": 159,
+  "max_rank_error": 0.0,
+  "max_puct_error": 0.0,
+  "passes": true,
+  "nodes": [
+    {
+      "node_id": 0,
+      "score": -14524.00028355317,
+      "visits": 21,
+      "rank_score": 0.1,
+      "expected_rank_score": 0.1,
+      "rank_error": 0.0,
+      "puct": 0.12729333379419588,
+      "expected_puct": 0.12729333379419588,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 1,
+      "score": -5615.053007440791,
+      "visits": 21,
+      "rank_score": 0.15,
+      "expected_rank_score": 0.15,
+      "rank_error": 0.0,
+      "puct": 0.17729333379419587,
+      "expected_puct": 0.17729333379419587,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 2,
+      "score": null,
+      "visits": 2,
+      "rank_score": 0.025,
+      "expected_rank_score": 0.025,
+      "rank_error": 0.0,
+      "puct": 0.2251511144907697,
+      "expected_puct": 0.2251511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 3,
+      "score": -5615.0076801692085,
+      "visits": 19,
+      "rank_score": 0.45,
+      "expected_rank_score": 0.45,
+      "rank_error": 0.0,
+      "puct": 0.48002266717361547,
+      "expected_puct": 0.48002266717361547,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 4,
+      "score": -5615.0085580346895,
+      "visits": 2,
+      "rank_score": 0.35,
+      "expected_rank_score": 0.35,
+      "rank_error": 0.0,
+      "puct": 0.5501511144907697,
+      "expected_puct": 0.5501511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 5,
+      "score": -5615.02005710751,
+      "visits": 2,
+      "rank_score": 0.25,
+      "expected_rank_score": 0.25,
+      "rank_error": 0.0,
+      "puct": 0.4501511144907697,
+      "expected_puct": 0.4501511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 6,
+      "score": -5615.007932567289,
+      "visits": 2,
+      "rank_score": 0.4,
+      "expected_rank_score": 0.4,
+      "rank_error": 0.0,
+      "puct": 0.6001511144907697,
+      "expected_puct": 0.6001511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 7,
+      "score": -5615.007530846018,
+      "visits": 15,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 0.5375283339670193,
+      "expected_puct": 0.5375283339670193,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 8,
+      "score": -5615.00734711749,
+      "visits": 14,
+      "rank_score": 0.6,
+      "expected_rank_score": 0.6,
+      "rank_error": 0.0,
+      "puct": 0.6400302228981539,
+      "expected_puct": 0.6400302228981539,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 9,
+      "score": -5615.00717421703,
+      "visits": 13,
+      "rank_score": 0.75,
+      "expected_rank_score": 0.75,
+      "rank_error": 0.0,
+      "puct": 0.7928895245337364,
+      "expected_puct": 0.7928895245337364,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 10,
+      "score": -5615.009619615958,
+      "visits": 2,
+      "rank_score": 0.3,
+      "expected_rank_score": 0.3,
+      "rank_error": 0.0,
+      "puct": 0.5001511144907697,
+      "expected_puct": 0.5001511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 11,
+      "score": -5615.007298269339,
+      "visits": 10,
+      "rank_score": 0.65,
+      "expected_rank_score": 0.65,
+      "rank_error": 0.0,
+      "puct": 0.7045866675883917,
+      "expected_puct": 0.7045866675883917,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 12,
+      "score": -5615.02222904281,
+      "visits": 2,
+      "rank_score": 0.2,
+      "expected_rank_score": 0.2,
+      "rank_error": 0.0,
+      "puct": 0.4001511144907697,
+      "expected_puct": 0.4001511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 13,
+      "score": -5615.00720527214,
+      "visits": 9,
+      "rank_score": 0.7,
+      "expected_rank_score": 0.7,
+      "rank_error": 0.0,
+      "puct": 0.7600453343472309,
+      "expected_puct": 0.7600453343472309,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 14,
+      "score": -5615.007353976869,
+      "visits": 2,
+      "rank_score": 0.55,
+      "expected_rank_score": 0.55,
+      "rank_error": 0.0,
+      "puct": 0.7501511144907698,
+      "expected_puct": 0.7501511144907698,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 15,
+      "score": -5615.001374782811,
+      "visits": 7,
+      "rank_score": 0.9,
+      "expected_rank_score": 0.9,
+      "rank_error": 0.0,
+      "puct": 0.9750566679340387,
+      "expected_puct": 0.9750566679340387,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 16,
+      "score": -5615.001337945839,
+      "visits": 6,
+      "rank_score": 0.95,
+      "expected_rank_score": 0.95,
+      "rank_error": 0.0,
+      "puct": 1.0357790490674728,
+      "expected_puct": 1.0357790490674728,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 17,
+      "score": null,
+      "visits": 2,
+      "rank_score": 0.025,
+      "expected_rank_score": 0.025,
+      "rank_error": 0.0,
+      "puct": 0.2251511144907697,
+      "expected_puct": 0.2251511144907697,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 18,
+      "score": -5615.0008813369905,
+      "visits": 4,
+      "rank_score": 1.0,
+      "expected_rank_score": 1.0,
+      "rank_error": 0.0,
+      "puct": 1.1200906686944618,
+      "expected_puct": 1.1200906686944618,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 19,
+      "score": -5615.001910420111,
+      "visits": 2,
+      "rank_score": 0.8,
+      "expected_rank_score": 0.8,
+      "rank_error": 0.0,
+      "puct": 1.0001511144907698,
+      "expected_puct": 1.0001511144907698,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 20,
+      "score": -5615.00143593726,
+      "visits": 2,
+      "rank_score": 0.85,
+      "expected_rank_score": 0.85,
+      "rank_error": 0.0,
+      "puct": 1.0501511144907696,
+      "expected_puct": 1.0501511144907696,
+      "puct_error": 0.0
+    }
+  ]
+}

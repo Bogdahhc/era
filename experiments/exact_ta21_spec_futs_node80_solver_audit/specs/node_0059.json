@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "default",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 90.0,
+  "notes": "Test CP-SAT default portfolio branching with the same budget and all valid makespan lower bounds, since custom critical-machine ordering may restrict search performance on ta21.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

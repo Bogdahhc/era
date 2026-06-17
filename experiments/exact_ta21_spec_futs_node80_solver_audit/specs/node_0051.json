@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "critical_machine_first",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 90.0,
+  "notes": "Keep the exact interval CP-SAT model, all valid makespan lower bounds, and bottleneck-focused branching; modestly extend the time budget to improve incumbent quality and proof progress on dense ta21.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

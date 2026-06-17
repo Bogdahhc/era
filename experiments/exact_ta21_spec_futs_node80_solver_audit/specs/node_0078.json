@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "min_slack_first",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 120.0,
+  "notes": "Test a min-slack decision strategy while keeping the same exact CP-SAT interval encoding, full valid makespan lower bounds, and time budget for an interpretable comparison on ta21.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

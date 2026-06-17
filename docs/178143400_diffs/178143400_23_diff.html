@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 13.0,
+  "old_code": "import numpy as np\\nfrom typing import Callable, Tuple\\nimport scipy.integrate\\nimport warnings\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals of oscillatory integrands\\n    on infinite domains. It attempts to succeed on integrals where\\n    scipy.integrate.quad() might fail to converge, return a large error, or NaN.\\n\\n    Args:\\n        integrand: The function to integrate. Callable, taking a float and returning a float.\\n        lower_limit: The lower bound of integration. Can be -np.inf.\\n        upper_limit: The upper bound of integration. Can be np.inf.\\n\\n    Returns:\\n        A tuple (value, error_estimate) of the integral.\\n    \\"\\"\\"\\n\\n    # Helper function to perform integration on finite domains\\n    def _integrate_finite_domain(func, a, b):\\n        return scipy.integrate.quad(func, a, b)\\n\\n    # First, try scipy.integrate.quad directly. It has internal handlers for infinite limits.\\n    # We catch IntegrationWarning to allow for a fallback.\\n    try:\\n        with warnings.catch_warnings(record=True) as w:\\n            warnings.simplefilter(\\"always\\") # Make sure warnings are recorded\\n            value, error = scipy.integrate.quad(integrand, lower_limit, upper_limit)\\n            \\n            # Check if any IntegrationWarning occurred that might indicate convergence issues\\n            # even if a value was returned.\\n            if any(issubclass(warn.category, scipy.integrate.IntegrationWarning) for warn in w):\\n                raise scipy.integrate.IntegrationWarning(\\"Integration Warning occurred during initial attempt.\\")\\n            \\n            if np.isnan(value) or np.isinf(value) or error > abs(value) * 1e-3 and abs(value) > 1e-6:\\n                # Heuristic: if error is too large relative to value, or value is NaN/Inf,\\n                # it might be a convergence issue that needs transformation.\\n                raise ValueError(\\"Initial quad result suspicious, trying transformations.\\")\\n        return value, error\\n    except (scipy.integrate.IntegrationWarning, ValueError, Exception) as e:\\n        # print(f\\"Initial scipy.integrate.quad attempt failed or was suspicious ({e}). Trying transformations.\\")\\n        pass # Fall through to the transformation logic\\n\\n    # Apply change of variables for infinite limits\\n    if lower_limit == -np.inf and upper_limit == np.inf:\\n        # Transformation: x = t / (1 - t^2)\\n        # dx/dt = (1 + t^2) / (1 - t^2)^2\\n        def transformed_integrand_inf_inf(t):\\n            # Guard against division by zero at t=+-1.0, though quad often handles this if integrable\\n            if np.isclose(abs(t), 1.0):\\n                return 0.0 # Heuristic: assume integrand * Jacobian goes to 0 or is an integrable singularity\\n            x = t / (1 - t**2)\\n            jacobian = (1 + t**2) / (1 - t**2)**2\\n            return integrand(x) * jacobian\\n        return _integrate_finite_domain(transformed_integrand_inf_inf, -1.0, 1.0)\\n\\n    elif lower_limit == -np.inf and np.isfinite(upper_limit):\\n        b = upper_limit\\n        # Transformation: x = b - v / (1 - v)\\n        # dx/dv = -1 / (1 - v)^2\\n        def transformed_integrand_neg_inf_b(v):\\n            if np.isclose(v, 1.0):\\n                return 0.0\\n            x = b - v / (1 - v)\\n            jacobian = -1 / (1 - v)**2\\n            return integrand(x) * jacobian\\n        return _integrate_finite_domain(transformed_integrand_neg_inf_b, 0.0, 1.0)\\n\\n    elif np.isfinite(lower_limit) and upper_limit == np.inf:\\n        a = lower_limit\\n        # Transformation: x = a + v / (1 - v)\\n        # dx/dv = 1 / (1 - v)^2\\n        def transformed_integrand_a_inf(v):\\n            if np.isclose(v, 1.0):\\n                return 0.0\\n            x = a + v / (1 - v)\\n            jacobian = 1 / (1 - v)**2\\n            return integrand(x) * jacobian\\n        return _integrate_finite_domain(transformed_integrand_a_inf, 0.0, 1.0)\\n    else:\\n        # This case should ideally not be reached if the initial quad call\\n        # truly failed for finite limits, as that's usually beyond simple fixes.\\n        # Returning NaN to signify that a solution could not be found with this strategy.\\n        return np.nan, np.inf",
+  "new_index": 23,
+  "new_code": "import numpy as np\\nfrom typing import Callable, Tuple\\nimport scipy.integrate\\nimport warnings\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Computes the numerical value of definite integrals of oscillatory integrands\\n    on infinite domains. It attempts to succeed on integrals where\\n    scipy.integrate.quad() might fail to converge, return a large error, or NaN.\\n\\n    Args:\\n        integrand: The function to integrate. Callable, taking a float and returning a float.\\n        lower_limit: The lower bound of integration. Can be -np.inf.\\n        upper_limit: The upper bound of integration. Can be np.inf.\\n\\n    Returns:\\n        A tuple (value, error_estimate) of the integral.\\n    \\"\\"\\"\\n\\n    # --- Generate oscillation points for \`quad\` ---\\n    # These points are heuristics for common oscillatory patterns like sin(x^n)\\n    # They help \`quad\` to place initial subdivisions in regions where the integrand\\n    # oscillates rapidly or changes sign, improving convergence.\\n    oscillation_points = []\\n    # Choose a reasonable range for generating explicit points. Beyond this,\\n    # oscillations might be too dense for explicit points, or amplitude too small.\\n    # Adjusting based on common competition values.\\n    max_osc_range = 1000.0 \\n\\n    # Helper to add points to the list, checking bounds\\n    def _add_point_if_in_range(p_val):\\n        if np.isfinite(lower_limit) and p_val <= lower_limit:\\n            return\\n        if np.isfinite(upper_limit) and p_val >= upper_limit:\\n            return\\n        # Add a small epsilon to avoid numerical issues with exact limits or very close points\\n        # Only add if strictly within the current (possibly infinite) interval.\\n        if lower_limit < p_val < upper_limit:\\n            oscillation_points.append(p_val)\\n\\n    # Generate points for sin(x) or cos(x) -> y = k*pi\\n    for k in range(1, int(max_osc_range / np.pi) + 2):\\n        _add_point_if_in_range(k * np.pi)\\n        _add_point_if_in_range(-k * np.pi)\\n\\n    # Generate points for sin(x^2) or cos(x^2) -> y = sqrt(k*pi)\\n    # Only for positive x as x^2 is always positive. For negative x, it's (-x)^2.\\n    for k in range(1, int(max_osc_range / np.pi) + 2):\\n        val_sq = np.sqrt(k * np.pi)\\n        _add_point_if_in_range(val_sq)\\n        _add_point_if_in_range(-val_sq)\\n\\n    # Generate points for sin(x^3) or cos(x^3) -> y = (k*pi)^(1/3)\\n    # k*pi can be negative, allowing negative x.\\n    for k_val in range(-int(max_osc_range / np.pi) - 2, int(max_osc_range / np.pi) + 2):\\n        if k_val == 0: continue\\n        # Handle sign for cubic root: (val)**(1/3) for negative val might be complex without cmath\\n        # Use np.sign for robust handling of negative bases for odd powers\\n        val_cb = np.sign(k_val * np.pi) * (np.abs(k_val * np.pi))**(1/3.0)\\n        _add_point_if_in_range(val_cb)\\n    \\n    # Sort and remove duplicates\\n    oscillation_points = sorted(list(set(oscillation_points)))\\n\\n    # --- Attempt 1: scipy.integrate.quad with enhanced parameters and oscillation points ---\\n    # Increased limit for more subdivisions, added stricter epsabs/epsrel for precision.\\n    # The 'points' argument guides \`quad\` to focus on oscillatory regions.\\n    try:\\n        with warnings.catch_warnings(record=True) as w:\\n            warnings.simplefilter(\\"always\\") # Ensure warnings are recorded\\n            value, error = scipy.integrate.quad(\\n                integrand, lower_limit, upper_limit,\\n                limit=5000, # Increased max number of subdivisions\\n                points=oscillation_points if oscillation_points else None,\\n                epsabs=1e-12, # Absolute error tolerance\\n                epsrel=1e-12 # Relative error tolerance\\n            )\\n            \\n            # Check for IntegrationWarning or results that indicate failure\\n            if any(issubclass(warn.category, scipy.integrate.IntegrationWarning) for warn in w):\\n                raise scipy.integrate.IntegrationWarning(\\"Integration Warning occurred during enhanced quad.\\")\\n            \\n            # Heuristic check for suspicious results (NaN, Inf, or very high error relative to value)\\n            if np.isnan(value) or np.isinf(value) or (abs(value) > 1e-6 and error > abs(value) * 1e-3):\\n                raise ValueError(\\"Enhanced quad result suspicious, trying fallback strategies.\\")\\n        return value, error\\n    except (scipy.integrate.IntegrationWarning, ValueError, Exception):\\n        # Fall through to transformation fallbacks if the enhanced direct quad fails\\n        pass\\n\\n    # --- Fallback 1: Transformation for infinite domains to finite domains ---\\n    # These transformations can help \`quad\` if the main issue is the infinite domain\\n    # itself rather than just rapid oscillations (e.g., slow decay).\\n    # Re-attempt \`quad\` on the transformed finite domain with enhanced parameters.\\n    # For transformed domains, explicit points are typically not needed unless\\n    # new singularities are introduced (which they are at the new limits).\\n    \\n    try:\\n        if lower_limit == -np.inf and upper_limit == np.inf:\\n            # Transformation: x = t / (1 - t^2)\\n            # dx/dt = (1 + t^2) / (1 - t^2)^2\\n            def transformed_integrand_inf_inf(t):\\n                # Guard against division by zero at t=+-1.0, though quad often handles this\\n                if np.isclose(abs(t), 1.0):\\n                    return 0.0 # Assume integrand * Jacobian goes to 0 at the boundaries\\n                x = t / (1 - t**2)\\n                jacobian = (1 + t**2) / (1 - t**2)**2\\n                return integrand(x) * jacobian\\n            \\n            value, error = scipy.integrate.quad(\\n                transformed_integrand_inf_inf, -1.0, 1.0,\\n                limit=5000, epsabs=1e-12, epsrel=1e-12\\n            )\\n            if np.isnan(value) or np.isinf(value) or (abs(value) > 1e-6 and error > abs(value) * 1e-3):\\n                raise ValueError(\\"Transformed inf-inf result suspicious.\\")\\n            return value, error\\n\\n        elif lower_limit == -np.inf and np.isfinite(upper_limit):\\n            b = upper_limit\\n            # Transformation: x = b - v / (1 - v)\\n            # dx/dv = -1 / (1 - v)^2\\n            def transformed_integrand_neg_inf_b(v):\\n                if np.isclose(v, 1.0):\\n                    return 0.0\\n                x = b - v / (1 - v)\\n                jacobian = -1 / (1 - v)**2\\n                return integrand(x) * jacobian\\n            \\n            value, error = scipy.integrate.quad(\\n                transformed_integrand_neg_inf_b, 0.0, 1.0,\\n                limit=5000, epsabs=1e-12, epsrel=1e-12\\n            )\\n            if np.isnan(value) or np.isinf(value) or (abs(value) > 1e-6 and error > abs(value) * 1e-3):\\n                raise ValueError(\\"Transformed neg-inf-b result suspicious.\\")\\n            return value, error\\n\\n        elif np.isfinite(lower_limit) and upper_limit == np.inf:\\n            a = lower_limit\\n            # Transformation: x = a + v / (1 - v)\\n            # dx/dv = 1 / (1 - v)^2\\n            def transformed_integrand_a_inf(v):\\n                if np.isclose(v, 1.0):\\n                    return 0.0\\n                x = a + v / (1 - v)\\n                jacobian = 1 / (1 - v)**2\\n                return integrand(x) * jacobian\\n            \\n            value, error = scipy.integrate.quad(\\n                transformed_integrand_a_inf, 0.0, 1.0,\\n                limit=5000, epsabs=1e-12, epsrel=1e-12\\n            )\\n            if np.isnan(value) or np.isinf(value) or (abs(value) > 1e-6 and error > abs(value) * 1e-3):\\n                raise ValueError(\\"Transformed a-inf result suspicious.\\")\\n            return value, error\\n        \\n        # If execution reaches here, it means no infinite limits or transformation was applied successfully\\n        # but the initial enhanced quad failed. This might indicate an extremely difficult integral\\n        # or a very narrow finite range that the enhanced quad should have handled.\\n        # Fall through to final aggressive attempt.\\n        \\n    except Exception:\\n        # If transformation or quad on transformed domain fails, proceed to the final aggressive attempt\\n        pass\\n    \\n    # --- Final Fallback: Aggressive attempt with highest limits ---\\n    # If all previous strategies failed, try an even more aggressive \`quad\` call.\\n    try:\\n        value, error = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=10000, # Max out limit\\n            epsabs=1e-9, # Relax tolerance slightly as a last resort\\n            epsrel=1e-9,\\n            points=oscillation_points if oscillation_points else None # Still use points\\n        )\\n        if np.isnan(value) or np.isinf(value):\\n            raise ValueError(\\"Aggressive quad failed to yield finite result.\\")\\n        return value, error\\n    except Exception:\\n        # If even the aggressive attempt fails, return NaN and np.inf to signify non-convergence\\n        return np.nan, np.inf"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

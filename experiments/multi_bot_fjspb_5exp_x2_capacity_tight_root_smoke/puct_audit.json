@@ -1,0 +1,22 @@
+{
+  "num_nodes": 1,
+  "c_puct": 1.0,
+  "prior": 1.0,
+  "total_visits": 1,
+  "max_rank_error": 0.0,
+  "max_puct_error": 0.0,
+  "passes": true,
+  "nodes": [
+    {
+      "node_id": 0,
+      "score": -3922.03676819809,
+      "visits": 1,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 1.0,
+      "expected_puct": 1.0,
+      "puct_error": 0.0
+    }
+  ]
+}

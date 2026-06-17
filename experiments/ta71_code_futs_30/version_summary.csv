@@ -1,0 +1,8 @@
+node_id,parent_id,version_label,makespan,delta_makespan_vs_parent,delta_makespan_vs_root,score,status,best_bound,relative_gap,elapsed_seconds,branches,conflicts,changed_fields,candidate,spec_hash,parent_spec_hash
+0,,node_0000,5785,,0,-5785.000246233764,feasible,,,246.2337654280127,,,"[""_raw""]",candidates/node_0000.py,1f8d552cfc619e8f,
+1,0,node_0001,5542,-243,-243,-5542.000285941513,feasible,,,285.94151328201406,,,"[""_raw""]",candidates/node_0001.py,d0c6cd904d99c4c2,1f8d552cfc619e8f
+2,1,node_0002,5558,16,-227,-5558.000286284568,feasible,,,286.28456828999333,,,"[""_raw""]",candidates/node_0002.py,323f04fc56c2f041,d0c6cd904d99c4c2
+3,1,node_0003,5543,1,-242,-5543.000293748051,feasible,,,293.74805205798475,,,"[""_raw""]",candidates/node_0003.py,97f6d594c332ffde,d0c6cd904d99c4c2
+4,1,node_0004,5534,-8,-251,-5534.000293043713,feasible,,,293.04371317103505,,,"[""_raw""]",candidates/node_0004.py,d5549c45a5dd8341,d0c6cd904d99c4c2
+5,4,node_0005,5583,49,-202,-5583.000290152848,feasible,,,290.15284854499623,,,"[""_raw""]",candidates/node_0005.py,0d3d2d25b6c3a281,d5549c45a5dd8341
+6,4,node_0006,5464,-70,-321,-5464.000191678581,feasible,,,191.6785821620142,,,"[""_raw""]",candidates/node_0006.py,0a3f7930db5514e4,d5549c45a5dd8341

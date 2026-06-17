@@ -1,0 +1,22 @@
+[
+  {
+    "node_id": 0,
+    "parent_id": null,
+    "score": -5500.360286840994,
+    "visits": 2,
+    "rank_score": 1.0,
+    "puct": 1.3333333333333333,
+    "spec_hash": "747f583a08c801c1",
+    "parent_spec_hash": null
+  },
+  {
+    "node_id": 1,
+    "parent_id": 0,
+    "score": -5500.360399352969,
+    "visits": 2,
+    "rank_score": 0.0,
+    "puct": 0.3333333333333333,
+    "spec_hash": "747f583a08c801c1",
+    "parent_spec_hash": "747f583a08c801c1"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "backend": "ortools_cp_sat",
+  "branching": "default",
+  "encoding": "interval_variables",
+  "log_search_progress": false,
+  "max_time_in_seconds": 90.0,
+  "notes": "Keep full valid makespan lower bounds and same exact CP-SAT budget, but switch back to CP-SAT default branching to let its portfolio search adapt on this large 20x20 instance.",
+  "redundant_bounds": [
+    "job_chain_lb",
+    "machine_load_lb",
+    "critical_path_lb"
+  ],
+  "symmetry_breaking": false,
+  "warm_start": "none"
+}

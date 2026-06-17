@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Viewer</title>
+    <!-- Google "Inter" font family -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        margin: 0; /* Simplify bounds so the parent can determine the correct iFrame height. */
+        padding: 0;
+        overflow: hidden; /* Code can be long and wide, causing scroll-within-scroll. */
+      }
+
+      .container {
+        padding: 1.5rem;
+        background-color: #fff;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .diff-output-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .diff-original-column {
+        padding: 0.5rem;
+        border-right: 1px solid #cbd5e1;
+        min-height: 150px;
+      }
+
+      .diff-modified-column {
+        padding: 0.5rem;
+        min-height: 150px;
+      }
+
+      .diff-line {
+        display: block;
+        min-height: 1.5em;
+        padding: 0 0.25rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .diff-added {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .diff-removed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="diff-output-container">
+        <div class="diff-original-column">
+          <h2 id="original-title">Before</h2>
+          <pre id="originalDiffOutput"></pre>
+        </div>
+        <div class="diff-modified-column">
+          <h2 id="modified-title">After</h2>
+          <pre id="modifiedDiffOutput"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to dynamically load the jsdiff library.
+      function loadJsDiff() {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js";
+        script.integrity =
+          "sha512-8pp155siHVmN5FYcqWNSFYn8Efr61/7mfg/F15auw8MCL3kvINbNT7gT8LldYPq3i/GkSADZd4IcUXPBoPP8gA==";
+        script.crossOrigin = "anonymous";
+        script.referrerPolicy = "no-referrer";
+        script.onload = populateDiffs; // Call populateDiffs after the script is loaded
+        script.onerror = () => {
+          console.error("Error: Failed to load jsdiff library.");
+          const originalDiffOutput = document.getElementById("originalDiffOutput");
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = "";
+          }
+        };
+        document.head.appendChild(script);
+      }
+
+      function populateDiffs() {
+        const originalDiffOutput = document.getElementById("originalDiffOutput");
+        const modifiedDiffOutput = document.getElementById("modifiedDiffOutput");
+        const originalTitle = document.getElementById("original-title");
+        const modifiedTitle = document.getElementById("modified-title");
+
+        // Check if jsdiff library is loaded.
+        if (typeof Diff === "undefined") {
+          console.error("Error: jsdiff library (Diff) is not loaded or defined.");
+          // This case should ideally be caught by script.onerror, but keeping as a fallback.
+          if (originalDiffOutput) {
+            originalDiffOutput.innerHTML =
+              '<p style="color: #dc2626; text-align: center; padding: 2rem;">Error: Diff library failed to load. Please try refreshing the page or check your internet connection.</p>';
+          }
+          if (modifiedDiffOutput) {
+            modifiedDiffOutput.innerHTML = ""; // Clear modified output if error
+          }
+          return; // Exit since jsdiff is not loaded.
+        }
+
+        // The injected codes to display.
+        const codes = JSON.parse(`{
+  "old_index": 335.0,
+  "old_code": "import math\\nfrom typing import Any, Callable, Tuple\\nimport numpy as np\\nimport scipy.integrate\\nimport scipy.optimize\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Estimate the numeric value of the definite integral, especially\\n    when scipy.integrate.quad() fails to converge or returns a large error\\n    estimate or NaN.\\n    \\"\\"\\"\\n\\n    # --- Step 1: Initial Attempt with scipy.integrate.quad() ---\\n    try:\\n        # Pushing scipy.integrate.quad aggressively with high limit and machine precision tolerances\\n        answer, error_estimate = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=100000,     # Increased max subintervals significantly\\n            epsabs=1e-15,   # Absolute error tolerance, aligned with float64 precision\\n            epsrel=1e-15    # Relative error tolerance, aligned with float64 precision\\n        )\\n\\n        # Check for NaN or Inf results/errors from quad, or if error is too high\\n        # A result is considered unreliable if:\\n        # 1. Result or error estimate is NaN/Inf.\\n        # 2. For larger answers (>1e-6), relative error is > 1e-5 (0.001%).\\n        # 3. For tiny answers (<=1e-6), absolute error is > 1e-10.\\n        is_nan_inf = np.isnan(answer) or np.isinf(answer) or \\\\\\n                     np.isnan(error_estimate) or np.isinf(error_estimate)\\n        \\n        is_error_too_high = False\\n        if not is_nan_inf:\\n            if abs(answer) > 1e-6:\\n                if error_estimate / abs(answer) > 1e-5: # 0.001% relative error\\n                    is_error_too_high = True\\n            else: # For small answers, use absolute error threshold\\n                if error_estimate > 1e-10:\\n                    is_error_too_high = True\\n\\n        if is_nan_inf or is_error_too_high:\\n            # If unreliable, proceed to specialized method\\n            pass \\n        else:\\n            return answer, error_estimate\\n    except Exception:\\n        # If quad fails or raises an error, fall back to a more robust method\\n        pass # Continue to specialized method\\n\\n    # --- Step 2: Handle Infinite Limits for Specialized Method ---\\n    # Convert all integrals to the form [a, inf) for uniform processing.\\n    if lower_limit == -np.inf and upper_limit == np.inf:\\n        # Split into two infinite integrals: (-inf, 0] and [0, inf)\\n        # Recursively call quadrature for the split parts\\n        val1, err1 = quadrature(integrand, -np.inf, 0)\\n        val2, err2 = quadrature(integrand, 0, np.inf)\\n        \\n        # If either sub-integral failed (NaN result, or infinite error from sub-calls indicating deep problems),\\n        # propagate failure.\\n        if np.isnan(val1) or np.isnan(val2) or np.isinf(err1) or np.isinf(err2):\\n            return np.nan, np.inf\\n        \\n        return val1 + val2, err1 + err2\\n    elif lower_limit == -np.inf and upper_limit != np.inf: # Case: (-inf, b]\\n        # Transform x -> -t, dx -> -dt. Integral becomes int_{-upper_limit}^{inf} f(-t) dt\\n        def transformed_integrand_neg_inf(t):\\n            return integrand(-t)\\n        return quadrature(transformed_integrand_neg_inf, -upper_limit, np.inf)\\n    elif upper_limit != np.inf: # Case: [a, b] where quad failed.\\n        # This implies a very difficult finite integral. Try again with even more aggressive quad.\\n        try:\\n            # Even more aggressive quad parameters for the finite interval fallback\\n            answer, error_estimate = scipy.integrate.quad(\\n                integrand, lower_limit, upper_limit,\\n                limit=200000, epsabs=1e-16, epsrel=1e-16 # Significantly increased limit\\n            )\\n            # Stricter error check for finite integrals here.\\n            is_nan_inf = np.isnan(answer) or np.isinf(answer) or \\\\\\n                         np.isnan(error_estimate) or np.isinf(error_estimate)\\n            \\n            is_error_too_high = False\\n            if not is_nan_inf:\\n                if abs(answer) > 1e-8:\\n                    if error_estimate / abs(answer) > 1e-6: # 0.0001% relative error\\n                        is_error_too_high = True\\n                else: # For small answers, use absolute error threshold\\n                    if error_estimate > 1e-15:\\n                        is_error_too_high = True\\n\\n            if is_nan_inf or is_error_too_high: \\n                raise ValueError(\\"Aggressive quad also failed for finite interval.\\")\\n            return answer, error_estimate\\n        except Exception:\\n            # If even the very aggressive quad fails for a finite interval, it's likely very pathological.\\n            return np.nan, np.inf # Indicate failure\\n\\n    # --- Step 3: Specialized Fallback for Oscillatory Integrals on [a, inf) ---\\n    # This method is for [a, inf) where 'a' is finite.\\n    # It assumes the integrand might oscillate. It tries Euler acceleration.\\n    # NOTE: The fixed \`segment_length = math.pi\` is a limitation for integrals\\n    # where oscillation frequency varies significantly (e.g., sin(x^2), sin(e^x)).\\n    # For such cases, the segment integrals might not consistently alternate/decay,\\n    # making Euler acceleration ineffective. A generic black-box solution for\\n    # truly adaptive segment lengths is complex and beyond this scope.\\n\\n    current_segment_start = float(lower_limit)\\n    segment_length = math.pi  # Heuristic for half-period of common oscillations (sin(x), cos(x))\\n    \\n    segment_integrals = []\\n    \\n    # Increased max segments to compute for potentially slower convergence\\n    max_segments_to_compute = 50000 # Increased number of segments\\n    \\n    # Minimum terms required for Euler transformation to be meaningful.\\n    min_segments_for_euler = 80 # Increased minimum segments for stability\\n\\n    prev_seg_val = None\\n    consistent_sign_count = 0 \\n    consecutive_decay_count = 0 \\n\\n    for i in range(max_segments_to_compute):\\n        seg_start = current_segment_start\\n        seg_end = current_segment_start + segment_length\\n\\n        # Clamp seg_end to upper_limit if it exceeds.\\n        if upper_limit != np.inf and seg_end > upper_limit:\\n            seg_end = upper_limit\\n        \\n        # Ensure the segment has non-zero length, or if upper_limit is reached\\n        if seg_end <= seg_start + 1e-12: # Add a small epsilon to ensure non-zero length\\n            break # Reached end of integration or invalid segment\\n\\n        try:\\n            # Use aggressive quad parameters for segment integration\\n            seg_val, seg_err = scipy.integrate.quad(\\n                integrand, seg_start, seg_end,\\n                limit=50000, epsabs=1e-15, epsrel=1e-15 # Increased limit for segment integration\\n            )\\n            \\n            # If segment integral fails to converge to a small error, this whole method might be unsuitable\\n            # Allow slightly higher error to collect more segments for Euler.\\n            if np.isnan(seg_val) or np.isinf(seg_val) or seg_err > 1e-10: \\n                raise ValueError(f\\"Segment integration failed at {i}-th segment with val={seg_val}, err={seg_err}\\")\\n\\n            segment_integrals.append(seg_val)\\n            current_segment_start = seg_end # Move to the end of the current segment\\n\\n            # Early exit if we reached the upper_limit for finite integrals\\n            if upper_limit != np.inf and current_segment_start >= upper_limit - 1e-12: # Account for float precision\\n                break\\n\\n            # --- Checks for suitability of Euler transformation and early convergence ---\\n            if i > 0:\\n                # Check for alternating signs (crucial for Euler)\\n                # If signs are the same AND magnitude is not tiny, increment non-alternating count\\n                if seg_val * prev_seg_val >= 0 and abs(seg_val) > 1e-12: \\n                    consistent_sign_count += 1\\n                else:\\n                    consistent_sign_count = 0 # Reset if signs alternate\\n                \\n                # If signs consistently do not alternate after a few initial terms, Euler transformation is not suitable.\\n                if consistent_sign_count >= 30 and i >= min_segments_for_euler: \\n                    # print(f\\"Segment signs stopped alternating consistently at iteration {i}. Summing directly.\\")\\n                    return np.sum(segment_integrals), np.inf # High error, as Euler won't help much (potential divergence)\\n\\n                # Check for rapid decay: if terms are consistently very small, implies convergence\\n                if abs(seg_val) < (1e-14 * abs(prev_seg_val) + 1e-20): \\n                    consecutive_decay_count += 1\\n                    if consecutive_decay_count >= 20: \\n                        # If the total sum accumulated so far is also small, implies overall convergence.\\n                        if abs(np.sum(segment_integrals[:-20])) < 1e-8: \\n                            # print(f\\"Total sum is already tiny and segments decaying. Breaking at iteration {i}.\\")\\n                            break \\n                else:\\n                    consecutive_decay_count = 0\\n                \\n                # Check for strong divergence: if terms start to grow significantly after an initial phase\\n                if i >= min_segments_for_euler and abs(seg_val) > abs(segment_integrals[-2]) * 5000 and abs(segment_integrals[-2]) > 1e-12: \\n                    # If Euler transformation itself starts diverging, it's problematic.\\n                    # Revert to the last stable estimate or sum so far, with high error.\\n                    # print(f\\"Terms not decaying, or growing significantly at iteration {i}. Direct sum so far.\\")\\n                    return np.sum(segment_integrals), np.inf \\n            \\n            prev_seg_val = seg_val\\n\\n        except Exception as e:\\n            # If any segment integration fails, return the sum of successful segments\\n            # with a high error to indicate uncertainty.\\n            # print(f\\"scipy.integrate.quad failed for segment {seg_start}-{seg_end}: {e}\\")\\n            return np.sum(segment_integrals), np.inf\\n\\n    # --- Step 4: Apply Series Acceleration (Euler's Transformation) ---\\n    # This implementation uses the Euler-Knopp summation method.\\n    \\n    N = len(segment_integrals)\\n    if N < min_segments_for_euler:\\n        # Not enough terms collected for Euler transformation, return simple sum\\n        return np.sum(segment_integrals), np.inf # High uncertainty\\n\\n    euler_sums = np.array(segment_integrals, dtype=float)\\n    \\n    # Store the 'diagonal' elements of the Euler transformation table for convergence check\\n    euler_diagonal_values = [euler_sums[0]] \\n    consecutive_converged_count = 0\\n    target_consecutive_converged = 5 # Require convergence for 5 consecutive steps\\n\\n    try:\\n        # Perform Euler transformation iterations\\n        max_euler_levels = N - 1\\n\\n        for m in range(max_euler_levels): \\n            if len(euler_sums) < 2: \\n                break\\n            \\n            # Standard Euler transformation step\\n            new_euler_sums = (euler_sums[:-1] + euler_sums[1:]) / 2.0\\n            euler_sums = new_euler_sums\\n            \\n            euler_diagonal_values.append(euler_sums[0]) \\n            \\n            # Check for convergence of the Euler sum by comparing the last few diagonal elements\\n            if m > 0:\\n                diff = abs(euler_diagonal_values[-1] - euler_diagonal_values[-2])\\n                # Converged if difference is very small relatively OR absolutely\\n                # Using tighter tolerances for Euler's convergence.\\n                if (abs(euler_diagonal_values[-1]) > 1e-15 and diff < 1e-14 * abs(euler_diagonal_values[-1])) or \\\\\\n                   (abs(euler_diagonal_values[-1]) <= 1e-15 and diff < 1e-25): # Very strict absolute convergence\\n                    consecutive_converged_count += 1\\n                else:\\n                    consecutive_converged_count = 0 # Reset if not converged\\n                \\n                if consecutive_converged_count >= target_consecutive_converged:\\n                    break\\n\\n                # Check for strong divergence in Euler diagonal (e.g., values grow significantly)\\n                if m > 2 and abs(euler_diagonal_values[-1]) > abs(euler_diagonal_values[-2]) * 5000: \\n                    # If Euler transformation itself starts diverging, it's problematic.\\n                    # Revert to the last stable estimate or sum so far, with high error.\\n                    # print(f\\"Euler diagonal values diverging at level {m}. Reverting to previous estimate.\\")\\n                    final_answer = euler_diagonal_values[-2] if len(euler_diagonal_values) >= 2 else np.sum(segment_integrals)\\n                    return final_answer, np.inf\\n\\n    except Exception as e:\\n        # print(f\\"Euler transformation encountered an error: {e}\\")\\n        pass\\n\\n    final_answer = euler_diagonal_values[-1] if len(euler_diagonal_values) > 0 else np.sum(segment_integrals)\\n    \\n    # Estimate error: difference between the last two diagonal terms (if available) or the last segment magnitude\\n    if len(euler_diagonal_values) >= 2:\\n        # The error is approximately the difference between the last two computed Euler sums.\\n        # Using a combination of absolute difference and a small relative error based on the final answer itself.\\n        error_estimate = max(abs(euler_diagonal_values[-1] - euler_diagonal_values[-2]), \\n                             5e-15 * abs(final_answer), 1e-20) # Tighter relative error for Euler\\n    elif len(segment_integrals) > 0:\\n        # If only one Euler term was produced or Euler wasn't fully applied, use magnitude of last segment integral\\n        # as a rough indicator of remaining error, scaled up to be conservative.\\n        error_estimate = abs(segment_integrals[-1]) * 50 \\n    else:\\n        error_estimate = np.inf # No segments successfully integrated\\n\\n    # Final check for NaN or Inf in the answer\\n    if np.isnan(final_answer) or np.isinf(final_answer):\\n        return np.nan, np.inf\\n\\n    return final_answer, error_estimate",
+  "new_index": 352,
+  "new_code": "import math\\nfrom typing import Any, Callable, Tuple\\nimport numpy as np\\nimport scipy.integrate\\nimport scipy.optimize\\n\\ndef quadrature(\\n    integrand: Callable[float, float],\\n    lower_limit: float,\\n    upper_limit: float,\\n) -> Tuple[float, float]:\\n    \\"\\"\\"\\n    Estimate the numeric value of the definite integral, especially\\n    when scipy.integrate.quad() fails to converge or returns a large error\\n    estimate or NaN.\\n    \\"\\"\\"\\n\\n    # --- Step 1: Initial Attempt with scipy.integrate.quad() ---\\n    try:\\n        # Pushing scipy.integrate.quad aggressively with high limit and machine precision tolerances\\n        answer, error_estimate = scipy.integrate.quad(\\n            integrand, lower_limit, upper_limit,\\n            limit=100000,     # Increased max subintervals significantly\\n            epsabs=1e-15,   # Absolute error tolerance, aligned with float64 precision\\n            epsrel=1e-15    # Relative error tolerance, aligned with float64 precision\\n        )\\n\\n        # Check for NaN or Inf results/errors from quad, or if error is too high\\n        # A result is considered unreliable if:\\n        # 1. Result or error estimate is NaN/Inf.\\n        # 2. For larger answers (>1e-6), relative error is > 1e-5 (0.001%).\\n        # 3. For tiny answers (<=1e-6), absolute error is > 1e-10.\\n        is_nan_inf = np.isnan(answer) or np.isinf(answer) or \\\\\\n                     np.isnan(error_estimate) or np.isinf(error_estimate)\\n        \\n        is_error_too_high = False\\n        if not is_nan_inf:\\n            if abs(answer) > 1e-6:\\n                if error_estimate / abs(answer) > 1e-5: # 0.001% relative error\\n                    is_error_too_high = True\\n            else: # For small answers, use absolute error threshold\\n                if error_estimate > 1e-10:\\n                    is_error_too_high = True\\n\\n        if is_nan_inf or is_error_too_high:\\n            # If unreliable, proceed to specialized method\\n            pass \\n        else:\\n            return answer, error_estimate\\n    except Exception:\\n        # If quad fails or raises an error, fall back to a more robust method\\n        pass # Continue to specialized method\\n\\n    # --- Step 2: Handle Infinite Limits for Specialized Method ---\\n    # Convert all integrals to the form [a, inf) for uniform processing.\\n    if lower_limit == -np.inf and upper_limit == np.inf:\\n        # Split into two infinite integrals: (-inf, 0] and [0, inf)\\n        # Recursively call quadrature for the split parts\\n        val1, err1 = quadrature(integrand, -np.inf, 0)\\n        val2, err2 = quadrature(integrand, 0, np.inf)\\n        \\n        # If either sub-integral failed (NaN result, or infinite error from sub-calls indicating deep problems),\\n        # propagate failure.\\n        if np.isnan(val1) or np.isnan(val2) or np.isinf(err1) or np.isinf(err2):\\n            return np.nan, np.inf\\n        \\n        return val1 + val2, err1 + err2\\n    elif lower_limit == -np.inf and upper_limit != np.inf: # Case: (-inf, b]\\n        # Transform x -> -t, dx -> -dt. Integral becomes int_{-upper_limit}^{inf} f(-t) dt\\n        def transformed_integrand_neg_inf(t):\\n            return integrand(-t)\\n        return quadrature(transformed_integrand_neg_inf, -upper_limit, np.inf)\\n    elif upper_limit != np.inf: # Case: [a, b] where quad failed.\\n        # This implies a very difficult finite integral. Try again with even more aggressive quad.\\n        try:\\n            # Even more aggressive quad parameters for the finite interval fallback\\n            answer, error_estimate = scipy.integrate.quad(\\n                integrand, lower_limit, upper_limit,\\n                limit=200000, epsabs=1e-16, epsrel=1e-16 # Significantly increased limit\\n            )\\n            # Stricter error check for finite integrals here.\\n            is_nan_inf = np.isnan(answer) or np.isinf(answer) or \\\\\\n                         np.isnan(error_estimate) or np.isinf(error_estimate)\\n            \\n            is_error_too_high = False\\n            if not is_nan_inf:\\n                if abs(answer) > 1e-8:\\n                    if error_estimate / abs(answer) > 1e-6: # 0.0001% relative error\\n                        is_error_too_high = True\\n                else: # For small answers, use absolute error threshold\\n                    if error_estimate > 1e-15:\\n                        is_error_too_high = True\\n\\n            if is_nan_inf or is_error_too_high: \\n                raise ValueError(\\"Aggressive quad also failed for finite interval.\\")\\n            return answer, error_estimate\\n        except Exception:\\n            # If even the very aggressive quad fails for a finite interval, it's likely very pathological.\\n            return np.nan, np.inf # Indicate failure\\n\\n    # --- Step 3: Specialized Fallback for Oscillatory Integrals on [a, inf) ---\\n    # This method is for [a, inf) where 'a' is finite.\\n    # It tries to find zero-crossings of the integrand to define segments.\\n    # This is crucial for integrands with varying oscillation frequencies (e.g., sin(x^2), sin(e^x)).\\n\\n    segment_integrals = []\\n    current_segment_start = float(lower_limit)\\n    \\n    max_segments_to_collect = 500 # Limit number of segments to prevent infinite loops\\n    max_zero_search_range = 1000.0 # Max distance to search for a zero crossing before giving up\\n    zero_search_step = 5.0 # How much to extend the search window if no zero found\\n\\n    for i in range(max_segments_to_collect):\\n        seg_start_point = current_segment_start\\n\\n        # Handle case where integrand(seg_start_point) is exactly zero or very close to zero\\n        if abs(integrand(seg_start_point)) < 1e-15:\\n            seg_start_point += 1e-6 # Nudge slightly past the zero\\n\\n        if upper_limit != np.inf and seg_start_point >= upper_limit - 1e-12:\\n            break # Reached the upper limit\\n\\n        # Try to find the next zero crossing to define the segment end\\n        initial_sign = np.sign(integrand(seg_start_point))\\n        if initial_sign == 0: # If it's still zero after nudging\\n            initial_sign = 1.0 # Assume positive and start searching for negative\\n        \\n        next_zero_point = upper_limit # Default to upper_limit if no zero found\\n        zero_found_in_range = False\\n        \\n        search_interval_low = seg_start_point\\n        search_interval_high = seg_start_point + zero_search_step\\n\\n        while search_interval_high < seg_start_point + max_zero_search_range and \\\\\\n              (upper_limit == np.inf or search_interval_high <= upper_limit):\\n            \\n            try:\\n                # Find a bracket where the sign changes\\n                f_low = integrand(search_interval_low)\\n                f_high = integrand(search_interval_high)\\n\\n                if np.sign(f_low) != np.sign(f_high) and abs(f_low) > 1e-15 and abs(f_high) > 1e-15:\\n                    # Found a bracket, now find the root precisely\\n                    res = scipy.optimize.root_scalar(integrand, bracket=[search_interval_low, search_interval_high], method='brentq')\\n                    next_zero_point = res.root\\n                    zero_found_in_range = True\\n                    break # Zero crossing found\\n                \\n                # Move the search window\\n                search_interval_low = search_interval_high\\n                search_interval_high += zero_search_step\\n                \\n            except ValueError: # root_scalar fails if no sign change in bracket\\n                # Expand search window\\n                search_interval_low = search_interval_high\\n                search_interval_high += zero_search_step\\n            except Exception: # Other errors during root finding (e.g., NaN from integrand)\\n                zero_found_in_range = False\\n                break # Give up on root finding for this segment\\n\\n        if not zero_found_in_range and upper_limit != np.inf:\\n            # If no zero found within search range or it's a finite integral, integrate to upper_limit\\n            seg_end_point = upper_limit\\n        elif not zero_found_in_range and upper_limit == np.inf:\\n            # If no zero found and upper_limit is inf, assume non-oscillatory tail.\\n            # Integrate a fixed \\"tail\\" segment or let scipy.integrate.quad handle it.\\n            # For simplicity, we define a large fixed tail segment and assume it's the last one.\\n            seg_end_point = seg_start_point + 100.0 * math.pi # Arbitrarily large segment for the tail\\n            # print(f\\"No more zero crossings found from {seg_start_point}. Integrating fixed tail segment.\\")\\n        else:\\n            seg_end_point = next_zero_point\\n\\n        # Ensure the segment has non-zero length and is within bounds\\n        seg_end_point = min(seg_end_point, upper_limit if upper_limit != np.inf else seg_end_point)\\n        if seg_end_point <= seg_start_point + 1e-12: # Skip very tiny or invalid segments\\n            current_segment_start = seg_end_point\\n            continue\\n\\n        try:\\n            # Integrate the segment\\n            seg_val, seg_err = scipy.integrate.quad(\\n                integrand, seg_start_point, seg_end_point,\\n                limit=50000, epsabs=1e-15, epsrel=1e-15\\n            )\\n            \\n            # If segment integral fails to converge well, log it but still try to use it for Euler.\\n            if np.isnan(seg_val) or np.isinf(seg_val) or seg_err / (abs(seg_val) + 1e-12) > 1e-4:\\n                # print(f\\"Warning: Segment integral at {seg_start_point:.2f}-{seg_end_point:.2f} failed or has high error: {seg_err}\\")\\n                pass # Allow bad segment if it's the only way to proceed, Euler might filter noise\\n\\n            segment_integrals.append(seg_val)\\n            current_segment_start = seg_end_point\\n\\n            if upper_limit != np.inf and current_segment_start >= upper_limit - 1e-12:\\n                break # Reached the upper_limit for finite integrals\\n\\n            if not zero_found_in_range and upper_limit == np.inf:\\n                # If we gave up on zero finding and integrated a large fixed tail, we are done.\\n                break\\n\\n        except Exception as e:\\n            # If any segment integration fails, return the sum of successful segments\\n            # with a high error to indicate uncertainty.\\n            # print(f\\"Segment integration failed for {seg_start_point:.2f}-{seg_end_point:.2f}: {e}\\")\\n            return np.sum(segment_integrals), np.inf\\n\\n    # --- Step 4: Apply Series Acceleration (Euler's Transformation) ---\\n    # This implementation uses the Euler-Knopp summation method.\\n    \\n    N = len(segment_integrals)\\n    \\n    # Minimum terms required for Euler transformation to be meaningful.\\n    # A higher value provides more stability.\\n    min_segments_for_euler = 100 \\n\\n    if N < min_segments_for_euler:\\n        # Not enough terms collected for Euler transformation, return simple sum\\n        # print(f\\"Not enough segments ({N}) for Euler. Summing directly.\\")\\n        return np.sum(segment_integrals), np.inf # High uncertainty\\n\\n    # Check for sufficient sign alternation in the collected segments.\\n    # Euler's method works best for series with strictly alternating signs.\\n    alternating_terms_count = 0\\n    for k in range(N - 1):\\n        # Strict alternation OR term is very small (effectively zero)\\n        if segment_integrals[k] * segment_integrals[k+1] < 0 or \\\\\\n           (abs(segment_integrals[k]) < 1e-20 and abs(segment_integrals[k+1]) < 1e-20):\\n            alternating_terms_count += 1\\n        else:\\n            # If a term is significant and doesn't alternate, reset or stop counting.\\n            # If this happens too early or too often, Euler is not suitable.\\n            if abs(segment_integrals[k]) > 1e-15: # Only count non-alternation for significant terms\\n                # print(f\\"Non-alternating significant terms at index {k}.\\")\\n                alternating_terms_count = 0 \\n                if k < min_segments_for_euler / 2: # If non-alternating occurs early, Euler likely won't work\\n                    # print(\\"Giving up on Euler due to early non-alternation.\\")\\n                    return np.sum(segment_integrals), np.inf # High error, as Euler won't help much\\n\\n    # Require a high percentage of terms to alternate for Euler to be effective.\\n    if alternating_terms_count < N * 0.8: # At least 80% of segments should alternate\\n        # print(f\\"Insufficient sign alternation for Euler ({alternating_terms_count}/{N}). Summing directly.\\")\\n        return np.sum(segment_integrals), np.inf\\n\\n    euler_sums = np.array(segment_integrals, dtype=float)\\n    euler_diagonal_values = [euler_sums[0]] \\n    consecutive_converged_count = 0\\n    target_consecutive_converged = 5 # Require convergence for 5 consecutive steps\\n\\n    try:\\n        # Perform Euler transformation iterations\\n        max_euler_levels = N - 1\\n\\n        for m in range(max_euler_levels): \\n            if len(euler_sums) < 2: \\n                break\\n            \\n            # Standard Euler transformation step\\n            new_euler_sums = (euler_sums[:-1] + euler_sums[1:]) / 2.0\\n            euler_sums = new_euler_sums\\n            \\n            euler_diagonal_values.append(euler_sums[0]) \\n            \\n            # Check for convergence of the Euler sum by comparing the last few diagonal elements\\n            if m > 0:\\n                diff = abs(euler_diagonal_values[-1] - euler_diagonal_values[-2])\\n                # Converged if difference is very small relatively OR absolutely\\n                # Using tighter tolerances for Euler's convergence.\\n                if (abs(euler_diagonal_values[-1]) > 1e-15 and diff < 1e-14 * abs(euler_diagonal_values[-1])) or \\\\\\n                   (abs(euler_diagonal_values[-1]) <= 1e-15 and diff < 1e-25): # Very strict absolute convergence\\n                    consecutive_converged_count += 1\\n                else:\\n                    consecutive_converged_count = 0 # Reset if not converged\\n                \\n                if consecutive_converged_count >= target_consecutive_converged:\\n                    break\\n\\n                # Check for strong divergence in Euler diagonal (e.g., values grow significantly)\\n                if m > 2 and abs(euler_diagonal_values[-1]) > abs(euler_diagonal_values[-2]) * 5000 and abs(euler_diagonal_values[-2]) > 1e-15: \\n                    # If Euler transformation itself starts diverging, it's problematic.\\n                    # Revert to the last stable estimate or sum so far, with high error.\\n                    # print(f\\"Euler diagonal values diverging at level {m}. Reverting to previous estimate.\\")\\n                    final_answer = euler_diagonal_values[-2] if len(euler_diagonal_values) >= 2 else np.sum(segment_integrals)\\n                    return final_answer, np.inf\\n\\n    except Exception as e:\\n        # print(f\\"Euler transformation encountered an error: {e}\\")\\n        pass\\n\\n    final_answer = euler_diagonal_values[-1] if len(euler_diagonal_values) > 0 else np.sum(segment_integrals)\\n    \\n    # Estimate error: difference between the last two diagonal terms (if available) or the last segment magnitude\\n    if len(euler_diagonal_values) >= 2 and consecutive_converged_count >= target_consecutive_converged:\\n        # The error is approximately the difference between the last two computed Euler sums.\\n        # Using a combination of absolute difference and a small relative error based on the final answer itself.\\n        error_estimate = max(abs(euler_diagonal_values[-1] - euler_diagonal_values[-2]), \\n                             1e-12 * abs(final_answer), 1e-18) # Very tight error if converged\\n    elif len(segment_integrals) > 0:\\n        # If Euler didn't converge, or not enough terms, use a larger error.\\n        # The last segment is a very rough error for non-converged Euler.\\n        error_estimate = max(abs(segment_integrals[-1]), 1e-10) * 10 # More conservative error\\n    else:\\n        error_estimate = np.inf # No segments successfully integrated\\n\\n    # Final check for NaN or Inf in the answer\\n    if np.isnan(final_answer) or np.isinf(final_answer):\\n        return np.nan, np.inf\\n\\n    return final_answer, error_estimate"
+}`);
+        const originalCode = codes["old_code"];
+        const modifiedCode = codes["new_code"];
+        const originalIndex = codes["old_index"];
+        const modifiedIndex = codes["new_index"];
+
+        function displaySideBySideDiff(originalText, modifiedText) {
+          const diff = Diff.diffLines(originalText, modifiedText);
+
+          let originalHtmlLines = [];
+          let modifiedHtmlLines = [];
+
+          const escapeHtml = (text) =>
+            text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          diff.forEach((part) => {
+            // Split the part's value into individual lines.
+            // If the string ends with a newline, split will add an empty string at the end.
+            // We need to filter this out unless it's an actual empty line in the code.
+            const lines = part.value.split("\n");
+            const actualContentLines =
+              lines.length > 0 && lines[lines.length - 1] === "" ? lines.slice(0, -1) : lines;
+
+            actualContentLines.forEach((lineContent) => {
+              const escapedLineContent = escapeHtml(lineContent);
+
+              if (part.removed) {
+                // Line removed from original, display in original column, add blank in modified.
+                originalHtmlLines.push(
+                  `<span class="diff-line diff-removed">${escapedLineContent}</span>`,
+                );
+                // Use &nbsp; for consistent line height.
+                modifiedHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+              } else if (part.added) {
+                // Line added to modified, add blank in original column, display in modified.
+                // Use &nbsp; for consistent line height.
+                originalHtmlLines.push(`<span class="diff-line">&nbsp;</span>`);
+                modifiedHtmlLines.push(
+                  `<span class="diff-line diff-added">${escapedLineContent}</span>`,
+                );
+              } else {
+                // Equal part - no special styling (no background)
+                // Common line, display in both columns without any specific diff class.
+                originalHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+                modifiedHtmlLines.push(`<span class="diff-line">${escapedLineContent}</span>`);
+              }
+            });
+          });
+
+          // Join the lines and set innerHTML.
+          originalDiffOutput.innerHTML = originalHtmlLines.join("");
+          modifiedDiffOutput.innerHTML = modifiedHtmlLines.join("");
+        }
+
+        // Initial display with default content on DOMContentLoaded.
+        displaySideBySideDiff(originalCode, modifiedCode);
+
+        // Title the texts with their node numbers.
+        originalTitle.textContent = `Parent #${originalIndex}`;
+        modifiedTitle.textContent = `Child #${modifiedIndex}`;
+      }
+
+      // Load the jsdiff script when the DOM is fully loaded.
+      document.addEventListener("DOMContentLoaded", loadJsDiff);
+    </script>
+  </body>
+</html>

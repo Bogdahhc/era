@@ -1,0 +1,61 @@
+{
+  "architecture": {
+    "active_backend": "ortools_cp_sat",
+    "backend_registry": "implementation.exact_job_shop_era.backends",
+    "baseline_architecture": "implementation.job_shop_era generates Python solve(instance) code",
+    "executor": "ExactJobShopExecutor",
+    "name": "exact_job_shop_era",
+    "node_representation": "JSON exact-solver spec"
+  },
+  "cli_args": {
+    "c_puct": 1.0,
+    "experiment_name": "exact_ta21_spec_futs_node80_solver_audit",
+    "instance": "ta21",
+    "iterations": 80,
+    "no_llm": false,
+    "root_time_seconds": 10.0
+  },
+  "code_state": {
+    "exact_module_file_hashes": {
+      "__init__.py": "4abb922e213fc8b6",
+      "audit_cli.py": "a1d1188a0e0db308",
+      "backends.py": "d916bc46fee25d88",
+      "cli.py": "a9372d4653bf2b25",
+      "cp_sat_solver.py": "89f55da453680888",
+      "executor.py": "a204b358114c193a",
+      "json_llm.py": "e8fbf39773769b5e",
+      "logger.py": "88e202b03b562272",
+      "mutator.py": "a3710b631aeb5e88",
+      "plot.py": "e85eae0d89eab367",
+      "problem.py": "f027e996f6dbfbe8",
+      "prompt.py": "e1bef74d55ea1453",
+      "search.py": "88dbbedc351b9226",
+      "spec.py": "5dbcd31db2e5c943"
+    },
+    "git_head": "37637a49fd78139c01a2162f8dc5136087165f93",
+    "git_status_short": "M README.md\n M implementation/futs.py\n M implementation/llm.py\n M implementation/playground_s3e1.py\n?? experiments/\n?? implementation/exact_job_shop_era/\n?? implementation/job_shop_era/\n?? implementation/logior_era/",
+    "tracked_diff_hash": "a9acc6e77e1d5cdd"
+  },
+  "created_at": "2026-06-04 12:13:52",
+  "environment": {
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.35",
+    "python": "3.13.9"
+  },
+  "experiment_dir": "experiments/exact_ta21_spec_futs_node80_solver_audit",
+  "problem": {
+    "description": "Configure an exact solver for job-shop benchmark ta21. It has 20 jobs, 20 machines, and 400 operations. The inner solver must be an exact CP/MIP-style solver, not a dispatching heuristic. The scorer rewards low makespan and proof status.",
+    "instance_name": "ta21",
+    "optimum": 1642
+  },
+  "root_spec": {
+    "backend": "ortools_cp_sat",
+    "branching": "default",
+    "encoding": "interval_variables",
+    "log_search_progress": false,
+    "max_time_in_seconds": 10.0,
+    "notes": "",
+    "redundant_bounds": [],
+    "symmetry_breaking": false,
+    "warm_start": "none"
+  }
+}

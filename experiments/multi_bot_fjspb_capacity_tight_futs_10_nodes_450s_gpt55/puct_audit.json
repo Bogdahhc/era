@@ -1,0 +1,88 @@
+{
+  "num_nodes": 7,
+  "c_puct": 1.0,
+  "prior": 0.14285714285714285,
+  "total_visits": 29,
+  "max_rank_error": 0.0,
+  "max_puct_error": 0.0,
+  "passes": true,
+  "nodes": [
+    {
+      "node_id": 0,
+      "score": -1928.0121156293317,
+      "visits": 7,
+      "rank_score": 0.0,
+      "expected_rank_score": 0.0,
+      "rank_error": 0.0,
+      "puct": 0.096163657270259,
+      "expected_puct": 0.096163657270259,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 1,
+      "score": -1928.0103480624011,
+      "visits": 7,
+      "rank_score": 0.16666666666666666,
+      "expected_rank_score": 0.16666666666666666,
+      "rank_error": 0.0,
+      "puct": 0.2628303239369256,
+      "expected_puct": 0.2628303239369256,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 2,
+      "score": -1928.00412948597,
+      "visits": 6,
+      "rank_score": 0.6666666666666666,
+      "expected_rank_score": 0.6666666666666666,
+      "rank_error": 0.0,
+      "puct": 0.7765679892612484,
+      "expected_puct": 0.7765679892612484,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 3,
+      "score": -1928.00437955969,
+      "visits": 2,
+      "rank_score": 0.3333333333333333,
+      "expected_rank_score": 0.3333333333333333,
+      "rank_error": 0.0,
+      "puct": 0.5897697527206907,
+      "expected_puct": 0.5897697527206907,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 4,
+      "score": -1928.0042718209909,
+      "visits": 2,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 0.7564364193873574,
+      "expected_puct": 0.7564364193873574,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 5,
+      "score": -1928.0038339450582,
+      "visits": 3,
+      "rank_score": 0.8333333333333334,
+      "expected_rank_score": 0.8333333333333334,
+      "rank_error": 0.0,
+      "puct": 1.0256606478738513,
+      "expected_puct": 1.0256606478738513,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 6,
+      "score": -1928.0037720151106,
+      "visits": 2,
+      "rank_score": 1.0,
+      "expected_rank_score": 1.0,
+      "rank_error": 0.0,
+      "puct": 1.2564364193873574,
+      "expected_puct": 1.2564364193873574,
+      "puct_error": 0.0
+    }
+  ]
+}

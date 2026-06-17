@@ -1,0 +1,132 @@
+{
+  "num_nodes": 11,
+  "c_puct": 1.0,
+  "prior": 0.09090909090909091,
+  "total_visits": 48,
+  "max_rank_error": 0.0,
+  "max_puct_error": 0.0,
+  "passes": true,
+  "nodes": [
+    {
+      "node_id": 0,
+      "score": -735.0002451414196,
+      "visits": 11,
+      "rank_score": 0.0,
+      "expected_rank_score": 0.0,
+      "rank_error": 0.0,
+      "puct": 0.05248638810814779,
+      "expected_puct": 0.05248638810814779,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 1,
+      "score": -729.0002732006111,
+      "visits": 11,
+      "rank_score": 0.8,
+      "expected_rank_score": 0.8,
+      "rank_error": 0.0,
+      "puct": 0.8524863881081478,
+      "expected_puct": 0.8524863881081478,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 2,
+      "score": -729.0007485390897,
+      "visits": 2,
+      "rank_score": 0.2,
+      "expected_rank_score": 0.2,
+      "rank_error": 0.0,
+      "puct": 0.4099455524325912,
+      "expected_puct": 0.4099455524325912,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 3,
+      "score": -729.0002851792798,
+      "visits": 2,
+      "rank_score": 0.6,
+      "expected_rank_score": 0.6,
+      "rank_error": 0.0,
+      "puct": 0.8099455524325911,
+      "expected_puct": 0.8099455524325911,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 4,
+      "score": -729.0012153849099,
+      "visits": 2,
+      "rank_score": 0.1,
+      "expected_rank_score": 0.1,
+      "rank_error": 0.0,
+      "puct": 0.30994555243259114,
+      "expected_puct": 0.30994555243259114,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 5,
+      "score": -729.0002654574695,
+      "visits": 7,
+      "rank_score": 0.9,
+      "expected_rank_score": 0.9,
+      "rank_error": 0.0,
+      "puct": 0.9787295821622217,
+      "expected_puct": 0.9787295821622217,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 6,
+      "score": -729.0002748974692,
+      "visits": 2,
+      "rank_score": 0.7,
+      "expected_rank_score": 0.7,
+      "rank_error": 0.0,
+      "puct": 0.9099455524325911,
+      "expected_puct": 0.9099455524325911,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 7,
+      "score": -729.0002535998007,
+      "visits": 5,
+      "rank_score": 1.0,
+      "expected_rank_score": 1.0,
+      "rank_error": 0.0,
+      "puct": 1.1049727762162955,
+      "expected_puct": 1.1049727762162955,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 8,
+      "score": -729.0006580932787,
+      "visits": 2,
+      "rank_score": 0.3,
+      "expected_rank_score": 0.3,
+      "rank_error": 0.0,
+      "puct": 0.5099455524325911,
+      "expected_puct": 0.5099455524325911,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 9,
+      "score": -729.0003474110621,
+      "visits": 2,
+      "rank_score": 0.4,
+      "expected_rank_score": 0.4,
+      "rank_error": 0.0,
+      "puct": 0.6099455524325912,
+      "expected_puct": 0.6099455524325912,
+      "puct_error": 0.0
+    },
+    {
+      "node_id": 10,
+      "score": -729.0002857038006,
+      "visits": 2,
+      "rank_score": 0.5,
+      "expected_rank_score": 0.5,
+      "rank_error": 0.0,
+      "puct": 0.7099455524325912,
+      "expected_puct": 0.7099455524325912,
+      "puct_error": 0.0
+    }
+  ]
+}

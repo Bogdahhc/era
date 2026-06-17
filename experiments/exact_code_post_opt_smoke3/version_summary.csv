@@ -1,0 +1,3 @@
+node_id,parent_id,version_label,makespan,delta_makespan_vs_parent,delta_makespan_vs_root,score,score_mode,status,best_bound,relative_gap,elapsed_seconds,branches,conflicts,changed_fields,candidate,spec_hash,parent_spec_hash
+0,,node_0000,55,,0,-5500.377193861001,runtime_after_optimum,feasible,,,0.3771938610007055,,,"[""_raw""]",candidates/node_0000.py,747f583a08c801c1,
+1,0,node_0001,55,0,0,-5500.357500382001,runtime_after_optimum,feasible,,,0.35750038200058043,,,[],candidates/node_0001.py,747f583a08c801c1,747f583a08c801c1
