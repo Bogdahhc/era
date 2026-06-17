@@ -529,6 +529,56 @@ kill <PID>
 ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 ```
 
+## 图表轴含义
+
+`multi_bot_era` 的图表均从实验目录的 `nodes.jsonl` 读取数据。每个 node 记录包括 `node_id`、`parent_id`、`score`、`feasible`、`makespan`、`elapsed_seconds`、`error`、`rank_score` 和 `puct`。这些图用于判断 FJSPB/SQLite no-incumbent FUTS 是否在真实改善排程，而不是只优化脚本运行时间。
+
+### breakthrough.png
+
+`breakthrough.png` 展示每个 node 的 score 和 best-so-far score。
+
+- x 轴：`node_id`，即 FUTS 节点生成顺序。
+- y 轴：node score，按 `-(makespan + elapsed_seconds / 100)` 计算；值越大表示越好。
+- 散点：每个有有限 score 的 node。timeout、crash、不可行节点通常没有有限 score，不会作为正常分数点参与曲线。
+- 绿色阶梯线：从 root 到当前 node 的历史最佳 score。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 注释框：当前 best node，显示 node id、score 和 makespan。
+
+在 multi-bot 实验中，makespan 是主目标；同 makespan 下，`elapsed_seconds / 100` 是 tie-breaker。因此曲线大幅上升通常表示 makespan 改善，小幅上升通常表示相同 makespan 下脚本更快。
+
+### tree_branches.png
+
+`tree_branches.png` 是二维 FUTS 树结构图。
+
+- x 轴：`node_id` / expansion order，表示节点生成顺序。
+- y 轴：tree depth，root 深度为 0。
+- 灰色线：parent-child 边，来自 `parent_id`。
+- 散点：FUTS node。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node。
+- 注释框：best node 的 node id、score、makespan。
+
+这张图可以看出 FUTS 是否持续选择高分父节点扩展。例如 50-iteration continuation 中，大量节点从 best 附近的父节点继续变异，说明 PUCT 选择正在围绕高分候选开发。
+
+### tree_branches_3d.png
+
+`tree_branches_3d.png` 在二维树图上增加 makespan gap 维度。
+
+- x 轴：`node_id` / expansion order。
+- y 轴：tree depth。
+- z 轴：makespan gap to best，即 `node_makespan - best_makespan`。
+- z 轴裁剪：使用 focus window 裁剪远离 best 的 makespan gap，避免差节点把近优区域压扁。
+- 灰色线：parent-child 边。
+- 点颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node，通常 z=0。
+
+对 multi-bot/FJSPB 来说，三维图最适合检查两类现象：
+
+- 是否存在持续改善链：子节点 z 值沿深度下降。
+- 是否出现局部平台：多个节点 makespan 相同，z 维度接近，score 差异主要来自 elapsed。
+
+如果二维树显示持续扩展某个分支，但三维 z 轴没有下降，说明当前变异主要在优化 runtime 或做无效探索；如果 z 轴明显下降，说明变异确实在改善排程质量。
+
 如果进程没有退出，再使用：
 
 ```bash

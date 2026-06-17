@@ -339,3 +339,48 @@ ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 kill <PID>
 ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 ```
+
+## 图表轴含义
+
+`exact_job_shop_era` 的图表基于 `nodes.jsonl`，用于复盘 CP-SAT-code FUTS 的节点质量、树结构和 makespan 改善路径。
+
+### breakthrough.png
+
+`breakthrough.png` 展示每个 node 的 score 和截至该 node 的 best-so-far score。
+
+- x 轴：`node_id`，即 FUTS 节点生成顺序。
+- y 轴：node score，当前按 `-(makespan + elapsed_seconds / 100)` 计算；值越大越好。
+- 散点：每个有有限 score 的 node。
+- 绿色阶梯线：best-so-far score，表示搜索过程中历史最佳值如何变化。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 注释框：当前最高 score 的 node，包含 node id、score 和 makespan。
+
+如果某个节点 makespan 降低，曲线会明显上跳；如果 makespan 相同但运行时间变短，曲线只会小幅上升。
+
+### tree_branches.png
+
+`tree_branches.png` 是二维 FUTS 树分支图。
+
+- x 轴：`node_id` / expansion order，表示节点生成顺序。
+- y 轴：tree depth，root 深度为 0，子节点深度比父节点多 1。
+- 灰色线：由 `parent_id` 定义的 parent-child 边。
+- 散点：FUTS node。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node。
+- 注释框：best node 的 node id、score、makespan。
+
+这张图用于判断 FUTS 是在持续开发同一条高分链，还是在多个分支之间探索。
+
+### tree_branches_3d.png
+
+`tree_branches_3d.png` 是三维树图，在二维树结构基础上加入 makespan gap。
+
+- x 轴：`node_id` / expansion order。
+- y 轴：tree depth。
+- z 轴：makespan gap to best，即 `node_makespan - best_makespan`。
+- z 轴裁剪：图中 z 值会按 focus window 裁剪，避免极差节点压缩近优节点的视觉差异。
+- 灰色线：parent-child 边。
+- 点颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node，通常位于 z=0。
+
+在 exact 版本中，这张图特别适合观察 CP-SAT 建模变异是否沿父子链稳定降低 makespan，以及达到已知 optimum 后是否主要转向运行时间优化。

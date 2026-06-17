@@ -258,3 +258,46 @@ kill <PID>
 ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 ```
 
+## 图表轴含义
+
+`job_shop_era` 的绘图数据都来自实验目录中的 `nodes.jsonl`。每一行对应一个 FUTS node，主要字段包括 `node_id`、`parent_id`、`score`、`makespan`、`elapsed_seconds`、`feasible`。
+
+### breakthrough.png
+
+`breakthrough.png` 用于观察每个 node 的分数和 best-so-far 曲线。
+
+- x 轴：`node_id`，也就是 FUTS 节点生成顺序。
+- y 轴：node score，当前绘图按 `-(makespan + elapsed_seconds / 100)` 计算；值越大表示越好。
+- 点：每个可计算 score 的 node。
+- 绿色阶梯线：到当前 node 为止的 best-so-far score。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 标注星点/注释：当前最高 score 的 node。
+
+由于 score 是负数，makespan 越低，score 越接近 0；同 makespan 下运行时间更短的 node 会略好。
+
+### tree_branches.png
+
+`tree_branches.png` 是二维 FUTS 树结构图，用于观察树如何扩展。
+
+- x 轴：`node_id` / expansion order，表示节点生成顺序。
+- y 轴：tree depth，root 为 0，child 比 parent 深度加 1。
+- 灰色连线：parent-child 边，来自 `parent_id`。
+- 点：每个 FUTS node。
+- 颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node。
+
+该图主要看搜索是否集中在一条分支、是否有多分支探索，以及好节点出现在树的哪个深度。
+
+### tree_branches_3d.png
+
+`tree_branches_3d.png` 在二维树结构基础上增加 makespan 维度。
+
+- x 轴：`node_id` / expansion order。
+- y 轴：tree depth。
+- z 轴：makespan gap to best，即 `node_makespan - best_makespan`。
+- z 轴会被裁剪到一个 focus window，避免少数很差节点把图拉得过高。
+- 灰色线：parent-child 边。
+- 点颜色：按 score 映射，颜色越深表示 score 越好。
+- 红色星标：当前 best node，通常 z=0。
+
+三维图适合判断树的结构扩展和 makespan 质量是否同步改善：如果深层节点 z 逐步下降，说明变异链在持续改进；如果 z 波动或升高，说明分支在探索但不稳定。
