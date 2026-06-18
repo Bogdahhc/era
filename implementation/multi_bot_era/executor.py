@@ -37,6 +37,17 @@ class MultiBotExecutor:
       )
       self.last_evaluation = evaluation
       return evaluation
+    shortcut_reason = _disallowed_solver_shortcut(code)
+    if shortcut_reason:
+      evaluation = Evaluation(
+          WORST_SCORE,
+          False,
+          None,
+          time.perf_counter() - started,
+          shortcut_reason,
+      )
+      self.last_evaluation = evaluation
+      return evaluation
     result = run_candidate(
         code,
         problem.dataset,
@@ -75,3 +86,36 @@ def _uses_cp_sat(code: str) -> bool:
       and ("fromortools.sat.pythonimportcp_model" in compact
            or "importcp_model" in compact)
   )
+
+
+def _disallowed_solver_shortcut(code: str) -> str | None:
+  compact = code.replace(" ", "").replace("'", '"')
+  lower = code.lower()
+  if "_build_greedy_schedule" in code:
+    return (
+        "candidate rejected: cold-start multi_bot_era must build the schedule "
+        "inside CP-SAT, not precompute a full greedy schedule and wrap it"
+    )
+  if "_build_constructive_schedule" in code:
+    return (
+        "candidate rejected: cold-start multi_bot_era must not precompute a "
+        "complete constructive schedule before CP-SAT"
+    )
+  if "raw_assignments" in code and (
+      "NewIntVar(s0, s0" in code or "NewIntVar(e0, e0" in code
+  ):
+    return (
+        "candidate rejected: CP-SAT start/end variables are fixed to "
+        "precomputed raw_assignments instead of being solver decisions"
+    )
+  if 'return{"assignments":greedy}' in compact:
+    return (
+        "candidate rejected: returning a greedy schedule fallback bypasses "
+        "the required CP-SAT-derived assignments"
+    )
+  if "model.add(s == int(ass[" in lower or "model.add(e == int(ass[" in lower:
+    return (
+        "candidate rejected: CP-SAT variables are fixed to a precomputed "
+        "schedule instead of deciding start/end/machine values"
+    )
+  return None

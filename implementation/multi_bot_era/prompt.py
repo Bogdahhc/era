@@ -45,6 +45,24 @@ Mandatory solver requirements:
 - Use OR-Tools CP-SAT via `from ortools.sat.python import cp_model`.
 - Build a CP-SAT model, solve it with `cp_model.CpSolver`, and derive the
   returned assignments from solver variable values.
+- Before coding constraints, analyze the FJSPB scene from the IR and reflect
+  that analysis in clear code structure: identify jobs, ordered tasks,
+  eligible machines, fixed tasks, machine capacities, batch/synchronization
+  machines, chemistry conflicts, robot/device resources, and the makespan
+  objective. The code should be understandable as a reusable model of this
+  scheduling problem, not only a sequence of ad hoc checks.
+- Use semantic variable names and dictionaries keyed by problem entities, for
+  example task_key/job_task_key, machine_code, presence[(task_key, machine)],
+  start_vars[task_key], end_vars[task_key], interval_vars[(task_key, machine)],
+  machine_to_intervals, job_to_tasks, and makespan. Avoid opaque names that
+  make it hard to audit whether a constraint belongs to a task, machine,
+  resource, batch rule, or chemistry rule.
+- Do not precompute a complete greedy/list schedule and then fix CP-SAT
+  variables to those times or return that greedy schedule. CP-SAT must decide
+  start times, machine choices, and makespan for the returned assignments.
+- Do not create `raw_assignments`, `_build_constructive_schedule`, or fixed
+  domains such as `NewIntVar(s0, s0, ...)` / `NewIntVar(e0, e0, ...)` for
+  every task. Fixed domains are only valid for tasks with `is_fixed=True`.
 - Do not replace CP-SAT with a pure greedy/list scheduler. Greedy logic is only
   allowed as a fallback, hint generator, bound, repair, or CP-SAT-guided LNS
   component around the CP-SAT model.
@@ -60,9 +78,16 @@ Hard constraints:
 - Machine capacity comes from dataset["fjspb"]["machines"].
 - For capacity>1 batch machines, overlapping tasks must be synchronized:
   same start/end when durations match; different durations must not overlap.
+- Implement the batch rule pairwise for every pair of optional intervals on the
+  same machine. If both presences are true and durations differ, enforce
+  `end_i <= start_j OR end_j <= start_i`. If durations match, allow only those
+  two non-overlap orders or exact `start_i == start_j` and `end_i == end_j`.
 - Enforce chemistry rules in the IR: dripping/test/recycle mutual exclusion
   and back-to-back chains, muffle/dryer temperature incompatibility,
   centrifugation even active count, and same-experiment first-task sync.
+- Use OR-Tools Python APIs available in the local runtime. Do not call
+  `model.AddMapDomain`; either use Boolean presence variables directly or
+  `model.add_map_domain` if a domain-map helper is truly needed.
 - Do not use network access, file I/O, multiprocessing, or external services.
 - The code must be self-contained in one file and must not hard-code this
   dataset's final answer, makespan, or operation start/end table.
@@ -70,6 +95,12 @@ Hard constraints:
   not provide non-fixed incumbent start/end times; derive non-fixed assignments
   from CP-SAT variable values.
 - Keep the public API `solve(dataset)`.
+- Know and use the professional OR-Tools CP-SAT tools that match this domain:
+  `NewIntVar`, `NewBoolVar`, `NewOptionalIntervalVar`, `AddExactlyOne`,
+  `AddImplication`, `OnlyEnforceIf`, `AddBoolOr`, `AddNoOverlap`,
+  `AddCumulative`, `AddMaxEquality`, `Minimize`, solver time limits,
+  solution hints, decision strategies, and CP-SAT-guided large-neighborhood
+  search where useful.
 - Prefer reusable CP-SAT improvements such as tighter horizons, cumulative
   machine capacity, optional machine intervals, precedence constraints,
   batch synchronization booleans, chemistry-specific NoOverlap constraints,
@@ -114,7 +145,9 @@ def _format_feedback(context: dict) -> str:
   if timeout_seconds is not None:
     lines.append(
         f"- The executor gives every candidate the same outer timeout: "
-        f"{timeout_seconds} seconds."
+        f"{timeout_seconds} seconds. Candidate CP-SAT code should read "
+        "ERA_CANDIDATE_TIMEOUT_SECONDS and set solver.parameters.max_time_in_seconds "
+        "slightly below that outer timeout instead of hard-coding a short limit."
     )
   if score_contract:
     lines.append(f"- Scoring contract: {score_contract}")

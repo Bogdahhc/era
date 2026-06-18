@@ -200,7 +200,7 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
       plot_rows, key=lambda row: row["makespan"]
   )
   best_makespan = min(row["makespan"] for row in plot_rows)
-  focus_window = _makespan_focus_window(plot_rows, best_makespan)
+  gap_ticks = _makespan_gap_scale_ticks(plot_rows, best_makespan)
   width = max(9, min(18, 5 + 0.10 * len(plot_rows)))
   fig = plt.figure(figsize=(width, 7))
   ax = fig.add_subplot(111, projection="3d")
@@ -220,10 +220,8 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
         [parent_id, node_id],
         [depth[parent_id], depth[node_id]],
         [
-            _makespan_focus_z(
-                by_id[parent_id]["makespan"], best_makespan, focus_window
-            ),
-            _makespan_focus_z(row["makespan"], best_makespan, focus_window),
+            _makespan_scaled_z(by_id[parent_id]["makespan"], best_makespan, gap_ticks),
+            _makespan_scaled_z(row["makespan"], best_makespan, gap_ticks),
         ],
         color="#9aa0a6",
         linewidth=0.8,
@@ -233,7 +231,7 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
   xs = [row["node_id"] for row in plot_rows]
   ys = [depth[row["node_id"]] for row in plot_rows]
   zs = [
-      _makespan_focus_z(row["makespan"], best_makespan, focus_window)
+      _makespan_scaled_z(row["makespan"], best_makespan, gap_ticks)
       for row in plot_rows
   ]
   color_args, has_score_colors = _score_color_args(plot_rows)
@@ -255,7 +253,7 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
   ax.scatter(
       [best_id],
       [depth[best_id]],
-      [_makespan_focus_z(best["makespan"], best_makespan, focus_window)],
+      [_makespan_scaled_z(best["makespan"], best_makespan, gap_ticks)],
       marker="*",
       s=180,
       color="#d93025",
@@ -266,7 +264,7 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
   ax.text(
       best_id,
       depth[best_id],
-      _makespan_focus_z(best["makespan"], best_makespan, focus_window),
+      _makespan_scaled_z(best["makespan"], best_makespan, gap_ticks),
       (
           f" best node={best_id}\n"
           f" score={_effective_score(best):.3g}\n"
@@ -277,7 +275,7 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
 
   ax.set_xlabel("Node id / expansion order")
   ax.set_ylabel("Tree depth")
-  ax.set_zlabel(f"makespan gap to best, clipped at {focus_window:g}")
+  ax.set_zlabel("makespan gap to best, 30% ceil scale")
   ax.set_title(
       f"Multi-bot FJSPB FUTS tree branches 3D from node {TREE_PLOT_START_NODE_ID}"
   )
@@ -286,8 +284,10 @@ def plot_tree_branches_3d(nodes_jsonl: str | Path, output_path: str | Path) -> N
   if ys:
     ax.set_ylim(min(ys) - 0.5, max(ys) + 0.5)
   if zs:
-    z_margin = max(0.1, focus_window * 0.05)
-    ax.set_zlim(min(zs) - z_margin, max(zs) + z_margin)
+    top_z = len(gap_ticks) - 1
+    ax.set_zticks(list(range(len(gap_ticks))))
+    ax.set_zticklabels([_format_gap_tick(tick) for tick in gap_ticks])
+    ax.set_zlim(-0.2, top_z + 0.2)
   ax.view_init(elev=22, azim=-62)
   fig.tight_layout()
   fig.savefig(output_path, dpi=180)
@@ -371,22 +371,51 @@ def _node_depths(rows: list[dict]) -> dict[int, int]:
   return depth
 
 
-def _makespan_focus_window(rows: list[dict], best_makespan: float) -> float:
-  gaps = sorted(
+def _makespan_gap_scale_ticks(rows: list[dict], best_makespan: float) -> list[float]:
+  """Returns z-axis gap tick labels using a 30% ceil scale up to max gap."""
+  max_gap = max(
       max(0.0, float(row["makespan"]) - float(best_makespan))
       for row in rows
       if row.get("makespan") is not None
   )
-  positive_gaps = [gap for gap in gaps if gap > 0]
-  if not positive_gaps:
-    return 1.0
-  index = max(0, min(len(positive_gaps) - 1, math.ceil(len(positive_gaps) * 0.2) - 1))
-  return max(1.0, positive_gaps[index])
+  if max_gap <= 0:
+    return [0.0]
+
+  top_gap = int(math.ceil(max_gap))
+  descending = [float(top_gap)]
+  current = top_gap
+  while current > 1:
+    next_gap = int(math.ceil(current * 0.30))
+    if next_gap >= current:
+      next_gap = current - 1
+    if next_gap > 0:
+      descending.append(float(next_gap))
+    current = next_gap
+
+  return [0.0] + sorted(set(descending))
 
 
-def _makespan_focus_z(
-    makespan: float, best_makespan: float, focus_window: float
+def _makespan_scaled_z(
+    makespan: float, best_makespan: float, gap_ticks: list[float]
 ) -> float:
-  """Shows near-best makespan gaps linearly and clips far-away nodes."""
+  """Maps a makespan gap onto evenly spaced 30%-ceil gap-scale ticks."""
   gap = max(0.0, float(makespan) - float(best_makespan))
-  return min(gap, focus_window)
+  if not gap_ticks or len(gap_ticks) == 1:
+    return 0.0
+  if gap <= gap_ticks[0]:
+    return 0.0
+  if gap >= gap_ticks[-1]:
+    return float(len(gap_ticks) - 1)
+
+  for index in range(len(gap_ticks) - 1):
+    lower = gap_ticks[index]
+    upper = gap_ticks[index + 1]
+    if lower <= gap <= upper:
+      if upper == lower:
+        return float(index)
+      return index + (gap - lower) / (upper - lower)
+  return float(len(gap_ticks) - 1)
+
+
+def _format_gap_tick(value: float) -> str:
+  return str(int(value)) if float(value).is_integer() else f"{value:g}"

@@ -186,27 +186,21 @@ prompt 同时提供：
 
 ## seed.py 改进
 
-seed 是 root candidate，也是 FUTS 的初始可变异脚本。当前 seed 的目标是提供一个不依赖非固定 incumbent 的可行 CP-SAT 基线。
+seed 是 root candidate，也是 FUTS 的初始可变异脚本。当前默认 seed 已改为冷启动骨架：它只保留最小 OR-Tools CP-SAT 调用，故意不提供可用排程模型，返回空 `assignments` 并由 scorer 记录失败节点。
 
-主要模型结构：
+禁用原有强 seed 的原因：
 
-- 每个 task 建 start/end/interval。
-- 每个候选 machine 建 optional interval 和 presence。
-- 每个 task `AddExactlyOne(presences)`。
-- job precedence。
-- machine cumulative capacity。
-- capacity > 1 batch 同步/互斥。
-- dripping/test/recycle NoOverlap 和 back-to-back。
-- same-experiment first task sync。
-- 非固定 centrifuge task 按 `(expr_no, task_id, duration)` 成对同步，避免 active count 奇数。
-- fixed task 使用常量 start/end 和 fixed selected machine。
+- 原强 seed 已经手写了完整 CP-SAT 求解器，在合并数据上可直接给出强可行结果。
+- 这会把 FUTS 变成“从可用求解器做局部变异”，背离从纯语言需求、设备清单和约束描述中长出求解脚本的测试目标。
+- 默认冷启动要求第一个 LLM 子节点根据 prompt、FJSPB IR 摘要、失败反馈和 scorer 约束生成完整 OR-Tools 模型。
 
-移除内容：
+当前 seed 只做：
 
-- 移除了 `_existing_schedule` 作为完整 fallback 返回值。
-- 不再使用非固定任务的 SQLite incumbent 作为 hint。
+- `from ortools.sat.python import cp_model`
+- 构建一个最小 `CpModel/CpSolver` 骨架，满足静态 CP-SAT 检查。
+- 返回空 `{"assignments": []}`，让 root 客观失败。
 
-这使 root seed 在复杂 x2 数据上从真实搜索出发，而不是读数据库答案。
+如需从历史可用脚本继续实验，必须显式传入 `--initial-code /path/to/best.py`。默认 CLI 不再提供完整求解器 root。
 
 ## executor.py 改进
 
@@ -217,6 +211,10 @@ executor 负责运行候选代码并评分。关键限制：
   - `cp_model`
   - `CpModel`
   - `CpSolver`
+- 冷启动后新增 shortcut 拒绝：
+  - 不接受 `_build_greedy_schedule` 这类先完整 greedy 排程再包装 CP-SAT 的候选。
+  - 不接受 `return {"assignments": greedy}` 的 greedy fallback。
+  - 不接受把 CP-SAT `start/end` 变量直接固定到预计算排程 `ass["start"]/ass["end"]` 的候选。
 - 通过 sandbox 运行候选。
 - 外层 `timeout_seconds` 是候选脚本整体运行时间限制。
 - 运行结果交给 scorer 验证。
@@ -267,7 +265,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
   --experiment-name multi_bot_5exp_x2_no_incumbent_futs_50_iters_450s_gpt55_continue
 ```
 
-## 数据集和实验状态
+## 数据集和运行方式
 
 当前主要复杂测试数据：
 
@@ -283,54 +281,21 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
 - 第二批时间整体后移，保证数据库原排程仍可用于离线对比。
 - 按已有峰值收紧部分 workstation capacity。
 
-该数据的规模：
-
-- task rows: 1046
-- jobs: 76
-- exprs: 14
-- shifted incumbent makespan: 3922
-
 在 no-incumbent 接口下，候选脚本看不到非固定任务的 shifted incumbent 时间。
-
-10-node FUTS 结果：
-
-```text
-/home/era/experiments/multi_bot_5exp_x2_no_incumbent_futs_10_nodes_450s_gpt55
-```
-
-结果摘要：
-
-- root makespan: 4472
-- best node: 7
-- best makespan: 3728
-- best elapsed: 45.03s
-- 相对 root 降低 744
-- 相对 shifted incumbent 3922 降低 194
-- 10 个节点全部 feasible
-
-这说明切断 incumbent 泄露后，FUTS 仍能产生真实重排优化。
-
-当前已启动的 50-iteration continuation 实验：
-
-```text
-/home/era/experiments/multi_bot_5exp_x2_no_incumbent_futs_50_iters_450s_gpt55_continue
-```
-
-root 使用上一轮 10-node 的 best.py。
 
 ## 当前边界和风险
 
-1. seed 仍不是完整工业强度模型。
-   - 它提供可行 root 和可变异结构。
-   - 更强的温度、batch、离心、drip/test/recycle 细节仍可以由 FUTS 继续改进。
+1. 默认 seed 不是可行求解器。
+   - 它是冷启动骨架，root 预期失败。
+   - 可行完整模型应由 LLM/FUTS 子节点生成。
 
 2. scorer 是最终约束真值。
    - prompt 和 seed 只是引导。
    - 候选是否被接受，最终取决于 scorer。
 
-3. 数据接口隐藏非固定 incumbent 后，root 求解耗时上升。
-   - 这是预期结果。
-   - 复杂数据上 root 不再秒级返回，因为它确实在求解。
+3. 数据接口隐藏非固定 incumbent 后，候选若要可行必须真实建模求解。
+   - 默认 root 不再承担求解职责。
+   - 复杂数据上的耗时来自生成出的候选 CP-SAT 模型，而不是 seed 内置强模型。
 
 4. fixed 任务仍暴露原排程。
    - 这是必要约束，不是 replay。
@@ -374,7 +339,7 @@ OPENAI_MODEL=gpt-5.5
 
 ### 1. SQLite root smoke
 
-用于确认直接 SQLite 读取、FJSPB IR、seed、executor、scorer 能跑通。`--no-llm` 会重复 root candidate，不调用 API。
+用于确认直接 SQLite 读取、FJSPB IR、seed、executor、scorer 能跑通。当前默认 cold-start seed 预期不可行；`--no-llm` 会重复 root candidate，不调用 API。
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
@@ -419,18 +384,6 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
   --experiment-name multi_bot_5exp_x2_no_incumbent_futs_10_nodes_450s_gpt55
 ```
 
-当前历史结果：
-
-```text
-/home/era/experiments/multi_bot_5exp_x2_no_incumbent_futs_10_nodes_450s_gpt55
-```
-
-结果摘要：
-
-- root makespan: 4472
-- best makespan: 3728
-- best node: 7
-
 ### 4. 从已有 best.py 继续 FUTS
 
 `--initial-code` 会把已有候选脚本作为新实验 root。适合从一个已知好脚本继续 50 轮或更长训练。
@@ -449,7 +402,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
 
 - `--iterations 50` 会产生 root + 50 个 child，即 51 个节点。
 - 每个候选脚本外层最多运行 `--timeout-seconds` 秒。
-- 该 timeout 是候选脚本整体执行时间限制，不是 CP-SAT solver 内部参数；候选代码中也可以设置自己的 `solver.parameters.max_time_in_seconds`。
+- 该 timeout 是候选脚本整体执行时间限制；当前 sandbox 同时通过 `ERA_CANDIDATE_TIMEOUT_SECONDS` 传给候选脚本，根脚本和 prompt 要求 CP-SAT 内部时间略低于该外层上限。
 
 ### 5. 单次变异模式
 
@@ -562,12 +515,12 @@ ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 
 ### tree_branches_3d.png
 
-`tree_branches_3d.png` 在二维树图上增加 makespan gap 维度。
+`tree_branches_3d.png` 在二维树图上增加压缩后的 makespan gap 维度。
 
 - x 轴：`node_id` / expansion order。
 - y 轴：tree depth。
-- z 轴：makespan gap to best，即 `node_makespan - best_makespan`。
-- z 轴裁剪：使用 focus window 裁剪远离 best 的 makespan gap，避免差节点把近优区域压扁。
+- z 轴：makespan gap to best，即 `node_makespan - best_makespan`，但使用 30% ceil scale 显示。
+- z 轴刻度：底部为 best gap `0`；顶部为当前图中最大 gap；从顶部往下每一格为上一格的 `ceil(30%)`，直到接近 0。节点真实 gap 会映射到相邻 tick 之间的位置。
 - 灰色线：parent-child 边。
 - 点颜色：按 score 映射，颜色越深表示 score 越好。
 - 红色星标：当前 best node，通常 z=0。
@@ -695,4 +648,131 @@ ps -efww | grep -E 'implementation.multi_bot_era.cli|<experiment-name>'
 ps -p <PID> -o pid,ppid,user,stat,etime,cmd
 kill <PID>
 ps -p <PID> -o pid,ppid,user,stat,etime,cmd
+```
+
+## e1-e5 合并版数据接口
+
+新增脚本：
+
+- `/home/era/scripts/build_merged_fjspb_sqlite.py`：从原仓库 `database_paper/e1.sqlite` 到 `e5.sqlite` 构造合并 FJSPB SQLite，稳定前缀化 `b_id`、`expr_no`、`expr_name`，避免主键和首任务同步分组冲突。
+- `/home/era/scripts/run_fespb_reference.py`：在 SQLite 副本上运行原仓库 `fespb.fespb_ortools.fespb` 参考求解器。本地环境缺少 `docplex`，所以没有直接运行 CPLEX 版 `fespb.py`；wrapper 禁用了 OR-Tools 版本的旧排程 hint 层，因为合并数据上该辅助 hint 会产生重复 AddHint 并导致 `MODEL_INVALID`。
+
+数据集：
+
+```bash
+python /home/era/scripts/build_merged_fjspb_sqlite.py
+```
+
+输出到 `/home/era/experiments/fjspb_capacity_stress/`，并可由
+`multi_bot_era` loader 直接读取为 FJSPB IR。loader 必须保证非固定任务不暴露旧
+`fixed_start/fixed_end/scheduled_machine`，只保留 fixed 任务所需的硬约束信息。
+
+原仓库参考：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python /home/era/scripts/run_fespb_reference.py \
+  --input /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --output /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged_original_fespb_ortools.sqlite \
+  --cur-ptr 3 \
+  --time-limit 450
+```
+
+参考求解脚本只用于离线校验和对照，不作为 FUTS 训练 prompt 的参考内容。
+
+Timeout 语义修正：
+
+- `--timeout-seconds` 是候选脚本进程的外层运行上限。
+- 现在 sandbox 会把该值写入候选进程环境变量 `ERA_CANDIDATE_TIMEOUT_SECONDS`。
+- 根候选脚本读取该环境变量，并将 `solver.parameters.max_time_in_seconds` 设置为外层 timeout 减 5 秒，避免继续写死 60 秒。
+- prompt 也要求 LLM 变异脚本读取同一环境变量设置 CP-SAT 内部时间。
+
+Root smoke 命令模板：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --mode futs \
+  --iterations 0 \
+  --timeout-seconds 450 \
+  --no-llm \
+  --experiment-name multi_bot_e1_e2_e3_e4_e5_merged_root_smoke_450s_env_timeout_fix2
+```
+
+LLM FUTS 命令模板：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --mode futs \
+  --iterations 9 \
+  --timeout-seconds 450 \
+  --experiment-name multi_bot_e1_e2_e3_e4_e5_merged_futs_10_nodes_450s_gpt55
+```
+
+## Cold-start 默认 seed 约束
+
+默认 `seed.py` 已禁用强可行 CP-SAT baseline，改为 cold-start skeleton。默认 root 预期失败，强可行脚本只能通过 `--initial-code` 显式输入。
+
+默认 cold seed smoke 命令模板：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --mode futs \
+  --iterations 0 \
+  --timeout-seconds 450 \
+  --no-llm \
+  --experiment-name multi_bot_e1_e5_merged_default_cold_seed_smoke
+```
+
+为防止不合格的 greedy-wrapped CP-SAT，executor 已新增 shortcut 拒绝，
+prompt 也禁止先用启发式排程、再把 CP-SAT 变量固定到该排程的模式。
+
+Cold-start FUTS 命令模板：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --mode futs \
+  --iterations 5 \
+  --timeout-seconds 450 \
+  --experiment-name multi_bot_e1_e5_merged_cold_start_5_iter_gpt55_strict
+```
+
+相关 prompt 限制：
+
+- 明确不要调用 `model.AddMapDomain`，如确需映射使用 `model.add_map_domain` 或直接使用 presence bool。
+- 明确 capacity > 1 batch 的成对规则：不同 duration 必须二选一非重叠；相同 duration 只能非重叠或完全对齐 start/end。
+
+从已有候选继续 FUTS 的命令模板：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /home/era/experiments/fjspb_capacity_stress/e1_e2_e3_e4_e5_merged.sqlite \
+  --mode futs \
+  --iterations 5 \
+  --timeout-seconds 450 \
+  --initial-code /home/era/experiments/multi_bot_e1_e5_merged_cold_start_3_iter_gpt55_batch_api_prompt/best.py \
+  --experiment-name multi_bot_e1_e5_merged_cold_start_continue_5_iter_gpt55
+```
+
+当前结论：默认强 seed 已禁用；cold-start 训练应依赖 prompt、FJSPB IR、
+objective feedback 和 scorer 约束推动子节点生成完整 CP-SAT 模型，而不是从
+hidden incumbent 或手写强 baseline 出发。
+
+## 2026-06-18: FUTS mutation prompt strengthened for explicit modeling analysis
+
+针对 cold-start 变异容易退化为“能跑但不可审计”的短 CP-SAT 脚本，补强
+`implementation/multi_bot_era/prompt.py`：
+
+- 要求候选在代码结构中体现对 FJSPB 场景的分析：jobs、ordered tasks、eligible machines、fixed tasks、machine capacities、batch/synchronization machines、chemistry conflicts、robot/device resources、makespan objective。
+- 要求使用语义化变量和按实体索引的数据结构，例如 `task_key`、`machine_code`、`presence[(task_key, machine)]`、`start_vars`、`end_vars`、`interval_vars`、`machine_to_intervals`、`job_to_tasks`、`makespan`，避免生成难以判断约束归属的匿名变量。
+- 明确列出该问题应优先掌握和使用的 OR-Tools CP-SAT 专业工具：`NewIntVar`、`NewBoolVar`、`NewOptionalIntervalVar`、`AddExactlyOne`、`AddImplication`、`OnlyEnforceIf`、`AddBoolOr`、`AddNoOverlap`、`AddCumulative`、`AddMaxEquality`、`Minimize`、solver time limits、solution hints、decision strategies、CP-SAT-guided LNS。
+
+这次改动保持候选输出仍为纯 Python 代码，不要求额外 Markdown 或 JSON 说明；目标是让 FUTS 变异更可能产生完整、可维护、可复用的 OR-Tools 模型，而不是把约束判定复杂性继续推给 scorer。
+
+验证：
+
+```bash
+python -B -c "from pathlib import Path; p=Path('/home/era/implementation/multi_bot_era/prompt.py'); compile(p.read_text(), str(p), 'exec'); print('syntax ok')"
 ```

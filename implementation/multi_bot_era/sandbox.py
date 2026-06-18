@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,8 @@ def run_candidate(code: str, dataset: dict, timeout_seconds: int = 30) -> dict:
     code_path.write_text(code, encoding="utf-8")
     dataset_path.write_text(json.dumps(dataset, ensure_ascii=False), encoding="utf-8")
     runner_path.write_text(runner, encoding="utf-8")
+    env = os.environ.copy()
+    env["ERA_CANDIDATE_TIMEOUT_SECONDS"] = str(timeout_seconds)
 
     try:
       proc = subprocess.run(
@@ -46,6 +49,7 @@ def run_candidate(code: str, dataset: dict, timeout_seconds: int = 30) -> dict:
           capture_output=True,
           text=True,
           timeout=timeout_seconds,
+          env=env,
       )
     except subprocess.TimeoutExpired:
       return {"ok": False, "error": f"timeout after {timeout_seconds}s"}
@@ -56,4 +60,3 @@ def run_candidate(code: str, dataset: dict, timeout_seconds: int = 30) -> dict:
       return {"ok": True, "schedule": json.loads(proc.stdout)}
     except json.JSONDecodeError as exc:
       return {"ok": False, "error": f"invalid JSON output: {exc}"}
-
