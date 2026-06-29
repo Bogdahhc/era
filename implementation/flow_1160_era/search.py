@@ -1,4 +1,4 @@
-"""Traced FUTS loops for multi-bot scheduling."""
+"""Traced FUTS loops for flow_1160 scheduling."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import difflib
 
 from implementation import futs
 from implementation.job_shop_era.logger import ExperimentLogger, NodeRecord
-from implementation.multi_bot_era.executor import MultiBotExecutor
-from implementation.multi_bot_era.seed import baseline_candidate_code
+from implementation.flow_1160_era.executor import Flow1160Executor
+from implementation.flow_1160_era.seed import baseline_candidate_code
 
 
 def _record_node(logger: ExperimentLogger, node: futs.Node, evaluation, parent_code=None):
@@ -104,7 +104,7 @@ def _set_mutator_feedback(
       "next_node_id": next_node_id,
       "timeout_seconds": timeout_seconds,
       "score_contract": (
-          "Every node is executed and scored by MultiBotExecutor. Feasible "
+          "Every node is executed and scored by Flow1160Executor. Feasible "
           "schedules receive score=-(makespan + elapsed_seconds/100); "
           "invalid, non-CP-SAT, crashing, or timeout candidates receive "
           "the worst score and remain in the FUTS tree as failed nodes."
@@ -139,7 +139,7 @@ def run_futs(
     timeout_seconds: int = 30,
     c_puct: float = 1.0,
 ) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+  executor = Flow1160Executor(timeout_seconds)
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   nodes = [futs.Node(0, None, root_solution, root_score, num_visits=1)]
@@ -195,7 +195,7 @@ def run_single_generation(
     initial_code: str | None = None,
     timeout_seconds: int = 30,
 ) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+  executor = Flow1160Executor(timeout_seconds)
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   root = futs.Node(0, None, root_solution, root_score, num_visits=1)

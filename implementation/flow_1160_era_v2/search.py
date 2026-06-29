@@ -1,4 +1,4 @@
-"""Traced FUTS loops for multi-bot scheduling."""
+"""Traced FUTS loops for flow_1160_era_v2."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import difflib
 
 from implementation import futs
 from implementation.job_shop_era.logger import ExperimentLogger, NodeRecord
-from implementation.multi_bot_era.executor import MultiBotExecutor
-from implementation.multi_bot_era.seed import baseline_candidate_code
+from implementation.flow_1160_era.seed import baseline_candidate_code
+from implementation.flow_1160_era_v2.executor import Flow1160V2Executor
 
 
 def _record_node(logger: ExperimentLogger, node: futs.Node, evaluation, parent_code=None):
@@ -41,13 +41,8 @@ def _evaluation_row(node: futs.Node, evaluation) -> dict:
   }
 
 
-def _evaluation_rows(
-    nodes: list[futs.Node], raw_evaluations: dict[int, object]
-) -> dict[int, dict]:
-  return {
-      node.index: _evaluation_row(node, raw_evaluations[node.index])
-      for node in nodes
-  }
+def _evaluation_rows(nodes: list[futs.Node], raw_evaluations: dict[int, object]) -> dict[int, dict]:
+  return {node.index: _evaluation_row(node, raw_evaluations[node.index]) for node in nodes}
 
 
 def _lineage(parent: futs.Node, nodes: list[futs.Node]) -> list[futs.Node]:
@@ -66,9 +61,7 @@ def _lineage(parent: futs.Node, nodes: list[futs.Node]) -> list[futs.Node]:
 def _code_summary(code: str, limit: int = 6000) -> str:
   if len(code) <= limit:
     return code
-  head = code[: limit // 2]
-  tail = code[-limit // 2 :]
-  return head + "\n\n# ... middle of candidate omitted for prompt budget ...\n\n" + tail
+  return code[: limit // 2] + "\n\n# ... middle omitted ...\n\n" + code[-limit // 2 :]
 
 
 def _diff_summary(parent_code: str, child_code: str, limit: int = 5000) -> str:
@@ -82,20 +75,10 @@ def _diff_summary(parent_code: str, child_code: str, limit: int = 5000) -> str:
           n=3,
       )
   )
-  if len(diff) <= limit:
-    return diff
-  return diff[: limit - 80] + "\n# ... diff truncated for prompt budget ..."
+  return diff if len(diff) <= limit else diff[: limit - 80] + "\n# ... diff truncated ..."
 
 
-def _set_mutator_feedback(
-    mutator,
-    *,
-    nodes: list[futs.Node],
-    evaluations: dict[int, dict],
-    parent: futs.Node,
-    next_node_id: int,
-    timeout_seconds: int,
-) -> None:
+def _set_mutator_feedback(mutator, *, nodes, evaluations, parent, next_node_id, timeout_seconds):
   if not hasattr(mutator, "set_feedback_context"):
     return
   best = max(nodes, key=lambda node: node.score)
@@ -104,10 +87,30 @@ def _set_mutator_feedback(
       "next_node_id": next_node_id,
       "timeout_seconds": timeout_seconds,
       "score_contract": (
-          "Every node is executed and scored by MultiBotExecutor. Feasible "
-          "schedules receive score=-(makespan + elapsed_seconds/100); "
-          "invalid, non-CP-SAT, crashing, or timeout candidates receive "
-          "the worst score and remain in the FUTS tree as failed nodes."
+          "Flow1160V2Executor first rejects candidates that ignore material_edges, "
+          "material_inventory_events/AddReservoirConstraint, history_policy, "
+          "logistics_events, buffers/buffer_ids, rolling_state/existing_machine_occupancy, "
+          "AddNoOverlap, or AddCumulative. Feasible schedules then use v1 scorer: "
+          "score=-(makespan + elapsed_seconds/100). Schema details that caused "
+          "prior failures: precedence_pairs rows are [a, b], but "
+          "branch_priority_pairs rows are dicts with higher_task_id/lower_task_id; "
+          "model start[higher_task_id] <= start[lower_task_id]. In strict_cold_start "
+          "history_policy, do not infer logistics duration from historical "
+          "startTime/endTime spans. Logistics events with audit_no_overlap_candidate, "
+          "duration>0, and explicit resources must create fixed-present resource "
+          "intervals, AddNoOverlap per resource, link predecessor/successor task "
+          "ids, add buffer_ids intervals to AddCumulative calendars using buffer "
+          "capacity, and contribute event ends to modeled makespan. Logistics rows "
+          "with missing_planning_duration_no_history preserve topology only. Material "
+          "inventory events must be grouped by inventory_key and modeled with "
+          "AddReservoirConstraint: +quantity at source task end and -quantity at "
+          "destination task start, min_level=0. If CP-SAT has no feasible solution, "
+          "return empty assignments; do not return a cur_ptr or first-machine "
+          "fallback schedule. constraint_realization_boundaries is an interface/"
+          "seed-controlled state: only state.required_hard_constraints are "
+          "mandatory hard constraints; audit_controls, blocked_controls, and "
+          "experimental_controls are non-hard context unless explicit platform "
+          "fields exist."
       ),
       "parent": evaluations.get(parent.index),
       "best": evaluations.get(best.index),
@@ -117,29 +120,15 @@ def _set_mutator_feedback(
   }
   if best.index != parent.index:
     context["best_code_summary"] = _code_summary(best.solution.program)
-    context["parent_to_best_diff"] = _diff_summary(
-        parent.solution.program, best.solution.program
-    )
-  failed_recent = [
-      evaluations[node.index]
-      for node in recent_nodes
-      if not evaluations[node.index].get("feasible")
-  ]
+    context["parent_to_best_diff"] = _diff_summary(parent.solution.program, best.solution.program)
+  failed_recent = [evaluations[node.index] for node in recent_nodes if not evaluations[node.index].get("feasible")]
   if failed_recent:
     context["recent_failures"] = failed_recent
   mutator.set_feedback_context(context)
 
 
-def run_futs(
-    problem,
-    mutator,
-    num_iterations: int,
-    logger: ExperimentLogger,
-    initial_code: str | None = None,
-    timeout_seconds: int = 30,
-    c_puct: float = 1.0,
-) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+def run_futs(problem, mutator, num_iterations, logger, initial_code=None, timeout_seconds=30, c_puct=1.0):
+  executor = Flow1160V2Executor(timeout_seconds)
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   nodes = [futs.Node(0, None, root_solution, root_score, num_visits=1)]
@@ -163,13 +152,7 @@ def run_futs(
     )
     solution = mutator(problem, parent.solution, parent.score)
     score = executor(problem, solution)
-    child = futs.Node(
-        index=len(nodes),
-        parent_index=parent.index,
-        solution=solution,
-        score=score,
-        num_visits=1,
-    )
+    child = futs.Node(len(nodes), parent.index, solution, score, num_visits=1)
     nodes.append(child)
     raw_evaluations[child.index] = executor.last_evaluation
     evaluations = _evaluation_rows(nodes, raw_evaluations)
@@ -188,14 +171,8 @@ def run_futs(
   return best.solution, best.score
 
 
-def run_single_generation(
-    problem,
-    mutator,
-    logger: ExperimentLogger,
-    initial_code: str | None = None,
-    timeout_seconds: int = 30,
-) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+def run_single_generation(problem, mutator, logger, initial_code=None, timeout_seconds=30):
+  executor = Flow1160V2Executor(timeout_seconds)
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   root = futs.Node(0, None, root_solution, root_score, num_visits=1)
@@ -209,12 +186,8 @@ def run_single_generation(
       next_node_id=1,
       timeout_seconds=timeout_seconds,
   )
-
   candidate = mutator(problem, root_solution, root_score)
   candidate_score = executor(problem, candidate)
   child = futs.Node(1, 0, candidate, candidate_score, num_visits=1)
   _record_node(logger, child, executor.last_evaluation, root_solution.program)
-
-  if candidate_score > root_score:
-    return candidate, candidate_score
-  return root_solution, root_score
+  return (candidate, candidate_score) if candidate_score > root_score else (root_solution, root_score)

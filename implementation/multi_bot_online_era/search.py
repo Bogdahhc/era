@@ -1,4 +1,4 @@
-"""Traced FUTS loops for multi-bot scheduling."""
+"""Traced FUTS loops for multi-bot online scheduling."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import difflib
 
 from implementation import futs
 from implementation.job_shop_era.logger import ExperimentLogger, NodeRecord
-from implementation.multi_bot_era.executor import MultiBotExecutor
-from implementation.multi_bot_era.seed import baseline_candidate_code
+from implementation.multi_bot_online_era.executor import MultiBotOnlineExecutor
+from implementation.multi_bot_online_era.seed import baseline_candidate_code
 
 
 def _record_node(logger: ExperimentLogger, node: futs.Node, evaluation, parent_code=None):
@@ -95,6 +95,7 @@ def _set_mutator_feedback(
     parent: futs.Node,
     next_node_id: int,
     timeout_seconds: int,
+    scenario_config: dict | None = None,
 ) -> None:
   if not hasattr(mutator, "set_feedback_context"):
     return
@@ -104,10 +105,14 @@ def _set_mutator_feedback(
       "next_node_id": next_node_id,
       "timeout_seconds": timeout_seconds,
       "score_contract": (
-          "Every node is executed and scored by MultiBotExecutor. Feasible "
-          "schedules receive score=-(makespan + elapsed_seconds/100); "
-          "invalid, non-CP-SAT, crashing, or timeout candidates receive "
-          "the worst score and remain in the FUTS tree as failed nodes."
+          "Every node is executed and scored by MultiBotOnlineExecutor against "
+          "an online command stream. Candidates must expose DynamicScheduler "
+          "with handle_command(command), return valid schedules after initial "
+          "and post-insertion reschedule commands, and receive score="
+          "-(post_insert_makespan + stability_penalty + elapsed_seconds/100). "
+          "Invalid interfaces, non-CP-SAT code, infeasible schedules, crashes, "
+          "or timeouts receive the worst score and remain in the FUTS tree as "
+          "failed nodes."
       ),
       "parent": evaluations.get(parent.index),
       "best": evaluations.get(best.index),
@@ -115,6 +120,8 @@ def _set_mutator_feedback(
       "recent": [evaluations[node.index] for node in recent_nodes],
       "parent_code_summary": _code_summary(parent.solution.program),
   }
+  if scenario_config:
+    context["scenario_config"] = scenario_config
   if best.index != parent.index:
     context["best_code_summary"] = _code_summary(best.solution.program)
     context["parent_to_best_diff"] = _diff_summary(
@@ -138,8 +145,33 @@ def run_futs(
     initial_code: str | None = None,
     timeout_seconds: int = 30,
     c_puct: float = 1.0,
+    scenario_seed: int = 0,
+    insertion_count: int = 1,
+    inserted_jobs: int = 2,
+    inserted_task_count: int = 4,
+    insert_window_ratio: tuple[float, float] = (0.10, 0.60),
+    insert_times: list[int] | None = None,
+    enforce_even_centrifuge_inserts: bool = False,
 ) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+  scenario_config = {
+      "scenario_seed": scenario_seed,
+      "insertion_count": insertion_count,
+      "inserted_jobs": inserted_jobs,
+      "inserted_task_count": inserted_task_count,
+      "insert_window_ratio": list(insert_window_ratio),
+      "insert_times": list(insert_times) if insert_times is not None else None,
+      "enforce_even_centrifuge_inserts": enforce_even_centrifuge_inserts,
+  }
+  executor = MultiBotOnlineExecutor(
+      timeout_seconds,
+      scenario_seed=scenario_seed,
+      insertion_count=insertion_count,
+      inserted_jobs=inserted_jobs,
+      inserted_task_count=inserted_task_count,
+      insert_window_ratio=insert_window_ratio,
+      insert_times=insert_times,
+      enforce_even_centrifuge_inserts=enforce_even_centrifuge_inserts,
+  )
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   nodes = [futs.Node(0, None, root_solution, root_score, num_visits=1)]
@@ -160,6 +192,7 @@ def run_futs(
         parent=parent,
         next_node_id=len(nodes),
         timeout_seconds=timeout_seconds,
+        scenario_config=scenario_config,
     )
     solution = mutator(problem, parent.solution, parent.score)
     score = executor(problem, solution)
@@ -194,8 +227,33 @@ def run_single_generation(
     logger: ExperimentLogger,
     initial_code: str | None = None,
     timeout_seconds: int = 30,
+    scenario_seed: int = 0,
+    insertion_count: int = 1,
+    inserted_jobs: int = 2,
+    inserted_task_count: int = 4,
+    insert_window_ratio: tuple[float, float] = (0.10, 0.60),
+    insert_times: list[int] | None = None,
+    enforce_even_centrifuge_inserts: bool = False,
 ) -> tuple[futs.Solution, float]:
-  executor = MultiBotExecutor(timeout_seconds)
+  scenario_config = {
+      "scenario_seed": scenario_seed,
+      "insertion_count": insertion_count,
+      "inserted_jobs": inserted_jobs,
+      "inserted_task_count": inserted_task_count,
+      "insert_window_ratio": list(insert_window_ratio),
+      "insert_times": list(insert_times) if insert_times is not None else None,
+      "enforce_even_centrifuge_inserts": enforce_even_centrifuge_inserts,
+  }
+  executor = MultiBotOnlineExecutor(
+      timeout_seconds,
+      scenario_seed=scenario_seed,
+      insertion_count=insertion_count,
+      inserted_jobs=inserted_jobs,
+      inserted_task_count=inserted_task_count,
+      insert_window_ratio=insert_window_ratio,
+      insert_times=insert_times,
+      enforce_even_centrifuge_inserts=enforce_even_centrifuge_inserts,
+  )
   root_solution = futs.Solution(initial_code or baseline_candidate_code())
   root_score = executor(problem, root_solution)
   root = futs.Node(0, None, root_solution, root_score, num_visits=1)
@@ -208,6 +266,7 @@ def run_single_generation(
       parent=root,
       next_node_id=1,
       timeout_seconds=timeout_seconds,
+      scenario_config=scenario_config,
   )
 
   candidate = mutator(problem, root_solution, root_score)

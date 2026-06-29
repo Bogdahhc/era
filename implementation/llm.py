@@ -50,10 +50,12 @@ class OpenAILLM:
         wire_api: str = "responses",
         max_retries: int = 5,
     ):
+        timeout_seconds = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "1800"))
         self.client = OpenAI(
             api_key=api_key,
             base_url=base_url,
             default_headers=_default_headers(base_url),
+            timeout=timeout_seconds,
         )
         self.model_name = model_name
         self.wire_api = wire_api

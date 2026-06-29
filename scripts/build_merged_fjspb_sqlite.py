@@ -92,8 +92,15 @@ def build_merged_sqlite(sources: list[str], output: Path, cur_ptr: int | None) -
         "robots": 0,
     }
     try:
+        stem_counts = {
+            stem: sum(1 for path in source_paths if path.stem == stem)
+            for stem in {path.stem for path in source_paths}
+        }
+        stem_seen: dict[str, int] = {}
         for source_path in source_paths:
-            tag = source_path.stem
+            stem = source_path.stem
+            stem_seen[stem] = stem_seen.get(stem, 0) + 1
+            tag = f"{stem}_{stem_seen[stem]}" if stem_counts[stem] > 1 else stem
             src = sqlite3.connect(source_path)
             src.row_factory = sqlite3.Row
             try:
