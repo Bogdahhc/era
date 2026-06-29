@@ -1,235 +1,313 @@
-# ERA:面向科学家的经验型软件协同写作 AI 系统(本地化分支)
+# ERA: 面向调度优化的经验型软件协同写作 AI 系统
 
 [![arXiv](https://img.shields.io/badge/arXiv-2509.06503-b31b1b.svg)](https://arxiv.org/abs/2509.06503)
 [![Project Page](https://img.shields.io/badge/Project%20Page-google--research.github.io%2Fera-blue)](https://google-research.github.io/era/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](./LICENSE)
 
-> 本仓库(`localized_era`)是 [Google ERA](https://arxiv.org/abs/2509.06503) 的**本地化扩展分支**。
-> 在上游 FUTS + LLM 方法的基础上,将该方法落地到**组合调度优化**领域,新增了三个独立的调度搜索应用。
+本仓库是 Google ERA 的本地化扩展分支。它保留上游 ERA 的
+Flat UCB Tree Search (FUTS) 框架，并把“生成代码 -> 执行代码 -> 客观评分
+-> 继续变异”的闭环落地到作业车间、多机器人、湿实验流程图和在线滚动调度。
 
----
+当前重点不只是生成一次性答案，而是让 FUTS 逐步产生可复用、可运行、可审计的
+调度脚本。
 
-## 目录
+## 当前成果
 
-- [简介](#简介)
-- [本仓库相对上游的区别](#本仓库相对上游的区别)
-- [核心方法:Flat UCB Tree Search (FUTS)](#核心方法flat-ucb-tree-search-futs)
-- [仓库结构](#仓库结构)
-- [环境与依赖](#环境与依赖)
-- [快速开始](#快速开始)
-- [调度优化应用](#调度优化应用)
-  - [`job_shop_era` —— 自由变异](#job_shop_era--自由变异)
-  - [`exact_job_shop_era` —— CP-SAT 精确求解](#exact_job_shop_era--cp-sat-精确求解)
-  - [`multi_bot_era` —— 多机器人调度](#multi_bot_era--多机器人调度)
-  - [三者对比](#三者对比)
-- [实验产物](#实验产物)
-- [引用](#引用本工作)
-- [许可证](#许可证)
+- 保留上游 ERA/FUTS 核心实现：`implementation/futs.py`、`implementation/llm.py`、
+  `implementation/sandbox.py`。
+- 新增六个调度应用分支：
+  `job_shop_era`、`exact_job_shop_era`、`multi_bot_era`、
+  `multi_bot_online_era`、`flow_1160_era`、`flow_1160_era_v2`。
+- `flow_1160_era_v2` 已接入项目 1160 的流程图、运行态节点、物料流、物流节点、
+  buffer 容量、P1/P2/P3 分路优先级和 rolling/fixed 调度接口。
+- v2 默认使用 `history_policy=strict_cold_start`：候选不可见历史开始/结束时间，
+  不能用历史 span 推导物流或任务时长，避免把历史运行结果当答案 replay。
+- v2 当前可硬建的约束包括 task duration、eligible machine、frequency、
+  required capacity、precedence、min wait、物料边级库存非负、物流拓扑、
+  buffer 容量、机器 cumulative/no-overlap、rolling existing occupancy。
+- v2 当前 blocked 约束包括完整 merge/split 数量平衡、初始库存、入出库方向、
+  plate identity no-overlap；这些需要平台补充独立且可验证的字段。
+- `multi_bot_online_era` 已从一次性 `solve(dataset)` 扩展为
+  `DynamicScheduler(dataset).handle_command(command)`，支持 tick、insert_jobs、
+  reschedule、dispatch_until 的在线命令流评测。
 
----
+## 方法概览
 
-## 简介
+`implementation/futs.py` 是上游论文 Algorithm 1 的通用单线程参考实现。调用方
+只需要提供两个函数：
 
-ERA(Empirical Research Assistant,经验型研究助手)是一个帮助科学家撰写高质量经验型软件的 AI 系统。它将大语言模型与一种树搜索算法 —— **Flat UCB Tree Search (FUTS)** —— 结合,迭代地**生成 → 执行 → 评分**候选程序,逐步收敛到专家级解。
+- `generate_fn(problem, parent_solution, parent_score)`：基于问题、父节点代码和反馈
+  生成新候选脚本，通常由 LLM 完成。
+- `execute_fn(problem, solution)`：在沙箱中执行候选脚本，并返回一个客观分数。
 
-论文原文:
+FUTS 最大化 score。调度任务通常把 makespan 转成负分：
 
-> **[An AI system to help scientists write expert-level empirical software](https://arxiv.org/abs/2509.06503)**
-> Aygün, et al., 2025
+```text
+score = -(makespan + elapsed_seconds / 100)
+```
 
-上游 ERA 面向科学任务(如流感预测、单细胞批次整合)。本分支则把同样的"代码即解、客观打分、树搜索迭代"范式,迁移到**作业车间调度 / 多机器人任务调度**这类 NP-hard 组合优化问题上:让 LLM 直接产出可运行的求解脚本,FUTS 用真实的目标值(makespan)驱动搜索。
-
----
-
-## 本仓库相对上游的区别
-
-| 维度 | 上游 ERA | 本分支 `localized_era` |
-| --- | --- | --- |
-| 任务域 | 经验科学(Kaggle 回归、流行病预测、单细胞) | 组合调度(job-shop、多机器人) |
-| 解的形态 | 数据处理 notebook / 脚本 | 返回 `Schedule` 的求解器脚本 |
-| 评分信号 | 测试集指标(RMSE、batch score 等) | `-makespan`(越低越好) |
-| 求解范式 | 无约束 | 分自由变异 / 强制 CP-SAT 两套 |
-| 新增模块 | — | `job_shop_era`、`exact_job_shop_era`、`multi_bot_era` |
-| 保留模块 | FUTS 核心、`playground_s3e1.py`、notebooks | 同上,均保留 |
-
-> 注:上游 README 提到的 `era_applications/` 目录不属于本分支;本分支的应用位于 `implementation/` 下的三个子包。
-
----
-
-## 核心方法:Flat UCB Tree Search (FUTS)
-
-`implementation/futs.py` 是论文 Algorithm 1 的通用单线程参考实现。`search` 函数只需调用方提供两个函数:
-
-- **`generate_fn(problem, parent_solution, parent_score)`**:基于问题定义与一个父解,**生成一个新的(理想上更优的)候选解** —— 通常是渲染 prompt 喂给 LLM,再解析其输出。
-- **`execute_fn(problem, solution)`**:把候选解放进**沙箱**执行,针对问题的度量返回一个**客观分数**。
-
-`search` 会迭代 `num_iterations` 次,每次用 Flat UCB(PUCT)策略扩展一个搜索节点,最终返回找到的最优解。FUTS **最大化**分数,因此调度任务中统一用 `-makespan` 作为 score(makespan 越低 → 分数越高)。
-
-FUTS 的完整实现见 `implementation/futs.py`(`futs_test.py` 为其单元测试)。
-
----
+因此 makespan 越短，score 越高。当某些分支已证明 makespan 全局最优后，后续
+score 改善主要代表候选脚本求解速度或稳定性改善，而不是更短排程。
 
 ## 仓库结构
 
-```
+```text
 era/
-├── implementation/                 # 全部可运行代码
-│   ├── futs.py / futs_test.py      # FUTS 核心算法 + 测试
-│   ├── llm.py                      # LLM 调用封装
-│   ├── sandbox.py                  # 候选脚本执行沙箱
-│   ├── playground_s3e1.py          # 原版端到端示例(Kaggle 回归)
-│   ├── experiment_pipeline.ipynb   # 原版交互式实验
-│   ├── data/                       # playground 数据
-│   ├── notebooks/                  # 原版科学任务示例(流感预测 / 单细胞)
-│   ├── job_shop_era/               # 【新增】自由变异 job-shop
-│   ├── exact_job_shop_era/         # 【新增】CP-SAT 精确 job-shop
-│   └── multi_bot_era/              # 【新增】多机器人调度
-├── experiments/                    # 43 组实验产物(候选脚本/节点日志/图)
-├── docs/                           # 实验可视化(_study.html / _diffs)
-├── README.md  LICENSE  CONTRIBUTING.md
-└── job_shop_lib_dataset_directory.txt
+├── implementation/
+│   ├── futs.py / futs_test.py
+│   ├── llm.py
+│   ├── sandbox.py
+│   ├── playground_s3e1.py
+│   ├── notebooks/
+│   ├── job_shop_era/
+│   ├── exact_job_shop_era/
+│   ├── multi_bot_era/
+│   ├── multi_bot_online_era/
+│   ├── flow_1160_era/
+│   └── flow_1160_era_v2/
+├── scripts/
+│   ├── build_fjspb_capacity_variant.py
+│   ├── build_merged_fjspb_sqlite.py
+│   ├── monitor_multi_bot_futs.py
+│   └── prove_flow1160_v2_seed_optimal.py
+├── experiments/
+├── docs/
+├── README.md
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
----
+`experiments/` 保存本地实验产物。仓库中只保留已经入库的代表性结果；大量 smoke、
+cache、agent 状态、日志和临时输出不作为源码的一部分上传。
 
-## 环境与依赖
+## 环境
 
-- **Python 3.10+**
-- 上游通用依赖:`pandas`、`numpy`、`scikit-learn`、`openai`
-- 本分支调度应用额外依赖:
-  - [`job-shop-lib`](https://pypi.org/project/job-shop-lib/) —— job-shop 基准实例与 `Schedule` 校验
-  - [`ortools`](https://pypi.org/project/ortools/) —— CP-SAT 精确求解(`exact_job_shop_era`、`multi_bot_era`)
-- 一个 OpenAI 兼容的 API Key
+推荐 Python 3.10+。
 
 ```bash
 pip install pandas numpy scikit-learn openai job-shop-lib ortools
 ```
 
-**LLM 配置**:各应用默认从 `~/.config/era/openai.env` 读取私有的 endpoint / key / model 设置(文件不入库)。也可用环境变量 `OPENAI_API_KEY`、`OPENAI_MODEL` 等覆盖。`--no-llm` 可在无 LLM 时跑通流程做 smoke test。
+LLM 配置默认从 `~/.config/era/openai.env` 或环境变量读取。常用环境变量包括：
 
----
+```bash
+export OPENAI_API_KEY="..."
+export OPENAI_MODEL="..."
+```
+
+所有应用均支持 `--no-llm` 用于复现实验、跑已知候选或做 smoke test。
 
 ## 快速开始
 
-### 1. 原版示例:Kaggle 回归(Playground S3E1)
+### 原版 ERA 示例
 
 ```bash
-cd implementation/
-export OPENAI_API_KEY="your-api-key"
-export OPENAI_MODEL="gpt-5.5"
+cd /home/era/implementation
 python playground_s3e1.py
 ```
 
-或用 Jupyter 打开 `experiment_pipeline.ipynb` 交互式跑完整流程。
+上游科学任务 notebook 位于
+[`implementation/notebooks`](./implementation/notebooks)。
 
-### 2. 原版科学任务 notebooks
-
-`implementation/notebooks/` 提供两个评测基准 notebook —— CDC 流感预测、单细胞批次整合,详见 [`notebooks/README.md`](./implementation/notebooks/README.md)。
-
-### 3. 调度应用(本分支重点)
-
-见下方[调度优化应用](#调度优化应用)。
-
----
-
-## 调度优化应用
-
-三个应用共享同一套 FUTS 接口与沙箱执行框架,差异在于**候选脚本的形态约束**与**问题数据接口**。
-
-### `job_shop_era` —— 自由变异
-
-最开放的 job-shop 代码搜索版本。每个 FUTS 节点生成**完整 Python solver 脚本**,算法形式不受限制(启发式、局部搜索、贪心、随机修复均可),只要能返回合法 `job_shop_lib.Schedule` 并通过 scorer 即可进入搜索树。
-
-- 适配 `job_shop_lib` 标准基准(`ft06`、`ft10`、`taXX` 等)
-- 候选脚本须定义 `def solve(instance): ... return schedule`
-- `execute_fn` 在子进程沙箱执行,用 `Schedule.check_schedule` 校验可行性,返回 `-makespan`
-- CLI 默认对 LLM **隐藏**基准参考最优值(避免 hard-code)
+### 自由变异 job-shop
 
 ```bash
-# 列出可用基准
-python -m implementation.job_shop_era.cli --list-benchmarks
-
-# 跑一个 FUTS 搜索
-python -m implementation.job_shop_era.cli \
-    --instance ft06 --mode futs --iterations 50 --timeout-seconds 30
-
-# 无 LLM 冒烟测试
-python -m implementation.job_shop_era.cli --instance ft06 --no-llm --iterations 1
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.job_shop_era.cli \
+  --instance ft06 \
+  --mode futs \
+  --iterations 50 \
+  --timeout-seconds 30
 ```
 
-主要参数:`--instance`、`--mode {single,bon,futs}`、`--iterations`、`--timeout-seconds`、`--no-llm`、`--early-stop-at-optimum`、`--include-reference-values-in-prompt`。
+候选脚本定义 `solve(instance)` 并返回 `job_shop_lib.Schedule`。算法形式不限，评分
+只看可行性与 makespan。详见
+[`implementation/job_shop_era/README.md`](./implementation/job_shop_era/README.md)。
 
-详见 [`job_shop_era/README.md`](./implementation/job_shop_era/README.md) 与 [`FULL_MUTATION_LOG.md`](./implementation/job_shop_era/FULL_MUTATION_LOG.md)。
-
----
-
-### `exact_job_shop_era` —— CP-SAT 精确求解
-
-把探索空间收束到**可复用的 CP-SAT 求解脚本**。prompt 明确要求用 OR-Tools CP-SAT 建模(变量、约束、hint、branching、repair、LNS 等),返回标准 `Schedule`。相比自由变异,它额外支持:
-
-- **optimum 早停**:命中已知最优 makespan 即提前结束
-- **runtime tie-breaker**:达到相同 makespan 后,以运行时间作为次级排序
-- **结构化反馈**:把 parent / best / recent-failure 信息传给子节点(而非一句自然语言建议)
-- **完整产物**:每个实验落盘 `best.py`、节点候选、`versions`、`manifest`,以及二维 / 三维甘特图
+### CP-SAT job-shop
 
 ```bash
-python -m implementation.exact_job_shop_era.cli \
-    --instance ft06 --iterations 10 --c-puct 1.0 --timeout-seconds 30 \
-    --early-stop-at-optimum
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.exact_job_shop_era.cli \
+  --instance ft06 \
+  --iterations 10 \
+  --timeout-seconds 30 \
+  --early-stop-at-optimum
 ```
 
-辅助工具:`audit_cli.py`(审计候选)、`plot_tree_cli.py`(搜索树可视化)、`cp_sat_solver.py`。
+候选仍返回 `job_shop_lib.Schedule`，但 prompt 要求使用 OR-Tools CP-SAT 建模，并
+禁止 hard-code 实例答案。详见
+[`implementation/exact_job_shop_era/FREE_MUTATION_COMPARISON.md`](./implementation/exact_job_shop_era/FREE_MUTATION_COMPARISON.md)。
 
-详见 [`FREE_MUTATION_COMPARISON.md`](./implementation/exact_job_shop_era/FREE_MUTATION_COMPARISON.md)。
-
----
-
-### `multi_bot_era` —— 多机器人调度
-
-面向实验室的**多机器人 / 多任务调度**数据(JSON / SQLite)。借鉴 `exact_job_shop_era` 的结构性约束:
-
-- 候选脚本**必须使用 OR-Tools CP-SAT**
-- 数据接口**只暴露问题实例**,不向候选脚本泄露"非固定任务"的已排好答案 —— 避免 FUTS 学到 replay
-- scorer 只做**可行性与 makespan 验证**,不做主观代码质量判断
-- prompt 向子节点传递父节点、best 节点、近期失败、score contract、代码摘要与 diff,让变异有可继承信息
+### 离线多机器人调度
 
 ```bash
-# 用自定义数据集
-python -m implementation.multi_bot_era.cli \
-    --dataset /path/to/scheduling_benchmark.json \
-    --mode futs --iterations 20 --c-puct 1.0 --timeout-seconds 30
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_era.cli \
+  --dataset /path/to/fjspb.sqlite \
+  --mode futs \
+  --iterations 20 \
+  --timeout-seconds 450
 ```
 
-主要参数:`--dataset`、`--mode {single,futs}`、`--iterations`、`--c-puct`、`--timeout-seconds`、`--no-llm`。
+候选脚本应使用 CP-SAT，并返回 `{"assignments": [...]}`。默认 root 是故意失败的
+cold-start skeleton，用于测试 LLM/FUTS 能否从语言需求和反馈中生成完整可复用模型。
 
-详见 [`IMPROVEMENT_LOG.md`](./implementation/multi_bot_era/IMPROVEMENT_LOG.md)。
+### 在线滚动多机器人调度
 
----
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_online_era.cli \
+  --dataset /path/to/fjspb.sqlite \
+  --mode futs \
+  --iterations 0 \
+  --timeout-seconds 30 \
+  --no-llm \
+  --scenario-seed 0 \
+  --insertion-count 1 \
+  --inserted-jobs 2 \
+  --inserted-task-count 4 \
+  --experiment-name multi_bot_online_root_smoke
+```
 
-### 三者对比
+候选接口是：
 
-| 维度 | `job_shop_era` | `exact_job_shop_era` | `multi_bot_era` |
+```python
+class DynamicScheduler:
+    def __init__(self, dataset):
+        ...
+
+    def handle_command(self, command):
+        ...
+```
+
+评测器逐条发送 `reschedule`、`tick`、`insert_jobs`、`dispatch_until`。候选只能看到
+当前命令，不能假设未来插入事件或命令流长度。评分最大化：
+
+```text
+-(average_checked_makespan + cumulative_stability_penalty + elapsed_seconds / 100)
+```
+
+可用 `scenario_cli.py` 预览或导出确定性插入命令：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bot_online_era.scenario_cli \
+  --scenario-seed 7 \
+  --insertion-count 3 \
+  --inserted-jobs 2 \
+  --inserted-task-count 4 \
+  --emit-command-script
+```
+
+### 项目 1160 流程图调度 v1
+
+`flow_1160_era` 从智能调度系统项目 1160 的 flowData 和 projectAllNodeList 构造
+FJSPB IR，接入真实 duration、temperature、frequency、capacity、precedence_pairs
+和 P1/P2/P3 开始优先级。
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era.cli \
+  --mode futs \
+  --iterations 0 \
+  --no-llm \
+  --timeout-seconds 10
+```
+
+更多建模记录见
+[`implementation/flow_1160_era/IMPROVEMENT_LOG.md`](./implementation/flow_1160_era/IMPROVEMENT_LOG.md)。
+
+### 项目 1160 流程图调度 v2
+
+`flow_1160_era_v2` 是当前最新分支。它保留 v1 的核心 scoring contract，并新增：
+
+- `material_edges`
+- `material_inventory_events`
+- `material_lineage_links`
+- `logistics_events`
+- `buffers`
+- `rolling_state`
+- `constraint_realization_boundaries`
+- `history_policy`
+
+默认口径是 strict cold-start：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v2.cli \
+  --mode futs \
+  --iterations 1 \
+  --timeout-seconds 60 \
+  --no-llm \
+  --boundary-profile conservative \
+  --boundary-seed 1160 \
+  --history-policy strict_cold_start
+```
+
+审计 IR：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v2.audit_v2 \
+  --boundary-profile conservative \
+  --boundary-seed 1160 \
+  --history-policy strict_cold_start
+```
+
+证明当前 IR/seed/history-policy 口径下的 makespan 最优性：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python scripts/prove_flow1160_v2_seed_optimal.py
+```
+
+v2 数据落地边界见
+[`REALISTIC_DATA_REQUIREMENTS.md`](./implementation/flow_1160_era_v2/REALISTIC_DATA_REQUIREMENTS.md)，
+完整改进日志见
+[`IMPROVEMENT_LOG.md`](./implementation/flow_1160_era_v2/IMPROVEMENT_LOG.md)。
+
+## 应用对比
+
+| 分支 | 候选脚本接口 | 主要约束 | 评分口径 |
 | --- | --- | --- | --- |
-| 候选形态 | 任意 Python solver | solver,但 prompt 强制 CP-SAT | solver,强制 CP-SAT |
-| 问题数据 | `job_shop_lib` 标准基准 | `job_shop_lib` 标准基准 | 实验室 JSON / SQLite |
-| 输出对象 | 合法 `job_shop_lib.Schedule` | 同左 | 实验室 schedule 结构 |
-| 优化目标 | makespan(可行即计) | makespan + runtime tie-break | makespan |
-| 理论最优 | 不强制 bound | 支持 optimum 早停 | 防答案泄露、防 replay |
-| 失败反馈 | 分数 / 错误 | parent/best/recent 结构化反馈 | parent/best/recent + diff |
-| 产物 | best.py + 节点候选 | best.py/nodes/versions/manifest/图 | best.py + 节点候选 |
+| `job_shop_era` | `solve(instance) -> Schedule` | job-shop 可行性 | `-makespan` |
+| `exact_job_shop_era` | `solve(instance) -> Schedule` | CP-SAT、禁止 hard-code、optimum 早停 | makespan + runtime tie-break |
+| `multi_bot_era` | `solve(dataset) -> {"assignments": [...]}` | FJSPB、机器容量、precedence、fixed task | `-(makespan + elapsed/100)` |
+| `multi_bot_online_era` | `DynamicScheduler.handle_command` | 在线插入、rolling fixed、稳定性 | 平均 makespan + 稳定性惩罚 |
+| `flow_1160_era` | `solve(dataset) -> {"assignments": [...]}` | 项目 1160 task IR、真实 duration/capacity/frequency | `-(makespan + elapsed/100)` |
+| `flow_1160_era_v2` | 同上 | v1 + 物料/物流/buffer/rolling/边界接口 | strict cold-start makespan + runtime |
 
----
+## 项目 1160 当前建模口径
 
-## 实验产物
+当前 v2 默认只把已经能从平台字段独立验证的内容作为硬约束：
 
-- **`experiments/`**:43 组实验目录,涵盖各类 smoke test 与正式搜索(ft06/ft10、`taXX` 系列、multi-bot 多配置、CP-SAT vs 非 CP-SAT 对比等)。每组保留候选脚本、节点日志与可视化。
-- **`docs/`**:以 `_study.html`(完整解的可视化页面)与 `_diffs/`(父子候选差异)形式组织的实验可视化,可在浏览器直接查看。
+- task duration、eligible machine、frequency、required capacity；
+- `precedence_pairs`、`minWaitTime`、P1/P2/P3 start priority；
+- `material_edges[*].hard_precedence_candidate`；
+- `material_inventory_events` 的边级库存非负；
+- strict 模式下零时长 logistics 拓扑前序；
+- buffer capacity 与机器 cumulative/no-overlap；
+- rolling existing occupancy。
 
----
+以下内容只做 audit 或 blocked metadata，不允许候选私自硬建：
 
-## 引用本工作
+- 完整 merge/split 数量平衡；
+- 初始库存；
+- 入出库方向；
+- plate identity no-overlap；
+- 未确认的 `quantityConsumeRule` / `plateOperType` 枚举语义。
 
-如使用了本仓库的代码或数据,请引用上游论文:
+## 实验与产物
+
+常见产物包括：
+
+- `best.py`
+- `nodes.jsonl`
+- `versions.jsonl`
+- `candidates/node_XXXX.py`
+- `tree_branches.png`
+- `tree_branches_3d.png`
+- `manifest.json`
+
+本地运行会产生大量 experiment/cache/log/agent 文件。上传源码时默认只提交可复用代码、
+脚本、文档和代表性实验资料，不提交 `.claude`、`.agents`、`__pycache__`、日志、
+临时 cache 或大批运行输出。
+
+## 引用
+
+如使用了本仓库的代码或数据，请引用上游 ERA 论文：
 
 ```bibtex
 @misc{aygun2025aihelpscientistswrite,
@@ -245,6 +323,6 @@ python -m implementation.multi_bot_era.cli \
 
 ## 许可证
 
-Apache License 2.0,详见 [`LICENSE`](./LICENSE)。
+Apache License 2.0，详见 [`LICENSE`](./LICENSE)。
 
-> 本项目并非 Google 官方支持的产品(Not an officially supported Google product)。
+本项目并非 Google 官方支持的产品。
