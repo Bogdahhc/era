@@ -18,6 +18,7 @@ from collections import Counter, defaultdict, deque
 import copy
 import json
 import re
+import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -118,20 +119,49 @@ def _api_get(path: str) -> dict:
     return json.loads(r.read().decode())
 
 
+def _api_get_optional(path: str) -> dict:
+  try:
+    return _api_get(path)
+  except urllib.error.HTTPError as exc:
+    if exc.code == 404:
+      return {"code": 404, "rows": [], "data": []}
+    raise
+
+
 def fetch_project(project_id: str) -> dict:
-  """从调度系统拉 flowData + device/list + devicePosition。"""
+  """从调度系统拉 project 1160 planning + realism source data."""
   flow = _api_get("/material/tool/project/flowData?id=%s&language=cn" % project_id)
   devices = _api_get("/material/tool/device/list?pageNum=1&pageSize=500")
-  positions = _api_get("/material/tool/devicePosition/list?pageNum=1&pageSize=500")
+  positions = _api_get("/material/tool/devicePosition/list?pageNum=1&pageSize=1000")
   all_nodes_resp = _api_get(
       "/material/tool/projectRunning/projectAllNodeList?projectId=%s" % project_id
   )
+  device_materials = _api_get_optional(
+      "/design/proCenter/deviceMaterial/list?pageNum=1&pageSize=200&projectId=%s" % project_id
+  )
+  barcode_manage = _api_get_optional("/material/tool/barcodeManage/list?pageNum=1&pageSize=1000")
+  barcode_settings = _api_get_optional("/material/tool/barcodesetting/list?pageNum=1&pageSize=500")
+  material_settings = _api_get_optional("/material/tool/materialSetting/list?pageNum=1&pageSize=500")
+  device_inner_settings = _api_get_optional("/material/tool/deviceInnerSetting/list?pageNum=1&pageSize=500")
+  well_global = _api_get_optional("/material/tool/wellGlobal/list?pageNum=1&pageSize=500")
+  device_running = _api_get_optional(
+      "/design/proCenter/deviceRunning/list?pageNum=1&pageSize=200&projectId=%s" % project_id
+  )
+  dispatch_queue = _api_get_optional("/openApi/dispatch/nodeIdQueue/list?projectId=%s" % project_id)
   return {
       "project_id": str(project_id),
       "flow_data": flow.get("data", {}) or {},
       "devices": devices.get("rows", []),
       "positions": positions.get("rows", []),
       "all_nodes": all_nodes_resp.get("data", []) or [],
+      "device_materials": device_materials.get("rows", []) or [],
+      "barcode_manage": barcode_manage.get("rows", []) or [],
+      "barcode_settings": barcode_settings.get("rows", []) or [],
+      "material_settings": material_settings.get("rows", []) or [],
+      "device_inner_settings": device_inner_settings.get("rows", []) or [],
+      "well_global": well_global.get("rows", []) or [],
+      "device_running": device_running.get("rows", []) or [],
+      "dispatch_node_queue": dispatch_queue.get("data", []) or dispatch_queue.get("rows", []) or [],
   }
 
 
