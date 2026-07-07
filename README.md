@@ -15,9 +15,10 @@ Flat UCB Tree Search (FUTS) 框架，并把“生成代码 -> 执行代码 -> �
 
 - 保留上游 ERA/FUTS 核心实现：`implementation/futs.py`、`implementation/llm.py`、
   `implementation/sandbox.py`。
-- 新增六个调度应用分支：
+- 新增八个调度应用分支：
   `job_shop_era`、`exact_job_shop_era`、`multi_bot_era`、
-  `multi_bot_online_era`、`flow_1160_era`、`flow_1160_era_v2`。
+  `multi_bot_online_era`、`flow_1160_era`、`flow_1160_era_v2`、
+  `flow_1160_era_v3`、`flow_1160_era_v4`。
 - `flow_1160_era_v2` 已接入项目 1160 的流程图、运行态节点、物料流、物流节点、
   buffer 容量、P1/P2/P3 分路优先级和 rolling/fixed 调度接口。
 - v2 默认使用 `history_policy=strict_cold_start`：候选不可见历史开始/结束时间，
@@ -27,6 +28,11 @@ Flat UCB Tree Search (FUTS) 框架，并把“生成代码 -> 执行代码 -> �
   buffer 容量、机器 cumulative/no-overlap、rolling existing occupancy。
 - v2 当前 blocked 约束包括完整 merge/split 数量平衡、初始库存、入出库方向、
   plate identity no-overlap；这些需要平台补充独立且可验证的字段。
+- `flow_1160_era_v3` 新增 command IR、设备指令、真实化字段 audit 和
+  Isaac/motion monitor 入口，拒绝 task-only 的伪执行排程。
+- `flow_1160_era_v4` 是当前最新分支：从“整张流程图排一次”改为
+  seed-specific 的 1 个或多个培养皿/培养板实例排程，并共享设备、机器人、
+  buffer 和孔位资源。
 - `multi_bot_online_era` 已从一次性 `solve(dataset)` 扩展为
   `DynamicScheduler(dataset).handle_command(command)`，支持 tick、insert_jobs、
   reschedule、dispatch_until 的在线命令流评测。
@@ -64,12 +70,15 @@ era/
 │   ├── multi_bot_era/
 │   ├── multi_bot_online_era/
 │   ├── flow_1160_era/
-│   └── flow_1160_era_v2/
+│   ├── flow_1160_era_v2/
+│   ├── flow_1160_era_v3/
+│   └── flow_1160_era_v4/
 ├── scripts/
 │   ├── build_fjspb_capacity_variant.py
 │   ├── build_merged_fjspb_sqlite.py
 │   ├── monitor_multi_bot_futs.py
-│   └── prove_flow1160_v2_seed_optimal.py
+│   ├── prove_flow1160_v2_seed_optimal.py
+│   └── prove_flow1160_v4_relaxed_optimal.py
 ├── experiments/
 ├── docs/
 ├── README.md
@@ -214,7 +223,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_116
 
 ### 项目 1160 流程图调度 v2
 
-`flow_1160_era_v2` 是当前最新分支。它保留 v1 的核心 scoring contract，并新增：
+`flow_1160_era_v2` 保留 v1 的核心 scoring contract，并新增：
 
 - `material_edges`
 - `material_inventory_events`
@@ -258,6 +267,93 @@ v2 数据落地边界见
 完整改进日志见
 [`IMPROVEMENT_LOG.md`](./implementation/flow_1160_era_v2/IMPROVEMENT_LOG.md)。
 
+### 项目 1160 流程图调度 v4
+
+`flow_1160_era_v4` 是当前最新分支。它在 v3 command IR、设备指令和
+Isaac/motion monitor 基础上，新增 seed-specific 实例层；默认 seed 是样本 1 到
+`酶活检测1`，也可用多培养板 seed 展开成多套任务实例并共享设备资源。
+
+审计默认 seed：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v4.audit_v4 \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --history-policy strict_cold_start \
+  --boundary-profile conservative \
+  --boundary-seed 1160
+```
+
+运行 reference CP-SAT smoke：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --mode futs \
+  --iterations 0 \
+  --timeout-seconds 60 \
+  --no-llm \
+  --initial-code /home/era/implementation/flow_1160_era_v4/reference_v4_cpsat_candidate.py \
+  --history-policy strict_cold_start \
+  --boundary-profile conservative \
+  --boundary-seed 1160
+```
+
+多培养板 seed 示例：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --seed /home/era/implementation/flow_1160_era_v4/default_seeds/multi_dish_3_enzyme_activity.json \
+  --mode futs \
+  --iterations 0 \
+  --timeout-seconds 120 \
+  --no-llm \
+  --initial-code /home/era/implementation/flow_1160_era_v4/reference_v4_cpsat_candidate.py \
+  --history-policy strict_cold_start \
+  --boundary-profile conservative \
+  --boundary-seed 1160
+```
+
+Isaac Sim 数字孪生配置：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python /home/era/implementation/flow_1160_era_v4/v4_ir_to_events.py \
+  1160 \
+  --pick-seconds 30 \
+  --move-seconds 300 \
+  --place-seconds 30 \
+  --drop-seconds 10 \
+  --safety-gap-seconds 10 \
+  > /tmp/events1160_v4.json
+
+/home/hehaochen/anaconda3/envs/isaacsim/bin/python /home/era/implementation/flow_1160_era_v4/isaac_twin.py \
+  /tmp/events1160_v4.json \
+  --headless \
+  --speed 1200 \
+  --screenshot /tmp/twin_v4_end.png \
+  --report-json /tmp/twin_v4_report.json
+```
+
+FUTS 自适应物流也可以把 Isaac headless 报告作为 gap 收紧的验收门：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --mode futs \
+  --iterations 10 \
+  --timeout-seconds 120 \
+  --adaptive-logistics \
+  --adaptive-logistics-isaac-headless \
+  --adaptive-logistics-isaac-python /home/hehaochen/anaconda3/envs/isaacsim/bin/python \
+  --adaptive-logistics-isaac-speed 1200 \
+  --adaptive-logistics-isaac-timeout-seconds 300
+```
+
+v4 设计说明见
+[`FLOW_1160_V1_TO_V4_BIG_PICTURE.md`](./FLOW_1160_V1_TO_V4_BIG_PICTURE.md)，
+数据落地边界见
+[`FLOW_1160_V4_DATA_REQUIREMENTS.md`](./FLOW_1160_V4_DATA_REQUIREMENTS.md)。
+
 ## 应用对比
 
 | 分支 | 候选脚本接口 | 主要约束 | 评分口径 |
@@ -268,6 +364,8 @@ v2 数据落地边界见
 | `multi_bot_online_era` | `DynamicScheduler.handle_command` | 在线插入、rolling fixed、稳定性 | 平均 makespan + 稳定性惩罚 |
 | `flow_1160_era` | `solve(dataset) -> {"assignments": [...]}` | 项目 1160 task IR、真实 duration/capacity/frequency | `-(makespan + elapsed/100)` |
 | `flow_1160_era_v2` | 同上 | v1 + 物料/物流/buffer/rolling/边界接口 | strict cold-start makespan + runtime |
+| `flow_1160_era_v3` | task + `command_assignments` | v2 + command IR、设备指令、Isaac/motion monitor | command-aware strict cold-start |
+| `flow_1160_era_v4` | task + `command_assignments` | v3 + seed-specific 多培养板实例、共享资源、motion hard gate | seed-specific makespan + runtime |
 
 ## 项目 1160 当前建模口径
 

@@ -1,0 +1,42 @@
+{
+  "seed_id": "sample1_enzyme_activity",
+  "description": "Default v4 seed-specific benchmark: instantiate the sample-1 path through enzyme activity detection instead of scheduling every task-bearing branch in project 1160.",
+  "traverse_all_initial_materials": true,
+  "entry_task_ids": [1],
+  "target_task_ids": [64],
+  "include_task_ids": [],
+  "exclude_task_ids": [],
+  "initial_units": [
+    {
+      "unit_id": "dish_001",
+      "unit_type": "culture_dish",
+      "display_name": "96孔细胞培养板",
+      "count": 1,
+      "material_code": "V0",
+      "barcode_type": "pmix",
+      "count_semantics": "number_of_physical_culture_dishes_entering_the_experiment",
+      "hard_inventory": false,
+      "reason": "User-level seed quantity. Platform stock identity and initial position are still mapped separately."
+    }
+  ],
+  "initial_materials": [
+    {
+      "material_code": "V0",
+      "material_name": "96孔细胞培养板",
+      "barcode_type": "pmix",
+      "unit_type": "culture_dish",
+      "count": 1,
+      "role": "declared_seed_input",
+      "hard_inventory": false,
+      "reason": "One physical culture dish enters this default seed; platform stock identity and initial position are not hard-bound yet."
+    }
+  ],
+  "target_outputs": [
+    {
+      "task_id": 64,
+      "name": "酶活检测1",
+      "role": "selected_experiment_output"
+    }
+  ],
+  "hard_initial_inventory": []
+}

@@ -1,0 +1,43 @@
+{
+  "seed_id": "multi_dish_3_enzyme_activity",
+  "description": "Three physical 96-well culture dishes enter the same enzyme-activity workflow. Each dish gets its own task/material traversal instance while machines, robot, buffers, and positions are shared scheduling resources.",
+  "traverse_all_initial_materials": true,
+  "expand_initial_units": true,
+  "entry_task_ids": [1],
+  "target_task_ids": [64],
+  "include_task_ids": [],
+  "exclude_task_ids": [],
+  "initial_units": [
+    {
+      "unit_id": "dish_batch_001",
+      "unit_type": "culture_dish",
+      "display_name": "96孔细胞培养板",
+      "count": 3,
+      "material_code": "V0",
+      "barcode_type": "pmix",
+      "count_semantics": "three physical culture dishes enter the experiment and should be scheduled as independent plate instances",
+      "hard_inventory": false,
+      "reason": "This seed validates shared-resource scheduling: devices released by one dish can be reused by another dish before the first dish finishes the whole workflow."
+    }
+  ],
+  "initial_materials": [
+    {
+      "material_code": "V0",
+      "material_name": "96孔细胞培养板",
+      "barcode_type": "pmix",
+      "unit_type": "culture_dish",
+      "count": 3,
+      "role": "declared_seed_input",
+      "hard_inventory": false,
+      "reason": "Three physical culture dishes enter this seed; platform stock identity and initial position are not hard-bound yet."
+    }
+  ],
+  "target_outputs": [
+    {
+      "task_id": 64,
+      "name": "酶活检测1",
+      "role": "selected_experiment_output_per_dish"
+    }
+  ],
+  "hard_initial_inventory": []
+}

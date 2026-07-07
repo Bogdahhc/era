@@ -1,3 +1,143 @@
+# flow_1160_era_v4 创建记录
+
+2026-07-01 补充：新增多培养板 seed 和 v4 松弛最优性证明。
+
+本轮落地：
+
+- 新增 `default_seeds/multi_dish_3_enzyme_activity.json`：
+  - `initial_units.count=3`
+  - `expand_initial_units=true`
+  - 三个物理 96 孔培养板展开成三套独立 task/material traversal 实例。
+- `seed_instance.py` 支持 plate instance 展开：
+  - 单板 25 个任务展开为 3 个 job / 75 个任务；
+  - 每个实例使用唯一 task id：`10001..10064`、`20001..20064`、`30001..30064`；
+  - 设备、机器人、buffer、position 不复制，作为共享资源被 CP-SAT 竞争使用；
+  - 多板 job 的 `expr_no` 区分为 `proj_1160:plate_001` 等，避免 v1 scorer 的 first-task-sync 旧假设把多板误判为必须同步。
+- `prompt.py`、`executor.py`、`reference_v4_cpsat_candidate.py` 已读取 `plate_instances`。
+- 新增 `/home/era/scripts/prove_flow1160_v4_relaxed_optimal.py`，支持 `--seed` / `--no-seed-instance`，用于 v4 task-level 松弛最优性证明。
+
+验证：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --seed /home/era/implementation/flow_1160_era_v4/default_seeds/multi_dish_3_enzyme_activity.json \
+  --mode futs --iterations 0 --timeout-seconds 120 --no-llm \
+  --initial-code /home/era/implementation/flow_1160_era_v4/reference_v4_cpsat_candidate.py \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160 \
+  --output-dir /home/hehaochen/experiments \
+  --experiment-name flow1160_v4_multi_dish3_reference_smoke_rerun
+# feasible=true, makespan=147425
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python /home/era/scripts/prove_flow1160_v4_relaxed_optimal.py \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --seed /home/era/implementation/flow_1160_era_v4/default_seeds/multi_dish_3_enzyme_activity.json \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160 \
+  --known-upper-bound 147425 \
+  --include-machine-capacity --logistics-mode conditional \
+  --timeout-seconds 60 --workers 8
+# tasks=75, material_transfer_edges=207, branch_priority_constraints=6
+# relaxed_cp_sat_status=OPTIMAL
+# relaxed_cp_sat_objective=147425
+# relaxed_cp_sat_best_bound=147425
+# proof=OPTIMAL: relaxed lower bound equals known feasible upper bound
+```
+
+2026-07-01 补充：按用户修正，v4 seed-specific 实例层不应只从目标任务反查祖先，而应遍历每一份初始原料的任务/物料流程，并保留设备释放后的跨原料阶段交错优化空间。
+
+本轮追加：
+
+- `seed_instance.py` 改为 `material_traversals` 口径：从每条匹配的外部初始物料 edge 出发，沿 material/task graph 向下游遍历；默认 seed 设置 `traverse_all_initial_materials=true`，再与目标可达关系裁剪到本次实例。
+- `seed_instance["flow_parallelism_hints"]` 显式记录：
+  - 设备在某份原料阶段结束后释放，可立即被另一份原料的其他阶段竞争使用；
+  - 不允许把 selected task id、单份原料、或 P1/P2/P3 priority 错建成全局串行链；
+  - 多个 P1 上游物流同时导入某设备、或产物/废料同时从某设备导出，是并行机会，只有显式 precedence、设备/机器人/孔位容量和 motion monitor 才能限制它们。
+- `load_compatibility_report` 汇总每份 required initial material 是否有设备负载、孔位负载或 hard initial inventory 证据。
+- `prompt.py` 和 `executor.py` 要求候选读取 `material_traversals`、`load_compatibility_report`、`flow_parallelism_hints`。
+- `executor.py` 将 Isaac/motion monitor 的 conflict/deadlock 从扣分升级为候选不可行：只要 command monitor 或 Isaac/motion monitor 发现冲突/死锁，该候选直接 rejected。
+
+验证：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m compileall -q /home/era/implementation/flow_1160_era_v4
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.audit_v4 \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160
+# material_traversal_count=101, selected_task_count=25,
+# initial_device_load_count=11, initial_position_load_count=16,
+# load_parameter_binding_count=27
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --mode futs --iterations 0 --timeout-seconds 60 --no-llm \
+  --initial-code /home/era/implementation/flow_1160_era_v4/reference_v4_cpsat_candidate.py \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160 \
+  --output-dir /home/hehaochen/experiments \
+  --experiment-name flow1160_v4_material_traversal_isaac_gate_smoke
+# experiment_dir=/home/hehaochen/experiments/flow1160_v4_material_traversal_isaac_gate_smoke
+# best_score=-143525.01416267117
+```
+
+2026-07-01：按 `era-flow-1160` skill 中对 v3 的校准，创建独立
+`/home/era/implementation/flow_1160_era_v4`。v4 不再只默认调度 1160
+全流程图，而是在 v3 task/material/logistics/command IR 之上新增
+seed-specific 实例层。
+
+本轮落地：
+
+- 从 v3 独立复制为 v4，模块引用切到 `implementation.flow_1160_era_v4`。
+- 新增 `default_seeds/sample1_enzyme_activity.json`，默认以样本 1 到
+  `酶活检测1` 为目标构造一个 seed-specific benchmark。
+- 新增 `seed_instance.py`：生成 `fjspb["seed_instance"]`，包含
+  `initial_materials`、`target_outputs`、`selected_task_ids`、
+  `selected_material_edges`、`disabled_task_reason`、
+  `seed_realization_boundaries`。
+- 按用户校正，初始原料对排程的影响显式体现在设备/孔位等负载参数：
+  `required_initial_materials`、`initial_device_loads`、
+  `initial_position_loads`、`load_parameter_bindings`。这些字段暴露
+  `device_name/rack/start_well/remaining_count/quantity/volume` 以及
+  `device_name/rack/level/plate_barcode/inner_or_out/robot_interaction_flag`。
+  默认仍为 audit-only，除非 seed 明确提供 stable stock identity、
+  quantity 和 initial_position_id。
+- `cli.py` 和 `audit_v4.py` 增加 `--seed`、`--no-seed-instance`，支持
+  seed-specific v4 和 full-flow 对照。
+- `prompt.py` 和 `executor.py` 要求候选读取 `seed_instance` 及负载参数，
+  但禁止把 audit-only 初始库存/孔位私自升级为硬约束。
+- `reference_v4_cpsat_candidate.py` 已读取 v4 seed/load 字段，并继续只把
+  hard-ready 约束落地。
+
+验证：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m compileall -q /home/era/implementation/flow_1160_era_v4
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.audit_v4 \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160
+# 默认 seed: tasks=25, selected_task_count=25, disabled_task_count=46,
+# initial_device_load_count=11, initial_position_load_count=16,
+# load_parameter_binding_count=27
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.cli \
+  --dataset /home/era/experiments/flow_1160_cache/1160.json \
+  --mode futs --iterations 0 --timeout-seconds 60 --no-llm \
+  --initial-code /home/era/implementation/flow_1160_era_v4/reference_v4_cpsat_candidate.py \
+  --history-policy strict_cold_start --boundary-profile conservative --boundary-seed 1160 \
+  --output-dir /home/hehaochen/experiments \
+  --experiment-name flow1160_v4_seed_instance_reference_smoke
+# experiment_dir=/home/hehaochen/experiments/flow1160_v4_seed_instance_reference_smoke
+# best_score=-143525.08951587736
+```
+
 # flow_1160_era_v3 创建记录
 
 ## 2026-06-30 初始 scaffold
@@ -462,6 +602,156 @@ python -m implementation.flow_1160_era_v3.cli \
 ```
 
 结果：`experiment_dir=/home/era/experiments/flow1160_v3_material_conservation_model_smoke`，`best_score=-149745.128545367`。
+
+---
+
+## 2026-07-06 v4 口径记录：task-level 排程到 motion/Isaac 事件流的时间偏移来源
+
+用户指出，实际实验室里任意两台设备前后配合的耗时方差可能很大。如果把每一次设备间转移 gap 都作为精确硬约束写入 CP-SAT，会让模型快速复杂化，并且对真实波动非常脆弱。v4 后续建模应保持分层口径：
+
+- 硬约束优先表达结构性可行性：工序依赖、设备/孔位容量、机械臂互斥、设备端口/板位互斥、buffer 容量、不可达或禁止转移。
+- 高方差转移耗时应优先作为风险/余量/鲁棒性评分，或按 profile 使用 p50/p90/p95 等统计边界，而不是默认把每次真实耗时精确硬建。
+- Isaac/motion 发现的 `robot_transfer_late` 默认属于 transfer slack/gap 证据；只有 `robot_collision`、`device_port_collision`、`plate_motion_collision`、`device_swap_no_buffer` 等显性资源/死锁冲突才应优先回灌为求解器侧硬约束。
+
+关于当前 node 生成方案到模拟端的偏移，明确两类来源：
+
+1. 机械臂动作在 motion 层被重新排队。
+
+   当前候选 CP-SAT 多数仍以 task/device 粒度为主，通常只保证：
+
+   ```text
+   end(prev_task) + device_transfer_times[src,dst] <= start(next_task)
+   ```
+
+   以及设备 capacity/cumulative 等任务级资源约束。若候选没有把每一条物料边展开成 `pick/move/place/drop/safety` 机械臂动作 interval，并对 `robot:StackRobotA` 加完整 `NoOverlap`，则多个 transfer 在 CP-SAT 中可能都“看起来来得及”。motion 层生成真实动作序列时会按单机械臂日历串行化：
+
+   ```text
+   transfer.start = max(planned_transfer_start, robot_available_time)
+   ```
+
+   前面的 transfer 占用机械臂后，后续 transfer 会被顺延；如果顺延后的到达时间晚于后继 task start，就形成 `robot_transfer_late`。这说明 node 没有完整建机械臂动作日历，或只用转移 gap 近似了机械臂资源。
+
+2. 设备 task end 不等于物理释放完成。
+
+   CP-SAT 的 `assignments` 是 task-level 摘要：`task_id / machine / start / end`。这里的 `task end` 表示设备工序运行结束，但模拟可执行性需要检查物料如何离开前序设备并进入后继设备。motion/Isaac 因此会把一条 `material_edges` 物料边展开为隐含执行动作：
+
+   ```text
+   prev task end
+   -> pick from previous device
+   -> move
+   -> place into next device or buffer
+   -> drop/safety
+   -> next task may start
+   ```
+
+   这些动作不是实验流程外新增任务，而是 task-level 排程中被抽象掉的设备级/物流级执行动作。若候选没有显式返回这些 command interval，模拟端只能根据 `material_edges + assignments + device_transfer_times + isaac_motion_timing` 自动展开来复核。由此产生的时间偏移，本质是 task-level 计划表和 command/action-level 执行时间线粒度不一致。
+
+后续若要减少这类偏移，不应简单把所有 gap 写死为更大常数，而应逐步让求解器显式建模关键 command：
+
+```text
+cmd:task:<task_id>:run
+cmd:transfer:<edge_id>:pick
+cmd:transfer:<edge_id>:move
+cmd:transfer:<edge_id>:place
+cmd:transfer:<edge_id>:drop
+```
+
+并加结构性约束：
+
+```text
+pick.start >= prev_task.end
+move.start >= pick.end
+place.start >= move.end
+drop.start >= place.end
+next_task.start >= drop.end
+
+NoOverlap(robot pick/move/place/drop intervals)
+NoOverlap(device port pick/place/drop intervals when port identity is hard-ready)
+NoOverlap(plate motion intervals when stable plate identity is hard-ready)
+Cumulative(buffer occupancy intervals, capacity)
+```
+
+在平台缺少真实路径、端口、板位、夹爪、动作模板或统计耗时分布时，上述 command 层仍应以 `command_realization_boundaries` 控制升级边界：字段 hard-ready 才转为硬约束；缺字段时保留为 audit/Isaac 验证和风险评分，避免凭历史 span 或常数假设制造不可解释的硬约束。
+
+### 运输碰撞/冲突监测边界
+
+当前 v4 已经监测一部分运输相关冲突，但这些属于调度级/资源级冲突，不等价于完整真实几何碰撞检测：
+
+- `robot_transfer_late`：物料/培养板转运到达晚于后继 task start。
+- `robot_collision`：同一机械臂动作 interval 时间重叠。
+- `device_port_collision`：同一设备口在同一时间被多个 pick/place/drop 动作占用。
+- `plate_motion_collision`：同一培养板在同一时间出现多个移动动作。
+- `device_swap_no_buffer`：两台设备发生双向换板且没有可用 buffer，存在死锁风险。
+
+这些冲突适合回灌到 CP-SAT/FUTS：迟到类作为 transfer slack/gap 证据；资源互斥、端口互斥、板位互斥、buffer 死锁类作为硬约束升级候选。
+
+但当前实现还不是完整 Isaac 物理碰撞仿真。尚未 hard-model：
+
+- 真实机械臂关节轨迹规划；
+- 实验室 CAD 几何碰撞体；
+- 路径避障和动态障碍；
+- 夹爪姿态、抓取点和抓取失败；
+- 设备门、伸缩台、托盘、孔位的真实几何占用；
+- 多机器人运动学级协调。
+
+因此当前 `motion_ok=true` 的含义应解释为：在当前抽象运动/资源模型下未发现运输调度冲突；不能直接声明真实实验室几何碰撞一定安全。后续若引入真实 CAD、关节轨迹、控制器状态或传感器反馈，应先作为验证层记录冲突证据，再判断哪些冲突能升级为 v4 IR/CP-SAT 的硬约束，哪些只进入风险评分或执行层在线重排。
+
+### 2026-07-06 v4 运行改进：Isaac timeout 默认值与增量绘图
+
+本轮根据 `flow1160_v4_multi_dish3_coldstart_futs10_explicit_feedback_20260706` 的运行现象更新运行侧工具：
+
+- 外部 Isaac headless replay 在 `120s` 内经常已经写出 events/stdout，但没有写出 report，因此 adaptive 层会把内部 motion 可行节点标成 `timeout after 120s` 并额外扣 `1_000_000` 分。该 timeout 不是 CP-SAT 失败，也不是内部 motion 失败，而是 `AdaptiveLogisticsTightener` 调用外部 `isaac_twin.py` 的验证超时。
+- `cli.py`、`adaptive_futs.py`、`search.py` 的默认 `adaptive_logistics_isaac_timeout_seconds` 已从 `240` 放宽为 `300`。若命令行显式传 `--adaptive-logistics-isaac-timeout-seconds 120`，仍以显式值为准。
+- 新增 `flow_1160_era_v4.plot.write_incremental_futs_plots(experiment_dir)`，每个 node 完成评估后由 `search._record_node()` 自动刷新：
+  - `v4_node_progress.png`
+  - `v4_node_progress.csv`
+  - `v4_node_progress_summary.json`
+- 中断任务也可以离线补图：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/flow1160_v4_pycache PYTHONPATH=/home/era \
+python -m implementation.flow_1160_era_v4.plot \
+  /path/to/experiment_dir
+```
+
+绘图口径：
+
+- `csv/summary` 保留所有已评估/待评估 node 的状态，用于诊断失败原因。
+- 主图只画模拟可行节点：`feasible=True` 且状态属于 `isaac_ok`、`motion_ok`、`motion_ok_isaac_timeout`。
+- 模拟失败节点不进入主图曲线，例如 `motion_rejected`、`schema_rejected`、`guard_rejected`、`pending` 均被排除。
+- `motion_ok_isaac_timeout` 表示内部 motion monitor 已通过，但外部 Isaac headless report 未在 timeout 内确认；该状态可用于观察可行候选演进，但不能等同于完整 Isaac headless 通过。
+
+对当前 interrupted/partial 目录离线绘图验证通过：
+
+```text
+/home/hehaochen/experiments/flow1160_v4_multi_dish3_coldstart_futs10_explicit_feedback_20260706/v4_node_progress.png
+/home/hehaochen/experiments/flow1160_v4_multi_dish3_coldstart_futs10_explicit_feedback_20260706/v4_node_progress.csv
+/home/hehaochen/experiments/flow1160_v4_multi_dish3_coldstart_futs10_explicit_feedback_20260706/v4_node_progress_summary.json
+```
+
+---
+
+## 2026-07-07 v4 FUTS 目标函数与物流 padding 策略修正
+
+根据 multi-dish-3 FUTS 对比结果，当前 v4 生成候选不应采用“先全局加保守 padding 再找可行解”的默认方向。统一把 `adaptive_current_gap`、`adaptive_min_gap`、validation gap、`transfer_safety_padding` 或 `pair_padding` 叠加到所有 hard `material_edges` 会把仿真验证状态误当成额外工艺时间，直接抬高 CP-SAT 下界，并容易让 FUTS 在较长 makespan 的可行区域内反复微调。
+
+已更新 `prompt.py`、`search.py` 和 `executor.py`：
+
+- hard material transfer 的基础约束应保持为：
+
+```text
+start[dst] >= end[src] + max(src.min_wait, device_transfer_times[src_machine,dst_machine])
+```
+
+- `isaac_motion_timing["transfer_seconds"]` 仅作为缺失 pair 的 fallback，不是全局额外 padding。
+- 禁止候选把 adaptive gap/min gap/validation gap 统一加到每条 material edge。
+- 推荐词典序目标：先最小化 `makespan`，再在同 makespan 下最小化 selected-pair `transfer_cost`，例如：
+
+```text
+model.Minimize(makespan * (transfer_cost_upper_bound + 1) + transfer_cost)
+```
+
+- `robot_transfer_late` 只作为 transfer-time/slack evidence；若使用反馈，应定位到具体 `transfer_id`、`edge_id`、task pair 或 device pair，优先作为局部 soft preference 或二级 tie-break。只有 `robot_collision`、`device_port_collision`、`plate_motion_collision`、`device_swap_no_buffer` 等显性资源/死锁冲突才应回灌为硬资源/位置/buffer 约束。
 
 ---
 
