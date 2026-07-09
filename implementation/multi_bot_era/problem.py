@@ -10,9 +10,11 @@ import sqlite3
 from pathlib import Path
 
 
-DEFAULT_DATASET = (
-    "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/"
-    "simulation_methods/examples/era_mixed_scheduling_benchmark.json"
+DEFAULT_DATASET = str(
+    Path(__file__).resolve().parent
+    / "datasets"
+    / "json"
+    / "era_mixed_scheduling_benchmark.json"
 )
 
 

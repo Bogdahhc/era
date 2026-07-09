@@ -1,0 +1,88 @@
+{
+  "benchmarks": [
+    {
+      "name": "ft06",
+      "file": "ft06.json",
+      "num_jobs": 6,
+      "num_machines": 6,
+      "num_operations": 36,
+      "metadata": {
+        "optimum": 55,
+        "upper_bound": 55,
+        "lower_bound": 55,
+        "reference": "J.F. Muth, G.L. Thompson. 'Industrial scheduling.', Englewood Cliffs, NJ, Prentice-Hall, 1963."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    },
+    {
+      "name": "ft10",
+      "file": "ft10.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 930,
+        "upper_bound": 930,
+        "lower_bound": 930,
+        "reference": "J.F. Muth, G.L. Thompson. 'Industrial scheduling.', Englewood Cliffs, NJ, Prentice-Hall, 1963."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    },
+    {
+      "name": "ta21",
+      "file": "ta21.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": 1642,
+        "upper_bound": 1642,
+        "lower_bound": 1642,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    },
+    {
+      "name": "ta31",
+      "file": "ta31.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 1764,
+        "upper_bound": 1764,
+        "lower_bound": 1764,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    },
+    {
+      "name": "ta51",
+      "file": "ta51.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2760,
+        "upper_bound": 2760,
+        "lower_bound": 2760,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    },
+    {
+      "name": "ta71",
+      "file": "ta71.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5464,
+        "upper_bound": 5464,
+        "lower_bound": 5464,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+    }
+  ]
+}
