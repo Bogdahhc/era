@@ -1,18 +1,50 @@
 {
   "datasets": [
     {
-      "file": "json/era_mixed_scheduling_benchmark.json",
-      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/era_mixed_scheduling_benchmark.json",
-      "task_count": 4,
-      "workstation_count": 29,
+      "file": "json/e1.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/e1.json",
+      "task_count": 1,
+      "workstation_count": 27,
       "robot_count": 3,
       "format": "legacy_multi_bot_json"
     },
     {
-      "file": "json/simulation_4_experiments_parallel.json",
-      "source_path": "/home/hehaochen/era_datasets/simulation_4_experiments_parallel.json",
-      "task_count": 36,
-      "workstation_count": 19,
+      "file": "json/e2.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/e2.json",
+      "task_count": 2,
+      "workstation_count": 27,
+      "robot_count": 3,
+      "format": "legacy_multi_bot_json"
+    },
+    {
+      "file": "json/e3.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/e3.json",
+      "task_count": 1,
+      "workstation_count": 27,
+      "robot_count": 2,
+      "format": "legacy_multi_bot_json"
+    },
+    {
+      "file": "json/e4.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/e4.json",
+      "task_count": 2,
+      "workstation_count": 27,
+      "robot_count": 3,
+      "format": "legacy_multi_bot_json"
+    },
+    {
+      "file": "json/e5.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/e5.json",
+      "task_count": 1,
+      "workstation_count": 27,
+      "robot_count": 3,
+      "format": "legacy_multi_bot_json"
+    },
+    {
+      "file": "json/era_mixed_scheduling_benchmark.json",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/examples/era_mixed_scheduling_benchmark.json",
+      "task_count": 4,
+      "workstation_count": 29,
       "robot_count": 3,
       "format": "legacy_multi_bot_json"
     },
@@ -25,8 +57,41 @@
       "format": "legacy_multi_bot_json"
     },
     {
+      "file": "json/simulation_4_experiments_parallel.json",
+      "source_path": "/home/hehaochen/era_datasets/simulation_4_experiments_parallel.json",
+      "task_count": 36,
+      "workstation_count": 19,
+      "robot_count": 3,
+      "format": "legacy_multi_bot_json"
+    },
+    {
       "file": "sqlite/4_experiments.sqlite",
       "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/4_experiments.sqlite",
+      "format": "sqlite_fjspb_source"
+    },
+    {
+      "file": "sqlite/e1.sqlite",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/e1.sqlite",
+      "format": "sqlite_fjspb_source"
+    },
+    {
+      "file": "sqlite/e2.sqlite",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/e2.sqlite",
+      "format": "sqlite_fjspb_source"
+    },
+    {
+      "file": "sqlite/e3.sqlite",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/e3.sqlite",
+      "format": "sqlite_fjspb_source"
+    },
+    {
+      "file": "sqlite/e4.sqlite",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/e4.sqlite",
+      "format": "sqlite_fjspb_source"
+    },
+    {
+      "file": "sqlite/e5.sqlite",
+      "source_path": "/home/multi-bot-coordinator_licko/multi-robot-multi-task_scheduling/simulation_methods/database_paper/e5.sqlite",
       "format": "sqlite_fjspb_source"
     }
   ]

@@ -6,9 +6,10 @@ examples without relying on machine-local absolute paths.
 ## JSON examples
 
 `json/era_mixed_scheduling_benchmark.json` is the default CLI dataset. The other
-JSON files are local parallel multi-experiment examples used in earlier FUTS
-runs:
+JSON files include both the original single-experiment examples and local
+parallel multi-experiment examples used in earlier FUTS runs:
 
+- `json/e1.json` through `json/e5.json`
 - `json/simulation_4_experiments_parallel.json`
 - `json/real_e1_e2_e3_e4_parallel.json`
 
@@ -24,9 +25,10 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
 
 ## SQLite source
 
-`sqlite/4_experiments.sqlite` is the original SQLite-style FJSPB source used by
-the current `dataset["fjspb"]` loader path. It exercises machine capacity,
-fixed-task hiding, batching, resource, and chemistry-specific scorer checks.
+`sqlite/e1.sqlite` through `sqlite/e5.sqlite` and `sqlite/4_experiments.sqlite`
+are the original SQLite-style FJSPB sources used by the current
+`dataset["fjspb"]` loader path. They exercise machine capacity, fixed-task
+hiding, batching, resource, and chemistry-specific scorer checks.
 
 Example:
 
@@ -40,4 +42,3 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/era python -m implementation.multi_bo
 ```
 
 `manifest.json` records each checked-in file and its original local source path.
-
