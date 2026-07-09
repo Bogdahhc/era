@@ -1,5 +1,76 @@
 {
+  "benchmark_count": 162,
   "benchmarks": [
+    {
+      "name": "abz5",
+      "file": "abz5.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1234,
+        "upper_bound": 1234,
+        "lower_bound": 1234,
+        "reference": "J. Adams, E. Balas, D. Zawack. 'The shifting bottleneck procedure for job shop scheduling.', Management Science, Vol. 34, Issue 3, pp. 391-401, 1988."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "abz6",
+      "file": "abz6.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 943,
+        "upper_bound": 943,
+        "lower_bound": 943,
+        "reference": "J. Adams, E. Balas, D. Zawack. 'The shifting bottleneck procedure for job shop scheduling.', Management Science, Vol. 34, Issue 3, pp. 391-401, 1988."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "abz7",
+      "file": "abz7.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 656,
+        "upper_bound": 656,
+        "lower_bound": 656,
+        "reference": "J. Adams, E. Balas, D. Zawack. 'The shifting bottleneck procedure for job shop scheduling.', Management Science, Vol. 34, Issue 3, pp. 391-401, 1988."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "abz8",
+      "file": "abz8.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 665,
+        "lower_bound": 645,
+        "reference": "J. Adams, E. Balas, D. Zawack. 'The shifting bottleneck procedure for job shop scheduling.', Management Science, Vol. 34, Issue 3, pp. 391-401, 1988."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "abz9",
+      "file": "abz9.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 678,
+        "upper_bound": 678,
+        "lower_bound": 678,
+        "reference": "J. Adams, E. Balas, D. Zawack. 'The shifting bottleneck procedure for job shop scheduling.', Management Science, Vol. 34, Issue 3, pp. 391-401, 1988."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
     {
       "name": "ft06",
       "file": "ft06.json",
@@ -12,7 +83,7 @@
         "lower_bound": 55,
         "reference": "J.F. Muth, G.L. Thompson. 'Industrial scheduling.', Englewood Cliffs, NJ, Prentice-Hall, 1963."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     },
     {
       "name": "ft10",
@@ -26,7 +97,1281 @@
         "lower_bound": 930,
         "reference": "J.F. Muth, G.L. Thompson. 'Industrial scheduling.', Englewood Cliffs, NJ, Prentice-Hall, 1963."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ft20",
+      "file": "ft20.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1165,
+        "upper_bound": 1165,
+        "lower_bound": 1165,
+        "reference": "J.F. Muth, G.L. Thompson. 'Industrial scheduling.', Englewood Cliffs, NJ, Prentice-Hall, 1963."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la01",
+      "file": "la01.json",
+      "num_jobs": 10,
+      "num_machines": 5,
+      "num_operations": 50,
+      "metadata": {
+        "optimum": 666,
+        "upper_bound": 666,
+        "lower_bound": 666,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la02",
+      "file": "la02.json",
+      "num_jobs": 10,
+      "num_machines": 5,
+      "num_operations": 50,
+      "metadata": {
+        "optimum": 655,
+        "upper_bound": 655,
+        "lower_bound": 655,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la03",
+      "file": "la03.json",
+      "num_jobs": 10,
+      "num_machines": 5,
+      "num_operations": 50,
+      "metadata": {
+        "optimum": 597,
+        "upper_bound": 597,
+        "lower_bound": 597,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la04",
+      "file": "la04.json",
+      "num_jobs": 10,
+      "num_machines": 5,
+      "num_operations": 50,
+      "metadata": {
+        "optimum": 590,
+        "upper_bound": 590,
+        "lower_bound": 590,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la05",
+      "file": "la05.json",
+      "num_jobs": 10,
+      "num_machines": 5,
+      "num_operations": 50,
+      "metadata": {
+        "optimum": 593,
+        "upper_bound": 593,
+        "lower_bound": 593,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la06",
+      "file": "la06.json",
+      "num_jobs": 15,
+      "num_machines": 5,
+      "num_operations": 75,
+      "metadata": {
+        "optimum": 926,
+        "upper_bound": 926,
+        "lower_bound": 926,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la07",
+      "file": "la07.json",
+      "num_jobs": 15,
+      "num_machines": 5,
+      "num_operations": 75,
+      "metadata": {
+        "optimum": 890,
+        "upper_bound": 890,
+        "lower_bound": 890,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la08",
+      "file": "la08.json",
+      "num_jobs": 15,
+      "num_machines": 5,
+      "num_operations": 75,
+      "metadata": {
+        "optimum": 863,
+        "upper_bound": 863,
+        "lower_bound": 863,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la09",
+      "file": "la09.json",
+      "num_jobs": 15,
+      "num_machines": 5,
+      "num_operations": 75,
+      "metadata": {
+        "optimum": 951,
+        "upper_bound": 951,
+        "lower_bound": 951,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la10",
+      "file": "la10.json",
+      "num_jobs": 15,
+      "num_machines": 5,
+      "num_operations": 75,
+      "metadata": {
+        "optimum": 958,
+        "upper_bound": 958,
+        "lower_bound": 958,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la11",
+      "file": "la11.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1222,
+        "upper_bound": 1222,
+        "lower_bound": 1222,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la12",
+      "file": "la12.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1039,
+        "upper_bound": 1039,
+        "lower_bound": 1039,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la13",
+      "file": "la13.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1150,
+        "upper_bound": 1150,
+        "lower_bound": 1150,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la14",
+      "file": "la14.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1292,
+        "upper_bound": 1292,
+        "lower_bound": 1292,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la15",
+      "file": "la15.json",
+      "num_jobs": 20,
+      "num_machines": 5,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1207,
+        "upper_bound": 1207,
+        "lower_bound": 1207,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la16",
+      "file": "la16.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 945,
+        "upper_bound": 945,
+        "lower_bound": 945,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la17",
+      "file": "la17.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 784,
+        "upper_bound": 784,
+        "lower_bound": 784,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la18",
+      "file": "la18.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 848,
+        "upper_bound": 848,
+        "lower_bound": 848,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la19",
+      "file": "la19.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 842,
+        "upper_bound": 842,
+        "lower_bound": 842,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la20",
+      "file": "la20.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 902,
+        "upper_bound": 902,
+        "lower_bound": 902,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la21",
+      "file": "la21.json",
+      "num_jobs": 15,
+      "num_machines": 10,
+      "num_operations": 150,
+      "metadata": {
+        "optimum": 1046,
+        "upper_bound": 1046,
+        "lower_bound": 1046,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la22",
+      "file": "la22.json",
+      "num_jobs": 15,
+      "num_machines": 10,
+      "num_operations": 150,
+      "metadata": {
+        "optimum": 927,
+        "upper_bound": 927,
+        "lower_bound": 927,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la23",
+      "file": "la23.json",
+      "num_jobs": 15,
+      "num_machines": 10,
+      "num_operations": 150,
+      "metadata": {
+        "optimum": 1032,
+        "upper_bound": 1032,
+        "lower_bound": 1032,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la24",
+      "file": "la24.json",
+      "num_jobs": 15,
+      "num_machines": 10,
+      "num_operations": 150,
+      "metadata": {
+        "optimum": 935,
+        "upper_bound": 935,
+        "lower_bound": 935,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la25",
+      "file": "la25.json",
+      "num_jobs": 15,
+      "num_machines": 10,
+      "num_operations": 150,
+      "metadata": {
+        "optimum": 977,
+        "upper_bound": 977,
+        "lower_bound": 977,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la26",
+      "file": "la26.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1218,
+        "upper_bound": 1218,
+        "lower_bound": 1218,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la27",
+      "file": "la27.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1235,
+        "upper_bound": 1235,
+        "lower_bound": 1235,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la28",
+      "file": "la28.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1216,
+        "upper_bound": 1216,
+        "lower_bound": 1216,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la29",
+      "file": "la29.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1152,
+        "upper_bound": 1152,
+        "lower_bound": 1152,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la30",
+      "file": "la30.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1355,
+        "upper_bound": 1355,
+        "lower_bound": 1355,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la31",
+      "file": "la31.json",
+      "num_jobs": 30,
+      "num_machines": 10,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1784,
+        "upper_bound": 1784,
+        "lower_bound": 1784,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la32",
+      "file": "la32.json",
+      "num_jobs": 30,
+      "num_machines": 10,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1850,
+        "upper_bound": 1850,
+        "lower_bound": 1850,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la33",
+      "file": "la33.json",
+      "num_jobs": 30,
+      "num_machines": 10,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1719,
+        "upper_bound": 1719,
+        "lower_bound": 1719,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la34",
+      "file": "la34.json",
+      "num_jobs": 30,
+      "num_machines": 10,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1721,
+        "upper_bound": 1721,
+        "lower_bound": 1721,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la35",
+      "file": "la35.json",
+      "num_jobs": 30,
+      "num_machines": 10,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1888,
+        "upper_bound": 1888,
+        "lower_bound": 1888,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la36",
+      "file": "la36.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1268,
+        "upper_bound": 1268,
+        "lower_bound": 1268,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la37",
+      "file": "la37.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1397,
+        "upper_bound": 1397,
+        "lower_bound": 1397,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la38",
+      "file": "la38.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1196,
+        "upper_bound": 1196,
+        "lower_bound": 1196,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la39",
+      "file": "la39.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1233,
+        "upper_bound": 1233,
+        "lower_bound": 1233,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "la40",
+      "file": "la40.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1222,
+        "upper_bound": 1222,
+        "lower_bound": 1222,
+        "reference": "S. Lawrence. 'Resource constrained project scheduling: an experimental investigation of heuristic scheduling techniques (Supplement).', Graduate School of Industrial Administration. Pittsburgh, Pennsylvania, Carnegie-Mellon University, 1984."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb01",
+      "file": "orb01.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1059,
+        "upper_bound": 1059,
+        "lower_bound": 1059,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb02",
+      "file": "orb02.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 888,
+        "upper_bound": 888,
+        "lower_bound": 888,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb03",
+      "file": "orb03.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1005,
+        "upper_bound": 1005,
+        "lower_bound": 1005,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb04",
+      "file": "orb04.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1005,
+        "upper_bound": 1005,
+        "lower_bound": 1005,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb05",
+      "file": "orb05.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 887,
+        "upper_bound": 887,
+        "lower_bound": 887,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb06",
+      "file": "orb06.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 1010,
+        "upper_bound": 1010,
+        "lower_bound": 1010,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb07",
+      "file": "orb07.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 397,
+        "upper_bound": 397,
+        "lower_bound": 397,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb08",
+      "file": "orb08.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 899,
+        "upper_bound": 899,
+        "lower_bound": 899,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb09",
+      "file": "orb09.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 934,
+        "upper_bound": 934,
+        "lower_bound": 934,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "orb10",
+      "file": "orb10.json",
+      "num_jobs": 10,
+      "num_machines": 10,
+      "num_operations": 100,
+      "metadata": {
+        "optimum": 944,
+        "upper_bound": 944,
+        "lower_bound": 944,
+        "reference": "D. Applegate, W. Cook. 'A computational study of job-shop scheduling.', ORSA Journal on Computing, Vol. 3, Issue 2, pp. 149-156, 1991."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv01",
+      "file": "swv01.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1407,
+        "upper_bound": 1407,
+        "lower_bound": 1407,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv02",
+      "file": "swv02.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1475,
+        "upper_bound": 1475,
+        "lower_bound": 1475,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv03",
+      "file": "swv03.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1398,
+        "upper_bound": 1398,
+        "lower_bound": 1398,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv04",
+      "file": "swv04.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1464,
+        "upper_bound": 1464,
+        "lower_bound": 1464,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv05",
+      "file": "swv05.json",
+      "num_jobs": 20,
+      "num_machines": 10,
+      "num_operations": 200,
+      "metadata": {
+        "optimum": 1424,
+        "upper_bound": 1424,
+        "lower_bound": 1424,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv06",
+      "file": "swv06.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1671,
+        "lower_bound": 1630,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv07",
+      "file": "swv07.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1594,
+        "lower_bound": 1513,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv08",
+      "file": "swv08.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1752,
+        "lower_bound": 1671,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv09",
+      "file": "swv09.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1655,
+        "lower_bound": 1633,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv10",
+      "file": "swv10.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1743,
+        "lower_bound": 1663,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv11",
+      "file": "swv11.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2983,
+        "upper_bound": 2983,
+        "lower_bound": 2983,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv12",
+      "file": "swv12.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 2977,
+        "lower_bound": 2972,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv13",
+      "file": "swv13.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 3104,
+        "upper_bound": 3104,
+        "lower_bound": 3104,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv14",
+      "file": "swv14.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2968,
+        "upper_bound": 2968,
+        "lower_bound": 2968,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv15",
+      "file": "swv15.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2885,
+        "upper_bound": 2885,
+        "lower_bound": 2885,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv16",
+      "file": "swv16.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2924,
+        "upper_bound": 2924,
+        "lower_bound": 2924,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv17",
+      "file": "swv17.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2794,
+        "upper_bound": 2794,
+        "lower_bound": 2794,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv18",
+      "file": "swv18.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2852,
+        "upper_bound": 2852,
+        "lower_bound": 2852,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv19",
+      "file": "swv19.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2843,
+        "upper_bound": 2843,
+        "lower_bound": 2843,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "swv20",
+      "file": "swv20.json",
+      "num_jobs": 50,
+      "num_machines": 10,
+      "num_operations": 500,
+      "metadata": {
+        "optimum": 2823,
+        "upper_bound": 2823,
+        "lower_bound": 2823,
+        "reference": "R.H. Storer, S.D. Wu, R. Vaccari. 'New search spaces for sequencing problems with applications to job-shop scheduling.', Management Science Vol. 38, Issue 10, pp. 1495-1509, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta01",
+      "file": "ta01.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1231,
+        "upper_bound": 1231,
+        "lower_bound": 1231,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta02",
+      "file": "ta02.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1244,
+        "upper_bound": 1244,
+        "lower_bound": 1244,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta03",
+      "file": "ta03.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1218,
+        "upper_bound": 1218,
+        "lower_bound": 1218,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta04",
+      "file": "ta04.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1175,
+        "upper_bound": 1175,
+        "lower_bound": 1175,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta05",
+      "file": "ta05.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1224,
+        "upper_bound": 1224,
+        "lower_bound": 1224,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta06",
+      "file": "ta06.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1238,
+        "upper_bound": 1238,
+        "lower_bound": 1238,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta07",
+      "file": "ta07.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1227,
+        "upper_bound": 1227,
+        "lower_bound": 1227,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta08",
+      "file": "ta08.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1217,
+        "upper_bound": 1217,
+        "lower_bound": 1217,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta09",
+      "file": "ta09.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1274,
+        "upper_bound": 1274,
+        "lower_bound": 1274,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta10",
+      "file": "ta10.json",
+      "num_jobs": 15,
+      "num_machines": 15,
+      "num_operations": 225,
+      "metadata": {
+        "optimum": 1241,
+        "upper_bound": 1241,
+        "lower_bound": 1241,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta11",
+      "file": "ta11.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1357,
+        "upper_bound": 1357,
+        "lower_bound": 1357,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta12",
+      "file": "ta12.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1367,
+        "upper_bound": 1367,
+        "lower_bound": 1367,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta13",
+      "file": "ta13.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1342,
+        "upper_bound": 1342,
+        "lower_bound": 1342,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta14",
+      "file": "ta14.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1345,
+        "upper_bound": 1345,
+        "lower_bound": 1345,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta15",
+      "file": "ta15.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1339,
+        "upper_bound": 1339,
+        "lower_bound": 1339,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta16",
+      "file": "ta16.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1360,
+        "upper_bound": 1360,
+        "lower_bound": 1360,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta17",
+      "file": "ta17.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1462,
+        "upper_bound": 1462,
+        "lower_bound": 1462,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta18",
+      "file": "ta18.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1396,
+        "lower_bound": 1377,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta19",
+      "file": "ta19.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1332,
+        "upper_bound": 1332,
+        "lower_bound": 1332,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta20",
+      "file": "ta20.json",
+      "num_jobs": 20,
+      "num_machines": 15,
+      "num_operations": 300,
+      "metadata": {
+        "optimum": 1348,
+        "upper_bound": 1348,
+        "lower_bound": 1348,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     },
     {
       "name": "ta21",
@@ -40,7 +1385,133 @@
         "lower_bound": 1642,
         "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta22",
+      "file": "ta22.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1600,
+        "lower_bound": 1561,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta23",
+      "file": "ta23.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1557,
+        "lower_bound": 1518,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta24",
+      "file": "ta24.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": 1644,
+        "upper_bound": 1644,
+        "lower_bound": 1644,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta25",
+      "file": "ta25.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1595,
+        "lower_bound": 1558,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta26",
+      "file": "ta26.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1643,
+        "lower_bound": 1591,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta27",
+      "file": "ta27.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1680,
+        "lower_bound": 1652,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta28",
+      "file": "ta28.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": 1603,
+        "upper_bound": 1603,
+        "lower_bound": 1603,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta29",
+      "file": "ta29.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1625,
+        "lower_bound": 1573,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta30",
+      "file": "ta30.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1584,
+        "lower_bound": 1519,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     },
     {
       "name": "ta31",
@@ -54,7 +1525,273 @@
         "lower_bound": 1764,
         "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta32",
+      "file": "ta32.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1784,
+        "lower_bound": 1774,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta33",
+      "file": "ta33.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1791,
+        "lower_bound": 1778,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta34",
+      "file": "ta34.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1829,
+        "lower_bound": 1828,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta35",
+      "file": "ta35.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 2007,
+        "upper_bound": 2007,
+        "lower_bound": 2007,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta36",
+      "file": "ta36.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 1819,
+        "upper_bound": 1819,
+        "lower_bound": 1819,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta37",
+      "file": "ta37.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 1771,
+        "upper_bound": 1771,
+        "lower_bound": 1771,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta38",
+      "file": "ta38.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 1673,
+        "upper_bound": 1673,
+        "lower_bound": 1673,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta39",
+      "file": "ta39.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": 1795,
+        "upper_bound": 1795,
+        "lower_bound": 1795,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta40",
+      "file": "ta40.json",
+      "num_jobs": 30,
+      "num_machines": 15,
+      "num_operations": 450,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1669,
+        "lower_bound": 1651,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta41",
+      "file": "ta41.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 2005,
+        "lower_bound": 1906,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta42",
+      "file": "ta42.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1937,
+        "lower_bound": 1884,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta43",
+      "file": "ta43.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1846,
+        "lower_bound": 1809,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta44",
+      "file": "ta44.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1979,
+        "lower_bound": 1948,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta45",
+      "file": "ta45.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 2000,
+        "lower_bound": 1997,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta46",
+      "file": "ta46.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 2004,
+        "lower_bound": 1957,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta47",
+      "file": "ta47.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1889,
+        "lower_bound": 1807,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta48",
+      "file": "ta48.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1937,
+        "lower_bound": 1912,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta49",
+      "file": "ta49.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1968,
+        "lower_bound": 1931,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta50",
+      "file": "ta50.json",
+      "num_jobs": 30,
+      "num_machines": 20,
+      "num_operations": 600,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 1923,
+        "lower_bound": 1833,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     },
     {
       "name": "ta51",
@@ -68,7 +1805,273 @@
         "lower_bound": 2760,
         "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta52",
+      "file": "ta52.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2756,
+        "upper_bound": 2756,
+        "lower_bound": 2756,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta53",
+      "file": "ta53.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2717,
+        "upper_bound": 2717,
+        "lower_bound": 2717,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta54",
+      "file": "ta54.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2839,
+        "upper_bound": 2839,
+        "lower_bound": 2839,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta55",
+      "file": "ta55.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2679,
+        "upper_bound": 2679,
+        "lower_bound": 2679,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta56",
+      "file": "ta56.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2781,
+        "upper_bound": 2781,
+        "lower_bound": 2781,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta57",
+      "file": "ta57.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2943,
+        "upper_bound": 2943,
+        "lower_bound": 2943,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta58",
+      "file": "ta58.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2885,
+        "upper_bound": 2885,
+        "lower_bound": 2885,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta59",
+      "file": "ta59.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2655,
+        "upper_bound": 2655,
+        "lower_bound": 2655,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta60",
+      "file": "ta60.json",
+      "num_jobs": 50,
+      "num_machines": 15,
+      "num_operations": 750,
+      "metadata": {
+        "optimum": 2723,
+        "upper_bound": 2723,
+        "lower_bound": 2723,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta61",
+      "file": "ta61.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2868,
+        "upper_bound": 2868,
+        "lower_bound": 2868,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta62",
+      "file": "ta62.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2869,
+        "upper_bound": 2869,
+        "lower_bound": 2869,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta63",
+      "file": "ta63.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2755,
+        "upper_bound": 2755,
+        "lower_bound": 2755,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta64",
+      "file": "ta64.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2702,
+        "upper_bound": 2702,
+        "lower_bound": 2702,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta65",
+      "file": "ta65.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2725,
+        "upper_bound": 2725,
+        "lower_bound": 2725,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta66",
+      "file": "ta66.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2845,
+        "upper_bound": 2845,
+        "lower_bound": 2845,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta67",
+      "file": "ta67.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2825,
+        "upper_bound": 2825,
+        "lower_bound": 2825,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta68",
+      "file": "ta68.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2784,
+        "upper_bound": 2784,
+        "lower_bound": 2784,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta69",
+      "file": "ta69.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 3071,
+        "upper_bound": 3071,
+        "lower_bound": 3071,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta70",
+      "file": "ta70.json",
+      "num_jobs": 50,
+      "num_machines": 20,
+      "num_operations": 1000,
+      "metadata": {
+        "optimum": 2995,
+        "upper_bound": 2995,
+        "lower_bound": 2995,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     },
     {
       "name": "ta71",
@@ -82,7 +2085,189 @@
         "lower_bound": 5464,
         "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
       },
-      "source": "job_shop_lib.benchmarking.load_benchmark_instance"
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta72",
+      "file": "ta72.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5181,
+        "upper_bound": 5181,
+        "lower_bound": 5181,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta73",
+      "file": "ta73.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5568,
+        "upper_bound": 5568,
+        "lower_bound": 5568,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta74",
+      "file": "ta74.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5339,
+        "upper_bound": 5339,
+        "lower_bound": 5339,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta75",
+      "file": "ta75.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5392,
+        "upper_bound": 5392,
+        "lower_bound": 5392,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta76",
+      "file": "ta76.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5342,
+        "upper_bound": 5342,
+        "lower_bound": 5342,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta77",
+      "file": "ta77.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5436,
+        "upper_bound": 5436,
+        "lower_bound": 5436,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta78",
+      "file": "ta78.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5394,
+        "upper_bound": 5394,
+        "lower_bound": 5394,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta79",
+      "file": "ta79.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5358,
+        "upper_bound": 5358,
+        "lower_bound": 5358,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "ta80",
+      "file": "ta80.json",
+      "num_jobs": 100,
+      "num_machines": 20,
+      "num_operations": 2000,
+      "metadata": {
+        "optimum": 5183,
+        "upper_bound": 5183,
+        "lower_bound": 5183,
+        "reference": "E. Taillard. 'Benchmarks for basic scheduling problems', European Journal of Operational Research, Vol. 64, Issue 2, pp. 278-285, 1993."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "yn1",
+      "file": "yn1.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": 884,
+        "upper_bound": 884,
+        "lower_bound": 884,
+        "reference": "T. Yamada, R. Nakano. 'A genetic algorithm applicable to large-scale job-shop problems.', Proceedings of the Second international workshop on parallel problem solving from Nature (PPSN'2). Brussels (Belgium), pp. 281-290, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "yn2",
+      "file": "yn2.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 904,
+        "lower_bound": 870,
+        "reference": "T. Yamada, R. Nakano. 'A genetic algorithm applicable to large-scale job-shop problems.', Proceedings of the Second international workshop on parallel problem solving from Nature (PPSN'2). Brussels (Belgium), pp. 281-290, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "yn3",
+      "file": "yn3.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 892,
+        "lower_bound": 859,
+        "reference": "T. Yamada, R. Nakano. 'A genetic algorithm applicable to large-scale job-shop problems.', Proceedings of the Second international workshop on parallel problem solving from Nature (PPSN'2). Brussels (Belgium), pp. 281-290, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
+    },
+    {
+      "name": "yn4",
+      "file": "yn4.json",
+      "num_jobs": 20,
+      "num_machines": 20,
+      "num_operations": 400,
+      "metadata": {
+        "optimum": null,
+        "upper_bound": 968,
+        "lower_bound": 929,
+        "reference": "T. Yamada, R. Nakano. 'A genetic algorithm applicable to large-scale job-shop problems.', Proceedings of the Second international workshop on parallel problem solving from Nature (PPSN'2). Brussels (Belgium), pp. 281-290, 1992."
+      },
+      "source": "job_shop_lib.benchmarking.load_all_benchmark_instances"
     }
   ]
 }
